@@ -272,7 +272,6 @@ class Island {
         }
         
         let base = tops
-        
         for x in base {
             
             for y in x.adj(max: map.mapAdj){
@@ -286,10 +285,7 @@ class Island {
             }
             
         }
-        
-        
-        
-        
+
     }
     
 }
@@ -504,19 +500,10 @@ class MapHandler{
         
         self.createHarbors()
         
-        if let sHarbor = self.startIsle?.harbor,
-            let dHarbor = self.endIsle?.harbor {
+        if let _ = self.startIsle?.harbor,
+            let _ = self.endIsle?.harbor {
             
-            let wSet:Set<Landscape> = [.water,.path]
-            let path = sHarbor.path(to: dHarbor, map: self, using: wSet)
-            
-            for i in path {
-                
-                if wSet.contains(kind(point: i)){
-                    changeTile(at: i, to:.path)
-                }
-                
-            }
+        
             
         } else {
             refreshMap()
