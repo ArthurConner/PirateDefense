@@ -38,6 +38,9 @@
 		0E4501281F743493008493C2 /* PirateTileSet.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0E4501271F743493008493C2 /* PirateTileSet.sks */; };
 		0E4501291F743493008493C2 /* PirateTileSet.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0E4501271F743493008493C2 /* PirateTileSet.sks */; };
 		0E45012A1F743493008493C2 /* PirateTileSet.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0E4501271F743493008493C2 /* PirateTileSet.sks */; };
+		4AA689551F78A1E60086F3C1 /* ShipWake.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4AA689541F78A1E60086F3C1 /* ShipWake.sks */; };
+		4AA689561F78A1E60086F3C1 /* ShipWake.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4AA689541F78A1E60086F3C1 /* ShipWake.sks */; };
+		4AA689571F78A1E60086F3C1 /* ShipWake.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4AA689541F78A1E60086F3C1 /* ShipWake.sks */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -64,6 +67,7 @@
 		0E4501181F742D42008493C2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0E45011F1F742E50008493C2 /* MapHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapHandler.swift; sourceTree = "<group>"; };
 		0E4501271F743493008493C2 /* PirateTileSet.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = PirateTileSet.sks; sourceTree = "<group>"; };
+		4AA689541F78A1E60086F3C1 /* ShipWake.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = ShipWake.sks; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +113,7 @@
 			children = (
 				0E4500CE1F742D1A008493C2 /* Actions.sks */,
 				0E4500CF1F742D1A008493C2 /* GameScene.sks */,
+				4AA689541F78A1E60086F3C1 /* ShipWake.sks */,
 				0E45011F1F742E50008493C2 /* MapHandler.swift */,
 				0E4500D01F742D1A008493C2 /* GameScene.swift */,
 				0E4500D11F742D1A008493C2 /* Assets.xcassets */,
@@ -270,6 +275,7 @@
 				0E45011C1F742D42008493C2 /* Assets.xcassets in Resources */,
 				0E4501091F742D1A008493C2 /* Assets.xcassets in Resources */,
 				0E4501281F743493008493C2 /* PirateTileSet.sks in Resources */,
+				4AA689551F78A1E60086F3C1 /* ShipWake.sks in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -279,6 +285,7 @@
 			files = (
 				0E4500F01F742D1A008493C2 /* Main.storyboard in Resources */,
 				0E4501041F742D1A008493C2 /* GameScene.sks in Resources */,
+				4AA689561F78A1E60086F3C1 /* ShipWake.sks in Resources */,
 				0E45010A1F742D1A008493C2 /* Assets.xcassets in Resources */,
 				0E45011D1F742D42008493C2 /* Assets.xcassets in Resources */,
 				0E4501291F743493008493C2 /* PirateTileSet.sks in Resources */,
@@ -292,6 +299,7 @@
 			files = (
 				0E4500FE1F742D1A008493C2 /* Main.storyboard in Resources */,
 				0E4501051F742D1A008493C2 /* GameScene.sks in Resources */,
+				4AA689571F78A1E60086F3C1 /* ShipWake.sks in Resources */,
 				0E45010B1F742D1A008493C2 /* Assets.xcassets in Resources */,
 				0E45011E1F742D42008493C2 /* Assets.xcassets in Resources */,
 				0E45012A1F743493008493C2 /* PirateTileSet.sks in Resources */,

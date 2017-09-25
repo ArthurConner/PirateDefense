@@ -25,7 +25,22 @@ class ShipMaker {
         
         //let node = SKSpriteNode(imageNamed: "PirateShip")
         let mynode = SKShapeNode(circleOfRadius: 20)
-        mynode.fillColor = .green
+        mynode.fillColor = .purple
+        
+        
+        let body = SKPhysicsBody(circleOfRadius:
+            20)
+        
+        
+        let BlockCategory  : UInt32 = 0x1 << 2
+        
+        body.isDynamic = false
+        body.allowsRotation = false
+        body.categoryBitMask = BlockCategory
+        body.collisionBitMask = BlockCategory
+        
+        mynode.physicsBody = body
+        body.affectedByGravity = true
         
         return mynode
     }
@@ -65,31 +80,22 @@ class GameScene: SKScene {
     
     
     func restart(){
-        
         setUpScene()
-        
     }
     
     
     func CGPointOF(mp:MapPoint)->CGPoint? {
         
         guard let background = mapTiles.tiles else {return nil }
-        
-        
-        
-        
+
         let bar  = background.centerOfTile(atColumn:mp.col,row:mp.row)
         let foo =  self.convert(bar, from: background)
-        
-        // print("\(bar) \(foo)")
+
         return foo
-        
-        
-        
+  
     }
+    
     func pathCG(of route:[MapPoint])->CGPath?{
-        
-        
         
         guard let f1 = route.first, let p1 = CGPointOF(mp:f1) else { return nil}
         
@@ -107,71 +113,16 @@ class GameScene: SKScene {
     
     
     func setUpScene() {
-        // Get label node from scene and store it for use later
         guard let tile  = self.childNode(withName: "//MapTiles") as? SKTileMapNode else { return }
         mapTiles.load(map:tile)
         
-        
+        physicsWorld.gravity = CGVector(dx: 0.0, dy: 1.0)
+        physicsWorld.contactDelegate = self
         mapTiles.refreshMap()
-        
-        /*
-         let wSet:Set<Landscape> = [.water,.path]
-         let path = sHarbor.path(to: dHarbor, map: self, using: wSet)
-         
-         for i in path {
-         
-         if wSet.contains(kind(point: i)){
-         changeTile(at: i, to:.path)
-         }
-         
-         }
-         */
-        
-        /*
-         if let harbor = mapTiles.startIsle?.harbor, let dest = mapTiles.endIsle?.harbor {
-         let ship = self.shipM.makeShip()
-         
-         func loc(_ harbor:MapPoint)->CGPoint{
-         
-         let bar  = tile.centerOfTile(atColumn:harbor.col,row:harbor.col)
-         let foo =  self.convert(bar, from: tile)
-         
-         print("\(bar) \(foo)")
-         return foo
-         
-         }
-         ship.position = loc(harbor)
-         
-         
-         self.addChild(ship)
-         
-         let wSet:Set<Landscape> = [.water,.path]
-         
-         let route = harbor.path(to: dest, map: mapTiles, using: wSet)
-         
-         let path = CGMutablePath()
-         path.move(to: ship.position)
-         
-         for hex in route {
-         if wSet.contains(mapTiles.kind(point: hex)){
-         mapTiles.changeTile(at: hex, to:.path)
-         }
-         path.addLine(to:loc(hex))
-         }
-         
-         let followLine = SKAction.follow( path, asOffset: true, orientToPath: false, duration: 8.0)
-         ship.run(followLine)
-         
-         }
-         
-         */
         
     }
     
     func handle(point: CGPoint){
-        
-        
-       // guard let background = mapTiles.tiles else {return}
 
         if let p = mapTiles.map(coordinate: point) {
             
@@ -182,24 +133,35 @@ class GameScene: SKScene {
                 
                 if let path = pathCG(of:route), let p1 = CGPointOF(mp:p) {
                     
-                    let mynode = SKShapeNode(circleOfRadius: 20)
-                    mynode.fillColor = .orange
-                    
-                    //let bar2 = self.convert(bar, from: background)
+                    let mynode = shipM.makeShip()
                     mynode.position = p1
+                    
+                    let time =  0.2 * Double(route.count)
+                    
+                    /*
+                    if let myEmt = SKEmitterNode(fileNamed: "ShipWake") {
+                        myEmt.position = CGPoint(x: 20, y: 20)
+                        mynode.addChild(myEmt)
+                        let wait = SKAction.wait(forDuration: time)
+                        let fadeAway = SKAction.fadeOut(withDuration: 0.25)
+                        let removeNode = SKAction.removeFromParent()
+                        let sequence = SKAction.sequence([ wait, fadeAway, removeNode])
+                        
+                        myEmt.run(sequence)
+                    }
+ */
                     self.addChild(mynode)
                     
-                    
-                    
-                    let followLine = SKAction.follow( path, asOffset: false, orientToPath: false, duration: 8.0)
+                    let followLine = SKAction.follow( path, asOffset: false, orientToPath: false, duration: time)
                     mynode.run(followLine)
                 }
-
+                
             }
             
         }
-
+        
     }
+
     
     
     #if os(watchOS)
@@ -223,11 +185,16 @@ class GameScene: SKScene {
     }
 }
 
+extension GameScene : SKPhysicsContactDelegate {
+    func didBegin(_ contact: SKPhysicsContact){
+        print ("ouch")
+    }
+}
+
 #if os(iOS) || os(tvOS)
     // Touch-based event handling
     extension GameScene {
-        
-        
+
         func handle(touches: Set<UITouch>){
             
             for t in touches {
@@ -274,4 +241,7 @@ class GameScene: SKScene {
         
     }
 #endif
+
+
+
 
