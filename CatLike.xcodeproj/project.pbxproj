@@ -44,6 +44,9 @@
 		0E53B5B31F796CC60020A31C /* PirateShip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5B21F796CC60020A31C /* PirateShip.swift */; };
 		0E53B5B41F796CC60020A31C /* PirateShip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5B21F796CC60020A31C /* PirateShip.swift */; };
 		0E53B5B51F796CC60020A31C /* PirateShip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5B21F796CC60020A31C /* PirateShip.swift */; };
+		0E53B5B71F7991100020A31C /* TowerNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5B61F7991100020A31C /* TowerNode.swift */; };
+		0E53B5B81F7991100020A31C /* TowerNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5B61F7991100020A31C /* TowerNode.swift */; };
+		0E53B5B91F7991100020A31C /* TowerNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5B61F7991100020A31C /* TowerNode.swift */; };
 		4AA689551F78A1E60086F3C1 /* ShipWake.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4AA689541F78A1E60086F3C1 /* ShipWake.sks */; };
 		4AA689561F78A1E60086F3C1 /* ShipWake.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4AA689541F78A1E60086F3C1 /* ShipWake.sks */; };
 		4AA689571F78A1E60086F3C1 /* ShipWake.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4AA689541F78A1E60086F3C1 /* ShipWake.sks */; };
@@ -75,6 +78,7 @@
 		0E4501271F743493008493C2 /* PirateTileSet.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = PirateTileSet.sks; sourceTree = "<group>"; };
 		0E53B5AE1F796C350020A31C /* Types.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
 		0E53B5B21F796CC60020A31C /* PirateShip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PirateShip.swift; sourceTree = "<group>"; };
+		0E53B5B61F7991100020A31C /* TowerNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerNode.swift; sourceTree = "<group>"; };
 		4AA689541F78A1E60086F3C1 /* ShipWake.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = ShipWake.sks; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -125,6 +129,7 @@
 				0E45011F1F742E50008493C2 /* MapHandler.swift */,
 				0E4500D01F742D1A008493C2 /* GameScene.swift */,
 				0E53B5B21F796CC60020A31C /* PirateShip.swift */,
+				0E53B5B61F7991100020A31C /* TowerNode.swift */,
 				0E4500D11F742D1A008493C2 /* Assets.xcassets */,
 				0E53B5AE1F796C350020A31C /* Types.swift */,
 			);
@@ -328,6 +333,7 @@
 				0E4500DC1F742D1A008493C2 /* GameViewController.swift in Sources */,
 				0E53B5B31F796CC60020A31C /* PirateShip.swift in Sources */,
 				0E4500DA1F742D1A008493C2 /* AppDelegate.swift in Sources */,
+				0E53B5B71F7991100020A31C /* TowerNode.swift in Sources */,
 				0E53B5AF1F796C350020A31C /* Types.swift in Sources */,
 				0E4501201F742E50008493C2 /* MapHandler.swift in Sources */,
 			);
@@ -341,6 +347,7 @@
 				0E4500ED1F742D1A008493C2 /* GameViewController.swift in Sources */,
 				0E53B5B41F796CC60020A31C /* PirateShip.swift in Sources */,
 				0E4500EB1F742D1A008493C2 /* AppDelegate.swift in Sources */,
+				0E53B5B81F7991100020A31C /* TowerNode.swift in Sources */,
 				0E53B5B01F796C350020A31C /* Types.swift in Sources */,
 				0E4501211F742E50008493C2 /* MapHandler.swift in Sources */,
 			);
@@ -354,6 +361,7 @@
 				0E4500FB1F742D1A008493C2 /* GameViewController.swift in Sources */,
 				0E53B5B51F796CC60020A31C /* PirateShip.swift in Sources */,
 				0E4500F91F742D1A008493C2 /* AppDelegate.swift in Sources */,
+				0E53B5B91F7991100020A31C /* TowerNode.swift in Sources */,
 				0E53B5B11F796C350020A31C /* Types.swift in Sources */,
 				0E4501221F742E50008493C2 /* MapHandler.swift in Sources */,
 			);

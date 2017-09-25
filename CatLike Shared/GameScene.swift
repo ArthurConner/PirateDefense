@@ -19,7 +19,12 @@ class GameScene: SKScene {
     
     fileprivate var mapTiles = MapHandler()
     
- 
+    var intervalTime:TimeInterval = 4
+    var lastLaunch:Date = Date.distantPast
+    
+    var towerLocations:[MapPoint:TowerNode] = [:]
+    var ships:[PirateNode] = []
+    let maxTowers = 4
     /*
      
      lazy var componentSystems: [GKComponentSystem] = {
@@ -101,31 +106,35 @@ class GameScene: SKScene {
     
     func handle(point: CGPoint){
 
-        if let p = mapTiles.map(coordinate: point) {
+ 
+        if let p = mapTiles.map(coordinate: point),
+            mapTiles.kind(point: p) == .sand{
             
-            if  let dest = mapTiles.endIsle?.harbor {
+            if let t = towerLocations[p] {
+                print("handle upgrade for \(t)")
+            } else if let place = convert(mappoint: p), towerLocations.count < 4 {
+                let tower = TowerNode(range:90)
                 
-                let wSet:Set<Landscape> = [.water,.path]
-                let route = p.path(to: dest, map: mapTiles, using: wSet)
-                
-                if let path = pathOf(mappoints:route), let p1 = convert(mappoint:p) {
+               tower.position = place
+                self.addChild(tower)
+                towerLocations[p] = tower
+   
+                for x in p.adj(max: mapTiles.mapAdj){
+                    if mapTiles.kind(point: x) == .water {
+                        tower.watchTiles.insert(x)
+                        for y in x.adj(max: mapTiles.mapAdj){
+                            if mapTiles.kind(point: y) == .water {
+                                tower.watchTiles.insert(y)
+  
+                            }
+                            
+                        }
+                        
+                    }
                     
-                    let ship = PirateNode(named: "BlackBear")
-                    ship.position = p1
-                    
-                    let time =  0.2 * Double(route.count)
- 
- 
-                    self.addChild(ship)
-                    
-                ship.run(SKAction.repeat(SKAction.sequence([SKAction.run(ship.spawnWake),SKAction.wait(forDuration: 0.1)]), count: route.count * 2))
-                    
-                    let followLine = SKAction.follow( path, asOffset: false, orientToPath: true, duration: time)
-                    ship.run(followLine)
                 }
-                
             }
-            
+
         }
         
     }
@@ -144,6 +153,39 @@ class GameScene: SKScene {
     #endif
     
     
+    func launchAttack(speed:Double) {
+        
+        
+        if  let dest = mapTiles.endIsle?.harbor,
+            let source = mapTiles.startIsle?.harbor  {
+            
+  
+            
+                let wSet:Set<Landscape> = [.water,.path]
+                let route = source.path(to: dest, map: mapTiles, using: wSet)
+                
+                if let path = pathOf(mappoints:route), let p1 = convert(mappoint:source) {
+                    
+                    let ship = PirateNode(named: "BlackBear")
+                    ship.position = p1
+                    
+                    let time =  speed * Double(route.count)
+                    
+                    
+                    self.addChild(ship)
+                    
+                    ship.run(SKAction.repeat(SKAction.sequence([SKAction.run(ship.spawnWake),SKAction.wait(forDuration: speed/2)]), count: route.count * 2))
+                    
+                    let followLine = SKAction.follow( path, asOffset: false, orientToPath: true, duration: time)
+                    ship.run(followLine)
+                    ships.append(ship)
+                }
+                
+            }
+            
+        
+        
+    }
     
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
@@ -151,17 +193,51 @@ class GameScene: SKScene {
         super.update(currentTime)
         if isPaused { return }
         
+        if lastLaunch < Date(timeIntervalSinceNow: 0){
+            lastLaunch = Date(timeIntervalSinceNow:intervalTime)
+            intervalTime = intervalTime * 0.999
+            launchAttack(speed:intervalTime/2)
+        }
+        
+        var checkSet:Set<MapPoint> = []
+        for x in ships {
+            
+            if let p = mapTiles.map(coordinate: x.position){
+                checkSet.insert(p)
+            }
+            
+        }
+        
+        for (_,v) in towerLocations {
+            v.checkFire(targets: checkSet, converter: convert)
+            
+        }
+        
+        
+        
     }
 }
 
 extension GameScene : SKPhysicsContactDelegate {
     
     func didBegin(_ contact: SKPhysicsContact) {
+        /*
         let other = contact.bodyA.categoryBitMask
-            == PhysicsCategory.Player ?
+            == PhysicsCategory.Ship ?
                 contact.bodyB : contact.bodyA
+        */
+        let ship  = contact.bodyA.categoryBitMask
+            == PhysicsCategory.Ship ?
+                contact.bodyA : contact.bodyB
         
-        print(other)
+        guard let s = ship.node as? PirateNode else { return }
+        
+        s.hitsRemain -= 1
+        if s.hitsRemain == 0 {
+            s.die()
+        }
+        
+       
     }
     
     

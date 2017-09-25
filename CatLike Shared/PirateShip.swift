@@ -16,10 +16,12 @@ class PirateNode: SKShapeNode {
     
     var animations: [SKAction] = []
     
+    var hitsRemain = 3
+    
     convenience init(named:String) {
         
         self.init(ellipseOf:CGSize(width: 20, height: 45))
-        self.fillColor = .purple
+        self.fillColor = .brown
         
         
         let body = SKPhysicsBody(circleOfRadius: 20)

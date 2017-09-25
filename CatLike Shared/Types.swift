@@ -11,10 +11,10 @@ import Foundation
 struct PhysicsCategory {
     static let None:      UInt32 = 0
     static let All:       UInt32 = 0xFFFFFFFF
-    static let Edge:      UInt32 = 0b1
+    static let EndPoint:      UInt32 = 0b1
     static let Player:    UInt32 = 0b10
     static let Ship:       UInt32 = 0b100
-    static let Firebug:   UInt32 = 0b1000
+    static let Missle:   UInt32 = 0b1000
     static let Breakable: UInt32 = 0b10000
 }
 
