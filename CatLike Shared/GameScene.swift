@@ -22,29 +22,33 @@ class ShipMaker {
     
     func makeShip()->SKNode{
         
-      
-        let node = SKSpriteNode(imageNamed: "PirateShip")
         
+        //let node = SKSpriteNode(imageNamed: "PirateShip")
+        let mynode = SKShapeNode(circleOfRadius: 20)
+        mynode.fillColor = .green
         
-        return node
+        return mynode
     }
 }
 
 class GameScene: SKScene {
-
+    
+    
+    
+    
     fileprivate var mapTiles = MapHandler()
     
     let shipM = ShipMaker()
     /*
-    
-    lazy var componentSystems: [GKComponentSystem] = {
-        let animationSystem = GKComponentSystem(
-            componentClass: AnimationComponent.self)
-        let firingSystem = GKComponentSystem(componentClass: FiringComponent.self)
-        return [animationSystem, firingSystem]
-    }()
-    
-    */
+     
+     lazy var componentSystems: [GKComponentSystem] = {
+     let animationSystem = GKComponentSystem(
+     componentClass: AnimationComponent.self)
+     let firingSystem = GKComponentSystem(componentClass: FiringComponent.self)
+     return [animationSystem, firingSystem]
+     }()
+     
+     */
     
     class func newGameScene() -> GameScene {
         // Load 'GameScene.sks' as an SKScene.
@@ -61,88 +65,140 @@ class GameScene: SKScene {
     
     
     func restart(){
-       
+        
         setUpScene()
         
     }
     
+    
+    func CGPointOF(mp:MapPoint)->CGPoint? {
+        
+        guard let background = mapTiles.tiles else {return nil }
+        
+        
+        
+        
+        let bar  = background.centerOfTile(atColumn:mp.col,row:mp.row)
+        let foo =  self.convert(bar, from: background)
+        
+        // print("\(bar) \(foo)")
+        return foo
+        
+        
+        
+    }
+    func pathCG(of route:[MapPoint])->CGPath?{
+        
+        
+        
+        guard let f1 = route.first, let p1 = CGPointOF(mp:f1) else { return nil}
+        
+        let path = CGMutablePath()
+        path.move(to: p1)
+        
+        for hex in route {
+            if let p = CGPointOF(mp:hex){
+                path.addLine(to:p)
+            }
+        }
+        
+        return path
+    }
+    
+    
     func setUpScene() {
         // Get label node from scene and store it for use later
         guard let tile  = self.childNode(withName: "//MapTiles") as? SKTileMapNode else { return }
-            mapTiles.load(map:tile)
+        mapTiles.load(map:tile)
         
         
-         mapTiles.refreshMap()
+        mapTiles.refreshMap()
         
-       /*
- let wSet:Set<Landscape> = [.water,.path]
- let path = sHarbor.path(to: dHarbor, map: self, using: wSet)
- 
- for i in path {
- 
- if wSet.contains(kind(point: i)){
- changeTile(at: i, to:.path)
- }
- 
- }
- */
+        /*
+         let wSet:Set<Landscape> = [.water,.path]
+         let path = sHarbor.path(to: dHarbor, map: self, using: wSet)
+         
+         for i in path {
+         
+         if wSet.contains(kind(point: i)){
+         changeTile(at: i, to:.path)
+         }
+         
+         }
+         */
         
-        
-        if let harbor = mapTiles.startIsle?.harbor, let dest = mapTiles.endIsle?.harbor {
-             let ship = self.shipM.makeShip()
-            ship.position = tile.centerOfTile(atColumn:harbor.col,row:harbor.col)
-           
-            
-            tile.addChild(ship)
-            
-            let wSet:Set<Landscape> = [.water,.path]
-            
-            let route = harbor.path(to: dest, map: mapTiles, using: wSet)
-            
-            let path = CGMutablePath()
-            path.move(to: ship.position)
-            
-            for hex in route {
-                if wSet.contains(mapTiles.kind(point: hex)){
-                 mapTiles.changeTile(at: hex, to:.path)
-                }
-                path.addLine(to:  tile.centerOfTile(atColumn: hex.col, row: hex.row))
-            }
-      
-            let followLine = SKAction.follow( path, asOffset: true, orientToPath: false, duration: 8.0)
-            ship.run(followLine)
-            
-        }
-        
-        
+        /*
+         if let harbor = mapTiles.startIsle?.harbor, let dest = mapTiles.endIsle?.harbor {
+         let ship = self.shipM.makeShip()
+         
+         func loc(_ harbor:MapPoint)->CGPoint{
+         
+         let bar  = tile.centerOfTile(atColumn:harbor.col,row:harbor.col)
+         let foo =  self.convert(bar, from: tile)
+         
+         print("\(bar) \(foo)")
+         return foo
+         
+         }
+         ship.position = loc(harbor)
+         
+         
+         self.addChild(ship)
+         
+         let wSet:Set<Landscape> = [.water,.path]
+         
+         let route = harbor.path(to: dest, map: mapTiles, using: wSet)
+         
+         let path = CGMutablePath()
+         path.move(to: ship.position)
+         
+         for hex in route {
+         if wSet.contains(mapTiles.kind(point: hex)){
+         mapTiles.changeTile(at: hex, to:.path)
+         }
+         path.addLine(to:loc(hex))
+         }
+         
+         let followLine = SKAction.follow( path, asOffset: true, orientToPath: false, duration: 8.0)
+         ship.run(followLine)
+         
+         }
+         
+         */
         
     }
     
     func handle(point: CGPoint){
         
-        return
         
+       // guard let background = mapTiles.tiles else {return}
+
         if let p = mapTiles.map(coordinate: point) {
-            mapTiles.changeTile(at: p, to: .sand)
-            /*
-            if mapTiles.isBoundary(point: p) {
-                print("boundary")
-            } else {
-                print("nope")
+            
+            if  let dest = mapTiles.endIsle?.harbor {
+                
+                let wSet:Set<Landscape> = [.water,.path]
+                let route = p.path(to: dest, map: mapTiles, using: wSet)
+                
+                if let path = pathCG(of:route), let p1 = CGPointOF(mp:p) {
+                    
+                    let mynode = SKShapeNode(circleOfRadius: 20)
+                    mynode.fillColor = .orange
+                    
+                    //let bar2 = self.convert(bar, from: background)
+                    mynode.position = p1
+                    self.addChild(mynode)
+                    
+                    
+                    
+                    let followLine = SKAction.follow( path, asOffset: false, orientToPath: false, duration: 8.0)
+                    mynode.run(followLine)
+                }
+
             }
- */
-           
-            print("")
-            for x in p.adj(max: 24) {
-                mapTiles.changeTile(at: x, to: .tower)
-            }
-            print("---")
- 
+            
         }
-        
-        
-        
-        
+
     }
     
     
@@ -203,7 +259,7 @@ class GameScene: SKScene {
 #if os(OSX)
     // Mouse-based event handling
     extension GameScene {
-
+        
         override func mouseDown(with event: NSEvent) {
             handle(point:  event.location(in: self))
         }
