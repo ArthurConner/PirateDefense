@@ -11,40 +11,6 @@ import GameKit
 
 
 
-class ShipNode :SKShapeNode {
-    
-    
-    
-    
-}
-
-class ShipMaker {
-    
-    func makeShip()->SKNode{
-        
-        
-        //let node = SKSpriteNode(imageNamed: "PirateShip")
-        let mynode = SKShapeNode(circleOfRadius: 20)
-        mynode.fillColor = .purple
-        
-        
-        let body = SKPhysicsBody(circleOfRadius:
-            20)
-        
-        
-        let BlockCategory  : UInt32 = 0x1 << 2
-        
-        body.isDynamic = false
-        body.allowsRotation = false
-        body.categoryBitMask = BlockCategory
-        body.collisionBitMask = BlockCategory
-        
-        mynode.physicsBody = body
-        body.affectedByGravity = true
-        
-        return mynode
-    }
-}
 
 class GameScene: SKScene {
     
@@ -53,7 +19,7 @@ class GameScene: SKScene {
     
     fileprivate var mapTiles = MapHandler()
     
-    let shipM = ShipMaker()
+ 
     /*
      
      lazy var componentSystems: [GKComponentSystem] = {
@@ -84,26 +50,25 @@ class GameScene: SKScene {
     }
     
     
-    func CGPointOF(mp:MapPoint)->CGPoint? {
+    func convert(mappoint:MapPoint)->CGPoint? {
         
         guard let background = mapTiles.tiles else {return nil }
 
-        let bar  = background.centerOfTile(atColumn:mp.col,row:mp.row)
+        let bar  = background.centerOfTile(atColumn:mappoint.col,row:mappoint.row)
         let foo =  self.convert(bar, from: background)
 
         return foo
-  
     }
     
-    func pathCG(of route:[MapPoint])->CGPath?{
+    func pathOf(mappoints route:[MapPoint])->CGPath?{
         
-        guard let f1 = route.first, let p1 = CGPointOF(mp:f1) else { return nil}
+        guard let f1 = route.first, let p1 = convert(mappoint:f1) else { return nil}
         
         let path = CGMutablePath()
         path.move(to: p1)
         
         for hex in route {
-            if let p = CGPointOF(mp:hex){
+            if let p = convert(mappoint:hex){
                 path.addLine(to:p)
             }
         }
@@ -112,12 +77,24 @@ class GameScene: SKScene {
     }
     
     
+    func setupWorldPhysics() {
+        
+       /*
+        guard let background = mapTiles.tiles else {return  }
+        background.physicsBody =
+            SKPhysicsBody(edgeLoopFrom: background.frame)
+        
+        background.physicsBody?.categoryBitMask = PhysicsCategory.Edge
+*/
+       physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
+       physicsWorld.contactDelegate = self
+    }
+    
     func setUpScene() {
         guard let tile  = self.childNode(withName: "//MapTiles") as? SKTileMapNode else { return }
         mapTiles.load(map:tile)
         
-        physicsWorld.gravity = CGVector(dx: 0.0, dy: 1.0)
-        physicsWorld.contactDelegate = self
+  
         mapTiles.refreshMap()
         
     }
@@ -131,29 +108,20 @@ class GameScene: SKScene {
                 let wSet:Set<Landscape> = [.water,.path]
                 let route = p.path(to: dest, map: mapTiles, using: wSet)
                 
-                if let path = pathCG(of:route), let p1 = CGPointOF(mp:p) {
+                if let path = pathOf(mappoints:route), let p1 = convert(mappoint:p) {
                     
-                    let mynode = shipM.makeShip()
-                    mynode.position = p1
+                    let ship = PirateNode(named: "BlackBear")
+                    ship.position = p1
                     
                     let time =  0.2 * Double(route.count)
+ 
+ 
+                    self.addChild(ship)
                     
-                    /*
-                    if let myEmt = SKEmitterNode(fileNamed: "ShipWake") {
-                        myEmt.position = CGPoint(x: 20, y: 20)
-                        mynode.addChild(myEmt)
-                        let wait = SKAction.wait(forDuration: time)
-                        let fadeAway = SKAction.fadeOut(withDuration: 0.25)
-                        let removeNode = SKAction.removeFromParent()
-                        let sequence = SKAction.sequence([ wait, fadeAway, removeNode])
-                        
-                        myEmt.run(sequence)
-                    }
- */
-                    self.addChild(mynode)
+                ship.run(SKAction.repeat(SKAction.sequence([SKAction.run(ship.spawnWake),SKAction.wait(forDuration: 0.1)]), count: route.count * 2))
                     
-                    let followLine = SKAction.follow( path, asOffset: false, orientToPath: false, duration: time)
-                    mynode.run(followLine)
+                    let followLine = SKAction.follow( path, asOffset: false, orientToPath: true, duration: time)
+                    ship.run(followLine)
                 }
                 
             }
@@ -170,6 +138,7 @@ class GameScene: SKScene {
     }
     #else
     override func didMove(to view: SKView) {
+        setupWorldPhysics()
         self.setUpScene()
     }
     #endif
@@ -186,9 +155,21 @@ class GameScene: SKScene {
 }
 
 extension GameScene : SKPhysicsContactDelegate {
-    func didBegin(_ contact: SKPhysicsContact){
-        print ("ouch")
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        let other = contact.bodyA.categoryBitMask
+            == PhysicsCategory.Player ?
+                contact.bodyB : contact.bodyA
+        
+        print(other)
     }
+    
+    
+     func didEnd(_ contact: SKPhysicsContact){
+        print("ended")
+    }
+    
+ 
 }
 
 #if os(iOS) || os(tvOS)
