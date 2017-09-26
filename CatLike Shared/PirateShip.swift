@@ -12,6 +12,8 @@ import GameKit
 
 class CannonBall:SKShapeNode {
     
+    
+    
     convenience init(tower:PirateNode,dest:CGPoint,speed:Double) {
         
         self.init(circleOfRadius:8)
@@ -56,7 +58,7 @@ class PirateNode: SKShapeNode {
     var intervalTime:TimeInterval = 4
     var nextLaunch:Date = Date.distantPast
     var missleSpeed:Double = 0.8
-    
+    var waterSpeed:Double = 3
     var hitsRemain = 3
     
     convenience init(named:String) {

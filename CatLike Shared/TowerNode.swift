@@ -53,7 +53,7 @@ class TowerNode: SKShapeNode {
     var nextLaunch:Date = Date.distantPast
     var missleSpeed:Double = 0.2
     var level = 0
-    var hitsRemain = 20
+    var hitsRemain = 8
     
     convenience init(range:CGFloat) {
         
