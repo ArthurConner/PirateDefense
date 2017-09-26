@@ -10,22 +10,42 @@ import Foundation
 import GameKit
 
 
+enum ShipKind {
+    case galley
+    case row
+    case motor
+    case battle
+}
+
+func randomShipKind()->ShipKind{
+    let x = GKRandomSource.sharedRandom().nextUniform()
+    if x < 0.6{
+        return .galley
+    }
+    if x < 0.8 {
+        return .row
+    }
+    
+    if x < 0.9 {
+        return .motor
+    }
+    
+    return .battle
+    
+}
+
 class CannonBall:SKShapeNode {
     
-    
-    
+
     convenience init(tower:PirateNode,dest:CGPoint,speed:Double) {
         
         self.init(circleOfRadius:8)
         self.fillColor = .black
-        
         self.position = tower.position
-        
-        
-        guard let p = tower.parent else {return}
-        p.addChild(self)
-        
-        
+
+        guard let board = tower.parent else {return}
+        board.addChild(self)
+
         let body = SKPhysicsBody(circleOfRadius: 4)
         
         body.allowsRotation = false
@@ -37,13 +57,9 @@ class CannonBall:SKShapeNode {
         self.physicsBody = body
         
         let act = SKAction.move(to: dest, duration: speed)
-        
-        
         self.run(SKAction.sequence([act,
                                     SKAction.removeFromParent()]))
-        
-        
-        
+
         
     }
     
@@ -61,35 +77,61 @@ class PirateNode: SKShapeNode {
     var waterSpeed:Double = 3
     var hitsRemain = 3
     
-    convenience init(named:String) {
+    var kind:ShipKind = .galley
+    
+    convenience init(kind aKind:ShipKind, modfier:Double) {
         
-        self.init(ellipseOf:CGSize(width: 20, height: 45))
-        self.fillColor = .brown
+        let body:SKPhysicsBody
         
+        switch aKind {
+        case .galley:
+            self.init(ellipseOf:CGSize(width: 20, height: 45))
+            self.fillColor = .brown
+            body = SKPhysicsBody(circleOfRadius: 20)
+            body.restitution = 0.5
+            self.waterSpeed = modfier
+        case .row:
+            self.init(ellipseOf:CGSize(width: 10, height: 22))
+            self.fillColor = .white
+            body = SKPhysicsBody(circleOfRadius: 10)
+            self.waterSpeed = modfier * 2
+            body.restitution = 0.1
+            self.hitsRemain = 1
+            self.intervalTime = 0.75
+        case .motor:
+            self.init(ellipseOf:CGSize(width: 15, height: 30))
+            self.fillColor = .purple
+            body = SKPhysicsBody(circleOfRadius: 15)
+            body.restitution = 0.1
+            self.waterSpeed = modfier / 2
+            self.hitsRemain = 1
+            self.intervalTime = 8
+        case .battle:
+            self.init(ellipseOf:CGSize(width: 25, height: 50))
+            self.fillColor = .black
+            body = SKPhysicsBody(circleOfRadius: 35)
+            body.restitution = 0.9
+            self.waterSpeed = modfier * 8
+            self.hitsRemain = 8
+            self.intervalTime = 0.5
+        }
         
-        let body = SKPhysicsBody(circleOfRadius: 20)
+        self.kind = aKind
+        self.strokeColor = .black
         
         body.allowsRotation = false
         
         body.categoryBitMask = PhysicsCategory.Ship
-        
-        
-        //  body.collisionBitMask = PhysicsCategory.All
         body.contactTestBitMask = PhysicsCategory.Missle
         
-        body.restitution = 0.5
         self.physicsBody = body
         
     }
     
     func die() {
-        // 1
         removeAllActions()
-        
         yScale = -1
-        // 2
         physicsBody = nil
-        // 3
         run(SKAction.sequence([SKAction.fadeOut(withDuration: 3),
                                SKAction.removeFromParent()]))
     }
@@ -98,41 +140,37 @@ class PirateNode: SKShapeNode {
     
     func spawnWake() {
         
-        guard let p = self.parent else {return}
-        
-        let sand = SKSpriteNode(imageNamed: "Path")
-        
+        guard let board = self.parent else {return}
+
+        let sand = SKShapeNode.init(circleOfRadius: 2)
+         #if os(OSX)
+        sand.fillColor = (self.fillColor.blended(withFraction: 0.6, of: .white)?.blended(withFraction: 0.4, of: .clear)) ?? .white
+        #else
+            var h:CGFloat = 0
+            var s:CGFloat = 0
+            var b:CGFloat = 0
+            var a:CGFloat = 0
+            
+            self.fillColor.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
+            sand.fillColor = UIColor(hue: h, saturation: s/2, brightness: b * 2, alpha: 0.5)
+            #endif
+        sand.strokeColor = .clear
         sand.position = self.position
         
-        sand.size = CGSize(width: 5, height: 5)
-        let angle = CGFloat.pi * CGFloat(GKRandomSource.sharedRandom().nextUniform() - 0.5)
-        sand.run(SKAction.sequence([SKAction.rotate(byAngle: angle, duration: 0.2),
-                                    SKAction.scale(to: 10, duration: 4)]))
+        sand.run(SKAction.sequence([
+            SKAction.scale(to: 10, duration: 4)]))
         
         sand.run(SKAction.sequence([SKAction.fadeOut(withDuration: 7),
                                     SKAction.removeFromParent()]))
         
-        // self.addChild(sand)
-        /*
-         for (i, x) in p.children.enumerated(){
-         
-         if x == self {
-         p.insertChild(sand, at: 0)
-         return
-         }
-         
-         }
-         */
-        p.insertChild(sand, at: p.children.count - 1)
-        //p.addChild(sand)
         
+        board.insertChild(sand, at: board.children.count - 1)
+ 
     }
     
     func fire(target:MapPoint,converter:(_ mappoint:MapPoint)->CGPoint?){
         
         guard nextLaunch < Date(timeIntervalSinceNow: 0) else { return }
-        
-        
         if  let dest = converter(target){
             let _ = CannonBall(tower: self, dest: dest, speed: missleSpeed)
             nextLaunch = Date(timeIntervalSinceNow: intervalTime)

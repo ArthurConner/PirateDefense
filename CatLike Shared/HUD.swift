@@ -17,7 +17,7 @@ enum HUDSettings {
 enum HUDMessages {
     static let tapToStart = "Tap to Start"
     static let win = "You Win!"
-    static let lose = "Pirates made it to the harbor!"
+    static let lose = "Alas someone made it to the harbor!"
     static let nextLevel = "Tap for Next Level"
     static let playAgain = "Tap to Play Again"
     static let reload = "Continue Previous Game?"
@@ -28,6 +28,8 @@ enum HUDMessages {
 class HUD: SKNode {
     
     var timerLabel: SKLabelNode?
+    var kills = 0
+    var lossString = ""
     
     override init() {
         super.init()
@@ -84,11 +86,14 @@ class HUD: SKNode {
             add(message: HUDMessages.nextLevel,
                 position: CGPoint(x: 0, y: -100))
         case .lose:
-            add(message: HUDMessages.lose, position: .zero)
+            lossString = "\(kills) boats sunk."
+            add(message: lossString, position: .zero)
             add(message: HUDMessages.playAgain,
                 position: CGPoint(x: 0, y: -100))
         case .start:
             add(message: HUDMessages.tapToStart, position: .zero)
+            
+            
         case .reload:
             add(message: HUDMessages.reload, position: .zero,
                 fontSize: 40)
@@ -108,7 +113,7 @@ class HUD: SKNode {
             remove(message: HUDMessages.win)
             remove(message: HUDMessages.nextLevel)
         case .lose:
-            remove(message: HUDMessages.lose)
+            remove(message: lossString)
             remove(message: HUDMessages.playAgain)
         case .start:
             remove(message: HUDMessages.tapToStart)

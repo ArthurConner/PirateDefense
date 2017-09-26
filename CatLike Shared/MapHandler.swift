@@ -223,7 +223,6 @@ class Island {
         
         
         var visted:Set<MapPoint> = []
-        
         let checkSet:Set<Landscape> =  [.sand, .inland, .top, .dest, .tower ]
         
         func checkPoint(point:MapPoint){
@@ -240,9 +239,6 @@ class Island {
             }
             
         }
-        
-        
-        
     }
     
     func terraform(){
@@ -289,6 +285,7 @@ class Island {
     }
     
 }
+
 class MapHandler{
     
     var tiles : SKTileMapNode?
@@ -314,7 +311,6 @@ class MapHandler{
                 return true
             }
         }
-        
         return false
     }
     
@@ -347,13 +343,8 @@ class MapHandler{
         return ret
         
     }
-    
-    
-    
-    
-    
+
     func createHarbors(){
-        
         
         class WaterFront {
             var haborPoint:MapPoint
@@ -364,8 +355,8 @@ class MapHandler{
             
             init?(_ land:Island,_ map:MapHandler){
                 self.isle = land
-                guard let p =  land.terain[.sand] else { return nil }
-                coast = p
+                guard let sandTerain =  land.terain[.sand] else { return nil }
+                coast = sandTerain
                 
                 let wSet:Set<Landscape> = [.water,.path]
                 
@@ -474,9 +465,7 @@ class MapHandler{
             for addIdle in startIslands{
                 addIdle.merge()
                 
-                let p = addIdle.peak()
-                
-                if let peak = p {
+                if let peak = addIdle.peak() {
                     
                     var didCreateIsand = false
                     for isle in islands {
@@ -500,10 +489,12 @@ class MapHandler{
         
         self.createHarbors()
         
-        if let _ = self.startIsle?.harbor,
-            let _ = self.endIsle?.harbor {
-            
+         let wSet:Set<Landscape> = [.water,.path]
         
+        if let s = self.startIsle?.harbor,
+            let d = self.endIsle?.harbor,  s.path(to:d,map:self, using:wSet).count > 4 {
+            
+         self.changeTile(at: s, to: .tower)
             
         } else {
             refreshMap()
@@ -518,12 +509,6 @@ class MapHandler{
             return
         }
         tiles = nextM
-        
-        if let tile = tiles {
-            let scale =  40.0 / tile.tileSize.height
-            print("adjust tiles by \(scale)")
-        }
-        
         refreshMap()
         
     }
@@ -546,9 +531,7 @@ class MapHandler{
         guard let tiles = tiles  else {
             return
         }
-        
-        //  print("changing row \(at.row)  col \(at.col) to \(name)")
-        
+
         guard  let waterTile = tileSet?.tileGroups.first(where: {$0.name == name}) else {
             fatalError("No \(name) tile definition found")
         }
