@@ -274,19 +274,28 @@ class GameScene: SKScene {
         }
         
         var checkSet:Set<MapPoint> = []
+        var reponse:[MapPoint:PirateNode] = [:]
         for x in ships {
-            
+            if let p = self.mapTiles.map(coordinate: x.position){
+                reponse[p] = x
+            }
+           
             if let p = mapTiles.map(coordinate: x.position){
                 if p == dest {
                     gameState = .lose
                 }
                 checkSet.insert(p)
+                
             }
             
         }
         
-        for (_,v) in towerLocations {
-            v.checkFire(targets: checkSet, converter: convert)
+        for (towerPoint,v) in towerLocations {
+            if let shipP = v.checkFire(targets: checkSet, converter: convert) {
+                if let ship = reponse[shipP] {
+                    ship.fire(target:towerPoint,converter:convert)
+                }
+            }
             
         }
         
@@ -297,27 +306,53 @@ class GameScene: SKScene {
 
 extension GameScene : SKPhysicsContactDelegate {
     
+    func  hit(ship:PirateNode){
+        ship.hitsRemain -= 1
+        if ship.hitsRemain == 0 {
+            ship.die()
+            for (i , v) in ships.enumerated() {
+                if v == ship {
+                    ships.remove(at: i)
+                }
+            }
+        }
+    }
+    
+    func hit(tower:TowerNode){
+        
+        guard   let p = self.mapTiles.map(coordinate: tower.position) else { return }
+        tower.hitsRemain -= 1
+        if tower.hitsRemain == 0 {
+            tower.die()
+            towerLocations[p] = nil
+        }
+    }
     func didBegin(_ contact: SKPhysicsContact) {
         /*
          let other = contact.bodyA.categoryBitMask
          == PhysicsCategory.Ship ?
          contact.bodyB : contact.bodyA
          */
-        let ship  = contact.bodyA.categoryBitMask
-            == PhysicsCategory.Ship ?
-                contact.bodyA : contact.bodyB
         
-        guard let s = ship.node as? PirateNode else { return }
-        
-        s.hitsRemain -= 1
-        if s.hitsRemain == 0 {
-            s.die()
-            for (i , v) in ships.enumerated() {
-                if v == s {
-                    ships.remove(at: i)
-                }
+        for (i,x) in [contact.bodyA.node, contact.bodyB.node].enumerated() {
+            
+            let y =  i == 0 ? contact.bodyB.node : contact.bodyA.node
+            
+            if let ship  = x as? PirateNode {
+                hit(ship: ship)
+                
+                y?.run(SKAction.removeFromParent())
+                return
             }
+            
+            if let t = x as? TowerNode {
+                hit(tower:t)
+                y?.run(SKAction.removeFromParent())
+                return
+            }
+            
         }
+    
         
         
     }

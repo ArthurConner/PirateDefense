@@ -14,7 +14,7 @@ class TowerMissle:SKShapeNode {
     
     convenience init(tower:TowerNode,dest:CGPoint,speed:Double) {
         
-        self.init(circleOfRadius:4)
+        self.init(circleOfRadius:8)
         self.fillColor = .red
         
         self.position = tower.position
@@ -24,7 +24,7 @@ class TowerMissle:SKShapeNode {
         p.addChild(self)
         
         
-        let body = SKPhysicsBody(circleOfRadius: 20)
+        let body = SKPhysicsBody(circleOfRadius: 4)
         
         body.allowsRotation = false
         
@@ -53,26 +53,37 @@ class TowerNode: SKShapeNode {
     var nextLaunch:Date = Date.distantPast
     var missleSpeed:Double = 0.2
     var level = 0
+    var hitsRemain = 20
     
     convenience init(range:CGFloat) {
         
         self.init(circleOfRadius:20)
         self.fillColor = .purple
+        let body = SKPhysicsBody(circleOfRadius: 20)
         
+        body.allowsRotation = false
+        body.categoryBitMask = PhysicsCategory.Tower
+        body.isDynamic = false
+        
+        body.restitution = 0.5
+        self.physicsBody = body
   
     }
     
-    func checkFire(targets:Set<MapPoint>,converter:(_ mappoint:MapPoint)->CGPoint?){
+    func checkFire(targets:Set<MapPoint>,converter:(_ mappoint:MapPoint)->CGPoint?) -> MapPoint?{
         
-        guard nextLaunch < Date(timeIntervalSinceNow: 0) else { return }
+        
         
         for target in targets {
             if self.watchTiles.contains(target) , let dest = converter(target){
+                guard nextLaunch < Date(timeIntervalSinceNow: 0) else { return target }
                 let _ = TowerMissle(tower: self, dest: dest, speed: missleSpeed)
                 nextLaunch = Date(timeIntervalSinceNow: intervalTime)
-                return
+                return target
             }
         }
+        
+        return nil
     }
     
     func upgrade(){
@@ -93,7 +104,17 @@ class TowerNode: SKShapeNode {
         }
     }
     
-    
+    func die() {
+        // 1
+        removeAllActions()
+        
+        yScale = -1
+        // 2
+        physicsBody = nil
+        // 3
+        run(SKAction.sequence([SKAction.fadeOut(withDuration: 3),
+                               SKAction.removeFromParent()]))
+    }
     
 }
 

@@ -10,11 +10,52 @@ import Foundation
 import GameKit
 
 
+class CannonBall:SKShapeNode {
+    
+    convenience init(tower:PirateNode,dest:CGPoint,speed:Double) {
+        
+        self.init(circleOfRadius:8)
+        self.fillColor = .black
+        
+        self.position = tower.position
+        
+        
+        guard let p = tower.parent else {return}
+        p.addChild(self)
+        
+        
+        let body = SKPhysicsBody(circleOfRadius: 4)
+        
+        body.allowsRotation = false
+        
+        body.categoryBitMask = PhysicsCategory.CannonBall
+        body.contactTestBitMask = PhysicsCategory.Tower
+        
+        body.restitution = 0.5
+        self.physicsBody = body
+        
+        let act = SKAction.move(to: dest, duration: speed)
+        
+        
+        self.run(SKAction.sequence([act,
+                                    SKAction.removeFromParent()]))
+        
+        
+        
+        
+    }
+    
+}
+
 
 
 class PirateNode: SKShapeNode {
     
     var animations: [SKAction] = []
+    
+    var intervalTime:TimeInterval = 4
+    var nextLaunch:Date = Date.distantPast
+    var missleSpeed:Double = 0.8
     
     var hitsRemain = 3
     
@@ -32,7 +73,7 @@ class PirateNode: SKShapeNode {
         
         
         //  body.collisionBitMask = PhysicsCategory.All
-        body.contactTestBitMask = PhysicsCategory.All
+        body.contactTestBitMask = PhysicsCategory.Missle
         
         body.restitution = 0.5
         self.physicsBody = body
@@ -67,9 +108,9 @@ class PirateNode: SKShapeNode {
                                     SKAction.scale(to: 10, duration: 4)]))
         
         sand.run(SKAction.sequence([SKAction.fadeOut(withDuration: 7),
-                                      SKAction.removeFromParent()]))
+                                    SKAction.removeFromParent()]))
         
-       // self.addChild(sand)
+        // self.addChild(sand)
         /*
          for (i, x) in p.children.enumerated(){
          
@@ -85,4 +126,18 @@ class PirateNode: SKShapeNode {
         
     }
     
+    func fire(target:MapPoint,converter:(_ mappoint:MapPoint)->CGPoint?){
+        
+        guard nextLaunch < Date(timeIntervalSinceNow: 0) else { return }
+        
+        
+        if  let dest = converter(target){
+            let _ = CannonBall(tower: self, dest: dest, speed: missleSpeed)
+            nextLaunch = Date(timeIntervalSinceNow: intervalTime)
+            return
+        }
+    }
 }
+
+
+
