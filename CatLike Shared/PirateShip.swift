@@ -27,11 +27,11 @@ class PirateNode: SKShapeNode {
         let body = SKPhysicsBody(circleOfRadius: 20)
         
         body.allowsRotation = false
-    
-            body.categoryBitMask = PhysicsCategory.Ship
-            print("Ship")
-       
-      //  body.collisionBitMask = PhysicsCategory.All
+        
+        body.categoryBitMask = PhysicsCategory.Ship
+        
+        
+        //  body.collisionBitMask = PhysicsCategory.All
         body.contactTestBitMask = PhysicsCategory.All
         
         body.restitution = 0.5
@@ -60,23 +60,28 @@ class PirateNode: SKShapeNode {
         let sand = SKSpriteNode(imageNamed: "Path")
         
         sand.position = self.position
-   
+        
         sand.size = CGSize(width: 5, height: 5)
         let angle = CGFloat.pi * CGFloat(GKRandomSource.sharedRandom().nextUniform() - 0.5)
         sand.run(SKAction.sequence([SKAction.rotate(byAngle: angle, duration: 0.2),
-            SKAction.scale(to: 10, duration: 4)]))
+                                    SKAction.scale(to: 10, duration: 4)]))
         
         sand.run(SKAction.sequence([SKAction.fadeOut(withDuration: 7),
-                               SKAction.removeFromParent()]))
-     
-        for (i, x) in p.children.enumerated(){
-
-            if x == self {
-                p.insertChild(sand, at: i)
-                return
-            }
-
-        }
+                                      SKAction.removeFromParent()]))
+        
+       // self.addChild(sand)
+        /*
+         for (i, x) in p.children.enumerated(){
+         
+         if x == self {
+         p.insertChild(sand, at: 0)
+         return
+         }
+         
+         }
+         */
+        p.insertChild(sand, at: p.children.count - 1)
+        //p.addChild(sand)
         
     }
     

@@ -52,6 +52,7 @@ class TowerNode: SKShapeNode {
     var intervalTime:TimeInterval = 4
     var nextLaunch:Date = Date.distantPast
     var missleSpeed:Double = 0.2
+    var level = 0
     
     convenience init(range:CGFloat) {
         
@@ -71,6 +72,24 @@ class TowerNode: SKShapeNode {
                 nextLaunch = Date(timeIntervalSinceNow: intervalTime)
                 return
             }
+        }
+    }
+    
+    func upgrade(){
+        switch level {
+        case 0:
+            self.fillColor = .red
+            intervalTime = 3
+            level = 1
+        case 1:
+            self.fillColor = .orange
+            intervalTime = 2
+            level = 2
+        case 2:
+            self.fillColor = .white
+            intervalTime = 1
+        default:
+            level = 2
         }
     }
     

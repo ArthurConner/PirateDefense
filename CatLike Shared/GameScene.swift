@@ -19,12 +19,21 @@ class GameScene: SKScene {
     
     fileprivate var mapTiles = MapHandler()
     
-    var intervalTime:TimeInterval = 4
+    fileprivate var hud = HUD()
+    
+    var intervalTime:TimeInterval = 5
     var lastLaunch:Date = Date.distantPast
     
     var towerLocations:[MapPoint:TowerNode] = [:]
     var ships:[PirateNode] = []
     let maxTowers = 4
+    
+    var gameState: GameState = .initial {
+        didSet {
+            hud.updateGameState(from: oldValue, to: gameState)
+        }
+    }
+    
     /*
      
      lazy var componentSystems: [GKComponentSystem] = {
@@ -44,24 +53,48 @@ class GameScene: SKScene {
         }
         
         // Set the scale mode to scale to fit the window
-        scene.scaleMode = .aspectFill
+        scene.scaleMode = .aspectFit
         
         return scene
     }
     
     
+    func clear(){
+        for x in ships {
+            x.removeFromParent()
+        }
+        for (_, v) in towerLocations {
+            v.removeFromParent()
+        }
+        
+        
+        guard let background = mapTiles.tiles else {return }
+        
+        for x in children {
+            
+            if x != hud && x != background {
+                x.removeFromParent()
+            }
+        }
+        
+        ships.removeAll()
+        towerLocations.removeAll()
+        
+    }
     func restart(){
+        clear()
         setUpScene()
+        gameState = .start
     }
     
     
     func convert(mappoint:MapPoint)->CGPoint? {
         
         guard let background = mapTiles.tiles else {return nil }
-
+        
         let bar  = background.centerOfTile(atColumn:mappoint.col,row:mappoint.row)
         let foo =  self.convert(bar, from: background)
-
+        
         return foo
     }
     
@@ -84,61 +117,95 @@ class GameScene: SKScene {
     
     func setupWorldPhysics() {
         
-       /*
-        guard let background = mapTiles.tiles else {return  }
-        background.physicsBody =
-            SKPhysicsBody(edgeLoopFrom: background.frame)
-        
-        background.physicsBody?.categoryBitMask = PhysicsCategory.Edge
-*/
-       physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
-       physicsWorld.contactDelegate = self
+        /*
+         guard let background = mapTiles.tiles else {return  }
+         background.physicsBody =
+         SKPhysicsBody(edgeLoopFrom: background.frame)
+         
+         background.physicsBody?.categoryBitMask = PhysicsCategory.Edge
+         */
+        physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
+        physicsWorld.contactDelegate = self
     }
     
     func setUpScene() {
         guard let tile  = self.childNode(withName: "//MapTiles") as? SKTileMapNode else { return }
         mapTiles.load(map:tile)
         
-  
         mapTiles.refreshMap()
+        gameState = .start
         
     }
     
-    func handle(point: CGPoint){
-
- 
-        if let p = mapTiles.map(coordinate: point),
-            mapTiles.kind(point: p) == .sand{
+    func manageTower(point: CGPoint){
+        guard let p = mapTiles.map(coordinate: point),
+            mapTiles.kind(point: p) == .sand else { return }
+        
+        if let t = towerLocations[p] {
+           // print("handle upgrade for \(t)")
+            t.upgrade()
+        } else if let place = convert(mappoint: p), towerLocations.count < 4 {
+            let tower = TowerNode(range:90)
             
-            if let t = towerLocations[p] {
-                print("handle upgrade for \(t)")
-            } else if let place = convert(mappoint: p), towerLocations.count < 4 {
-                let tower = TowerNode(range:90)
-                
-               tower.position = place
-                self.addChild(tower)
-                towerLocations[p] = tower
-   
-                for x in p.adj(max: mapTiles.mapAdj){
-                    if mapTiles.kind(point: x) == .water {
-                        tower.watchTiles.insert(x)
-                        for y in x.adj(max: mapTiles.mapAdj){
-                            if mapTiles.kind(point: y) == .water {
-                                tower.watchTiles.insert(y)
-  
-                            }
-                            
+            tower.position = place
+            self.addChild(tower)
+            towerLocations[p] = tower
+            
+            for x in p.adj(max: mapTiles.mapAdj){
+                if mapTiles.kind(point: x) == .water {
+                    tower.watchTiles.insert(x)
+                    for y in x.adj(max: mapTiles.mapAdj){
+                        if mapTiles.kind(point: y) == .water {
+                            tower.watchTiles.insert(y)
                         }
                         
                     }
                     
                 }
+                
             }
-
+        }
+    }
+    
+    func handle(point: CGPoint){
+        
+        
+        switch gameState {
+            // 1
+            
+        case .start:
+            gameState = .play
+            isPaused = false
+            
+        // 2
+        case .play:
+            // player.move(target: touch.location(in: self))
+            manageTower(point: point)
+        case .win, .lose:
+            // transitionToScene(level: 1)
+            self.restart()
+        case .reload:
+            // 1
+            if let touchedNode =
+                atPoint(point) as? SKLabelNode {
+                // 2
+                if touchedNode.name == HUDMessages.yes {
+                    isPaused = false
+                    gameState = .play
+                    // 3
+                } else if touchedNode.name == HUDMessages.no {
+                    self.clear()
+                }
+            }
+        default:
+            break
         }
         
+        
+        
+        
     }
-
+    
     
     
     #if os(watchOS)
@@ -149,6 +216,10 @@ class GameScene: SKScene {
     override func didMove(to view: SKView) {
         setupWorldPhysics()
         self.setUpScene()
+        
+        self.addChild(hud)
+        
+        
     }
     #endif
     
@@ -159,30 +230,30 @@ class GameScene: SKScene {
         if  let dest = mapTiles.endIsle?.harbor,
             let source = mapTiles.startIsle?.harbor  {
             
-  
             
-                let wSet:Set<Landscape> = [.water,.path]
-                let route = source.path(to: dest, map: mapTiles, using: wSet)
+            
+            let wSet:Set<Landscape> = [.water,.path]
+            let route = source.path(to: dest, map: mapTiles, using: wSet)
+            
+            if let path = pathOf(mappoints:route), let p1 = convert(mappoint:source) {
                 
-                if let path = pathOf(mappoints:route), let p1 = convert(mappoint:source) {
-                    
-                    let ship = PirateNode(named: "BlackBear")
-                    ship.position = p1
-                    
-                    let time =  speed * Double(route.count)
-                    
-                    
-                    self.addChild(ship)
-                    
-                    ship.run(SKAction.repeat(SKAction.sequence([SKAction.run(ship.spawnWake),SKAction.wait(forDuration: speed/2)]), count: route.count * 2))
-                    
-                    let followLine = SKAction.follow( path, asOffset: false, orientToPath: true, duration: time)
-                    ship.run(followLine)
-                    ships.append(ship)
-                }
+                let ship = PirateNode(named: "BlackBear")
+                ship.position = p1
                 
+                let time =  speed * Double(route.count)
+                
+                
+                self.addChild(ship)
+                
+            ship.run(SKAction.repeat(SKAction.sequence([SKAction.run(ship.spawnWake),SKAction.wait(forDuration: speed/2)]), count: route.count * 2))
+                
+                let followLine = SKAction.follow( path, asOffset: false, orientToPath: true, duration: time)
+                ship.run(followLine)
+                ships.append(ship)
             }
             
+        }
+        
         
         
     }
@@ -192,17 +263,23 @@ class GameScene: SKScene {
         
         super.update(currentTime)
         if isPaused { return }
+        if gameState != .play {return}
+        
+        guard  let dest = mapTiles.endIsle?.harbor else { return }
         
         if lastLaunch < Date(timeIntervalSinceNow: 0){
             lastLaunch = Date(timeIntervalSinceNow:intervalTime)
             intervalTime = intervalTime * 0.999
-            launchAttack(speed:intervalTime/2)
+            launchAttack(speed:intervalTime/4)
         }
         
         var checkSet:Set<MapPoint> = []
         for x in ships {
             
             if let p = mapTiles.map(coordinate: x.position){
+                if p == dest {
+                    gameState = .lose
+                }
                 checkSet.insert(p)
             }
             
@@ -222,10 +299,10 @@ extension GameScene : SKPhysicsContactDelegate {
     
     func didBegin(_ contact: SKPhysicsContact) {
         /*
-        let other = contact.bodyA.categoryBitMask
-            == PhysicsCategory.Ship ?
-                contact.bodyB : contact.bodyA
-        */
+         let other = contact.bodyA.categoryBitMask
+         == PhysicsCategory.Ship ?
+         contact.bodyB : contact.bodyA
+         */
         let ship  = contact.bodyA.categoryBitMask
             == PhysicsCategory.Ship ?
                 contact.bodyA : contact.bodyB
@@ -235,23 +312,28 @@ extension GameScene : SKPhysicsContactDelegate {
         s.hitsRemain -= 1
         if s.hitsRemain == 0 {
             s.die()
+            for (i , v) in ships.enumerated() {
+                if v == s {
+                    ships.remove(at: i)
+                }
+            }
         }
         
-       
+        
     }
     
     
-     func didEnd(_ contact: SKPhysicsContact){
+    func didEnd(_ contact: SKPhysicsContact){
         print("ended")
     }
     
- 
+    
 }
 
 #if os(iOS) || os(tvOS)
     // Touch-based event handling
     extension GameScene {
-
+        
         func handle(touches: Set<UITouch>){
             
             for t in touches {
@@ -265,7 +347,7 @@ extension GameScene : SKPhysicsContactDelegate {
         }
         
         override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-            handle(touches: touches)
+           // handle(touches: touches)
         }
         
         override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
