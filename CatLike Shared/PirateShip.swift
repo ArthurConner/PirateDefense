@@ -15,68 +15,25 @@ enum ShipKind {
     case row
     case motor
     case battle
-}
-
-func randomShipKind()->ShipKind{
-    let x = GKRandomSource.sharedRandom().nextUniform()
-    if x < 0.6{
-        return .galley
-    }
-    if x < 0.8 {
-        return .row
-    }
-    
-    if x < 0.9 {
-        return .motor
-    }
-    
-    return .battle
-    
-}
-
-class CannonBall:SKShapeNode {
-    
-
-    convenience init(tower:PirateNode,dest:CGPoint,speed:Double) {
-        
-        self.init(circleOfRadius:8)
-        self.fillColor = .black
-        self.position = tower.position
-
-        guard let board = tower.parent else {return}
-        board.addChild(self)
-
-        let body = SKPhysicsBody(circleOfRadius: 4)
-        
-        body.allowsRotation = false
-        
-        body.categoryBitMask = PhysicsCategory.CannonBall
-        body.contactTestBitMask = PhysicsCategory.Tower
-        
-        body.restitution = 0.5
-        self.physicsBody = body
-        
-        let act = SKAction.move(to: dest, duration: speed)
-        self.run(SKAction.sequence([act,
-                                    SKAction.removeFromParent()]))
-
-        
-    }
-    
+    case destroyer
+    case crusier
 }
 
 
 
-class PirateNode: SKShapeNode {
+
+
+
+
+
+class PirateNode: SKShapeNode,  Fireable {
     
     var animations: [SKAction] = []
     
-    var intervalTime:TimeInterval = 4
-    var nextLaunch:Date = Date.distantPast
-    var missleSpeed:Double = 0.8
+    var gun = PirateGun(interval:4, flightDuration:0.8, radius:3)
     var waterSpeed:Double = 3
     var hitsRemain = 3
-    var fireRadius = 2
+   
     
     var kind:ShipKind = .galley
     
@@ -95,11 +52,36 @@ class PirateNode: SKShapeNode {
             self.init(ellipseOf:CGSize(width: 10, height: 22))
             self.fillColor = .white
             body = SKPhysicsBody(circleOfRadius: 10)
-            self.waterSpeed = modfier * 2
+            self.waterSpeed = modfier * 3
             body.restitution = 0.1
+            
             self.hitsRemain = 1
-            self.intervalTime = 3
-            self.fireRadius = 3
+            self.gun.clock.adjust(interval: 3)
+            self.gun.radius = 1
+           
+        case .crusier:
+            
+            self.init(ellipseOf:CGSize(width: 24, height: 48))
+            self.fillColor = .white
+            body = SKPhysicsBody(circleOfRadius: 20)
+            body.restitution = 0.5
+            self.waterSpeed = modfier * 1.5
+            self.hitsRemain = 1
+            
+            self.gun.clock.adjust(interval: 70)
+            
+        case .destroyer:
+            
+            self.init(ellipseOf:CGSize(width: 20, height: 47))
+            self.fillColor = .red
+            body = SKPhysicsBody(circleOfRadius: 20)
+            body.restitution = 0.5
+            self.waterSpeed = modfier * 3
+            self.hitsRemain = 4
+            self.gun.radius = 4
+            self.gun.clock.adjust(interval: 1.5)
+            
+            
         case .motor:
             self.init(ellipseOf:CGSize(width: 15, height: 30))
             self.fillColor = .purple
@@ -107,7 +89,7 @@ class PirateNode: SKShapeNode {
             body.restitution = 0.1
             self.waterSpeed = modfier / 2
             self.hitsRemain = 1
-            self.intervalTime = 8
+            self.gun.clock.adjust(interval: 8)
             print("motor is now \(modfier / 2)")
         case .battle:
             self.init(ellipseOf:CGSize(width: 25, height: 50))
@@ -116,11 +98,12 @@ class PirateNode: SKShapeNode {
             body.restitution = 0.9
             self.waterSpeed = modfier * 8
             self.hitsRemain = 8
-            self.intervalTime = 0.5
+            self.gun.clock.adjust(interval: 0.5)
         }
         
         self.kind = aKind
         self.strokeColor = .black
+        self.gun.landscapes =   [.sand]
         
         body.allowsRotation = false
         
@@ -165,10 +148,7 @@ class PirateNode: SKShapeNode {
  
     }
     
-   
-}
 
-extension PirateNode : Fireable {
     
     func die(scene:GameScene, isKill:Bool){
         removeAllActions()
@@ -180,14 +160,13 @@ extension PirateNode : Fireable {
   
     func targetTiles(scene:GameScene)->Set<MapPoint>{
         
-        guard nextLaunch < Date(timeIntervalSinceNow: 0) else { return  [] }
+        guard gun.clock.needsUpdate() else { return  [] }
         
         guard  let shipTile = scene.tileOf(node: self) else {
             return []
         }
         
-        let towerScapes:Set<Landscape> = [.sand]
-        return scene.mapTiles.tiles(near:shipTile,radius:fireRadius,kinds:towerScapes)
+        return scene.mapTiles.tiles(near:shipTile,radius:self.gun.radius,kinds:self.gun.landscapes)
         
     }
     
@@ -228,16 +207,88 @@ extension PirateNode : Fireable {
     }
     
     func fire(at:MapPoint,scene:GameScene){
-        guard nextLaunch < Date(timeIntervalSinceNow: 0) else { return }
+        guard self.gun.clock.needsUpdate() else { return }
         if  let dest =  scene.convert(mappoint: at){
-            let _ = CannonBall(tower: self, dest: dest, speed: missleSpeed)
-            nextLaunch = Date(timeIntervalSinceNow: intervalTime)
+            let _ = CannonBall(tower: self, dest: dest, speed: self.gun.flightDuration)
+            self.gun.clock.update()
             return
         }
     }
     
  
    
+}
+
+class CruiserNode : PirateNode{
+    override   func die(scene:GameScene, isKill:Bool){
+        removeAllActions()
+        yScale = -1
+        physicsBody = nil
+        
+        if isKill, let shipTile = scene.tileOf(node: self) {
+            
+            let water:Set<Landscape> = [.water,.path]
+            var lifeBoatTiles = scene.mapTiles.tiles(near:shipTile,radius:2,kinds:water)
+            lifeBoatTiles.remove(shipTile)
+            
+            for tile in lifeBoatTiles {
+                
+                
+              if   let shipPosition = scene.convert(mappoint:tile) {
+                
+                    let ship = PirateNode(kind: .row, modfier: 1)
+                    ship.position = shipPosition
+                
+                    scene.addChild(ship)
+                    scene.ships.append(ship)
+                    scene.adjust(ship: ship)
+                }
+                
+               
+                
+            }
+        
+            
+        }
+        
+        run(SKAction.sequence([
+            SKAction.removeFromParent()]))
+    }
+    
+}
+
+func randomShipKind()->ShipKind{
+    
+    let x = GKRandomSource.sharedRandom().nextUniform()
+    if x < 0.7{
+        return .galley
+    }
+    if x < 0.77 {
+        return .destroyer
+    }
+    
+    if x < 0.84 {
+        return .motor
+    }
+    if x < 0.91 {
+        return .crusier
+    }
+    
+    return .battle
+ 
+   // return .destroyer
+    
+}
+func randomShip( modfier:Double) -> PirateNode{
+    
+    let kind = randomShipKind()
+    
+    guard kind != .crusier else {
+        return CruiserNode(kind: kind, modfier: modfier)
+    }
+    
+    return PirateNode(kind:kind, modfier:modfier)
+    
 }
 
 

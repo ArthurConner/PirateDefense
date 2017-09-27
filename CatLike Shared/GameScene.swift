@@ -225,7 +225,7 @@ class GameScene: SKScene {
         
         if let source = mapTiles.startIsle?.harbor ,  let shipPosition = convert(mappoint:source) {
             
-            let ship = PirateNode(kind:randomShipKind(), modfier:timeOverTile)
+            let ship =  randomShip( modfier:timeOverTile)
             ship.position = shipPosition
             
             self.addChild(ship)

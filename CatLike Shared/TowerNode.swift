@@ -121,7 +121,7 @@ class TowerNode: SKShapeNode {
         
         var shrinkTime = levelTimer.length()
         
-        print("going from level \(prior) to \(level) in \(shrinkTime)")
+       // print("going from level \(prior) to \(level) in \(shrinkTime)")
         if prior < 0 {
             let interval = min(0.2,shrinkTime)
             shrinkTime = shrinkTime - interval
@@ -150,7 +150,7 @@ extension TowerNode : Fireable {
             scene.towerLocations[towerTile] = nil
             
         }
-        print("tower died")
+        //print("tower died")
         if isKill {
             run(SKAction.scale(by: CGFloat(self.gun.radius) - 0.5, duration: 2))
             run(SKAction.sequence([SKAction.fadeOut(withDuration: 3),
@@ -225,9 +225,7 @@ extension TowerNode : Fireable {
         guard gun.clock.needsUpdate() else { return }
         
         if  let dest =  scene.convert(mappoint: at){
-            if let place = scene.tileOf(node: self) {
-                print("firing from \(place) to \(at) which is \(dest)")
-            }
+       
             let _ = TowerMissle(tower: self, dest: dest, flightDuration: gun.flightDuration)
             gun.clock.update()
             
