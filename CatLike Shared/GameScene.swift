@@ -98,16 +98,22 @@ class GameScene: SKScene {
         
     }
     
-    func pathOf(mappoints route:[MapPoint])->CGPath?{
+    func pathOf(mappoints route:[MapPoint], startOveride:CGPoint? = nil)->CGPath?{
         
-        guard let f1 = route.first, let p1 = convert(mappoint:f1) else { return nil}
+        guard let f1 = route.first, var p1 = convert(mappoint:f1) else { return nil}
         
         let path = CGMutablePath()
+       
+        
+        p1 = startOveride ?? p1
+        
         path.move(to: p1)
         
-        for hex in route {
+        for (i, hex) in route.enumerated() {
             if let p = convert(mappoint:hex){
-                path.addLine(to:p)
+                if i > 0 {
+                    path.addLine(to:p)
+                }
             }
         }
         
@@ -208,7 +214,7 @@ class GameScene: SKScene {
         let wSet:Set<Landscape> = [.water,.path]
         let route = source.path(to: dest, map: mapTiles, using: wSet)
         
-        if let path = pathOf(mappoints:route) {
+        if let path = pathOf(mappoints:route, startOveride:ship.position) {
             
             let time =  ship.waterSpeed * Double(route.count)
             ship.removeAllActions()
