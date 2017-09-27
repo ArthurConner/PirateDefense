@@ -24,6 +24,8 @@ class GameScene: SKScene {
     var ships:[PirateNode] = []
     let maxTowers = 7
     
+    var ai:TowerAI? = TowerAI()
+    
     var gameState: GameState = .initial {
         didSet {
             hud.updateGameState(from: oldValue, to: gameState)
@@ -260,6 +262,10 @@ class GameScene: SKScene {
         
         if !ships.filter({ self.tileOf(node: $0) ?? MapPoint.offGrid == dest}).isEmpty {
             gameState = .lose
+        }
+        
+        if let ai = self.ai {
+            ai.update(scene: self)
         }
         
         

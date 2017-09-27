@@ -73,6 +73,11 @@ struct MapPoint{
     
     static let offGrid = MapPoint(row: -2, col: -2)
     
+    init(row:Int,col:Int) {
+        self.row = row
+        self.col = col
+    }
+    
     func adj(max:Int)->[MapPoint]{
         var ret:[MapPoint] = []
         let vals:[(Int,Int)]
@@ -93,6 +98,10 @@ struct MapPoint{
         }
         
         return ret
+    }
+    
+    func distance(manhattan:MapPoint)->Int{
+        return abs(self.row - manhattan.row) + abs(self.col - manhattan.col)
     }
 }
 extension MapPoint:Equatable{
@@ -470,9 +479,12 @@ class MapHandler{
             
             self.islands.removeAll()
             
+            
+            
             for r in 0..<map.numberOfRows{
                 for c in 0..<map.numberOfColumns{
-                    changeTile(at: MapPoint(row:r,col:c), to: .water)
+                    let p = MapPoint(row:r,col:c)
+                    changeTile(at:p, to: .water)
                 }
             }
             
@@ -519,17 +531,26 @@ class MapHandler{
         }
         
         self.createHarbors()
-        
-         let wSet:Set<Landscape> = [.water,.path]
-        
-        if let s = self.startIsle?.harbor,
-            let d = self.endIsle?.harbor,  s.path(to:d,map:self, using:wSet).count > 4 {
+ 
+        if let s = self.startIsle?.harbor, mainRoute().count > 4 {
             
          self.changeTile(at: s, to: .tower)
             
         } else {
             refreshMap()
         }
+    }
+    
+    
+    
+    func mainRoute()->[MapPoint]{
+        
+        guard let s = self.startIsle?.harbor,
+            let d = self.endIsle?.harbor  else { return [] }
+        let wSet:Set<Landscape> = [.water,.path]
+        
+        return s.path(to:d,map:self, using:wSet)
+        
     }
     
     

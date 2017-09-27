@@ -79,7 +79,7 @@ class PirateNode: SKShapeNode,  Fireable {
             self.waterSpeed = modfier * 3
             self.hitsRemain = 4
             self.gun.radius = 5
-            self.gun.clock.adjust(interval: 1.5)
+           // self.gun.clock.adjust(interval: 1)
             
             
         case .motor:
@@ -132,7 +132,7 @@ class PirateNode: SKShapeNode,  Fireable {
             var a:CGFloat = 0
             
             self.fillColor.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
-            sand.fillColor = UIColor(hue: h, saturation: s/2, brightness: b * 2, alpha: 0.5)
+            wake.fillColor = UIColor(hue: h, saturation: s/2, brightness: b * 2, alpha: 0.5)
             #endif
         wake.strokeColor = .clear
         wake.position = self.position
@@ -214,10 +214,8 @@ class PirateNode: SKShapeNode,  Fireable {
             }
             
             scene.ships = keepShip
-            
-            let wSet:Set<Landscape> = [.water,.path]
-            let route = source.path(to: dest, map: scene.mapTiles, using: wSet)
-            if route.count < 2 {
+
+            if scene.mapTiles.mainRoute().count < 2 {
                 scene.mapTiles.changeTile(at: shipTile, to: .path)
                 killShips.removeAll()
             }
@@ -243,7 +241,7 @@ class PirateNode: SKShapeNode,  Fireable {
 }
 
 class CruiserNode : PirateNode{
-    var raftLeft = 1
+    var raftLeft = 2
     
     override   func die(scene:GameScene, isKill:Bool){
     
@@ -274,13 +272,14 @@ class CruiserNode : PirateNode{
                     let c = CruiserNode(kind: .crusier, modfier: 1)
                     c.raftLeft = raftLeft - 1
                     
-                    let w:CGFloat = 9 // max(CGFloat(c.raftLeft) * 5,14)
+                    let w:CGFloat = 7 * CGFloat(raftLeft) // max(CGFloat(c.raftLeft) * 5,14)
                     let h = w * 2
                     
                     c.path = CGPath.init(ellipseIn: CGRect(x:-w,y:-h, width:w * 2, height:h * 2), transform: nil)
                         
                         //self.init(ellipseOf:CGSize(width: 24, height: 48))
                     ship = c
+                    
                 } else {
                     ship = PirateNode(kind: .row, modfier: 1)
                 }
