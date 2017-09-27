@@ -99,6 +99,7 @@ class TowerNode: SKShapeNode {
              
                 intervalTime = 2
             level = 2
+            
         case 2:
             self.fillColor = .white
             intervalTime = 2.25
@@ -108,13 +109,15 @@ class TowerNode: SKShapeNode {
             self.fillColor = .red
             intervalTime = 1
         }
+        let grow = SKAction.scale(to: 1.1, duration: 0.2)
+        self.run(SKAction.sequence([grow,SKAction.scale(to: 1/1.1, duration: 0.2)]))
     }
     
     func die() {
         // 1
         removeAllActions()
         
-        yScale = -1
+       
         // 2
         physicsBody = nil
         // 3

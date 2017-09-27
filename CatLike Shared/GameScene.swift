@@ -325,7 +325,7 @@ extension GameScene : SKPhysicsContactDelegate {
                     ships.remove(at: i)
                     hud.kills += 1
                     if self.mapTiles.kind(point: shipTile) == .water {
-                        self.mapTiles.changeTile(at: shipTile, to: .path)
+                        self.mapTiles.changeTile(at: shipTile, to: .sand)
                     } else {
                         self.mapTiles.changeTile(at: shipTile, to: .sand)
                     }

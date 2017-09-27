@@ -449,6 +449,11 @@ class MapHandler{
                     changeTile(at: MapPoint(row:r,col:c), to: .water)
                 }
             }
+            
+            for c in 0..<map.numberOfColumns {
+                 changeTile(at: MapPoint(row:0,col:c), to: .top)
+                changeTile(at: MapPoint(row:map.numberOfRows-1,col:c), to: .top)
+            }
             var startIslands:[Island] = []
             for _ in 0..<4 {
                 

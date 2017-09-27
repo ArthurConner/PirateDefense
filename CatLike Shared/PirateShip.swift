@@ -106,6 +106,7 @@ class PirateNode: SKShapeNode {
             self.waterSpeed = modfier / 2
             self.hitsRemain = 1
             self.intervalTime = 8
+            print("motor is now \(modfier / 2)")
         case .battle:
             self.init(ellipseOf:CGSize(width: 25, height: 50))
             self.fillColor = .black
