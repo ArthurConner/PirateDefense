@@ -12,7 +12,7 @@ import GameKit
 
 class TowerMissle:SKShapeNode {
     
-    convenience init(tower:TowerNode,dest:CGPoint,speed:Double) {
+    convenience init(tower:TowerNode,dest:CGPoint,flightDuration:Double) {
         
         self.init(circleOfRadius:8)
         self.fillColor = .red
@@ -28,7 +28,7 @@ class TowerMissle:SKShapeNode {
         body.restitution = 0.5
         self.physicsBody = body
         
-        let act = SKAction.move(to: dest, duration: speed)
+        let act = SKAction.move(to: dest, duration: flightDuration)
         self.run(SKAction.sequence([act,
                                     SKAction.removeFromParent()]))
         
@@ -37,26 +37,20 @@ class TowerMissle:SKShapeNode {
 }
 class TowerNode: SKShapeNode {
     
-    // var watchTiles:Set<MapPoint> = []
-    var intervalTime:TimeInterval = 1
-    var nextLaunch:Date = Date.distantPast
-    
-    var expireTime:Date = Date(timeIntervalSinceNow: 15)
-    var expireInterval:TimeInterval = 5
-    
-    var missleSpeed:Double = 0.2
+
+    var gun = PirateGun(interval:1, flightDuration:0.2, radius:3)
+    var levelTimer = PirateClock(10)
+ 
     var level = 0
     var hitsRemain = 10
-    
-    var fireRadius = 3
-    
-    
+
     convenience init(range:CGFloat) {
         
         self.init(circleOfRadius:20)
         self.fillColor = .red
         self.strokeColor = .black
         self.lineWidth = 3
+        self.gun.landscapes = [.water,.path]
         
         let body = SKPhysicsBody(circleOfRadius: 20)
         
@@ -65,12 +59,13 @@ class TowerNode: SKShapeNode {
         body.isDynamic = false
         
         body.restitution = 0.5
+
         self.physicsBody = body
         
     }
     
     func checkAge(scene:GameScene)->Bool{
-        if self.expireTime < Date(timeIntervalSinceNow: 0){
+        if levelTimer.needsUpdate(){
             
             if level == 3 {
                 if  let towerTile = scene.tileOf(node: self) {
@@ -79,23 +74,26 @@ class TowerNode: SKShapeNode {
                 self.die(scene: scene, isKill: false)
                 return false
             } else {
-                upgrade()
-                self.expireTime = Date(timeIntervalSinceNow: expireInterval)
+                adjust(level: level)
+                
             }
         }
         return true
     }
     
-    func upgrade(){
+    func adjust(level nextL:Int){
         
-        switch level {
+        let prior = level
+        
+       
+        switch nextL {
         case 0:
             #if os(OSX)
                 self.fillColor = NSColor.red.blended(withFraction: 0.25, of: .white) ?? .purple
             #else
                 self.fillColor = UIColor.purple
             #endif
-            intervalTime = 1.5
+            gun.clock.adjust(interval: 1.5)
             level = 1
         case 1:
             #if os(OSX)
@@ -104,20 +102,38 @@ class TowerNode: SKShapeNode {
                 self.fillColor = UIColor.blue
             #endif
             
-            intervalTime = 2
+          
+             gun.clock.adjust(interval: 2)
             level = 2
             
         case 2:
             self.fillColor = .white
-            intervalTime = 2.25
+ 
+            gun.clock.adjust(interval: 2.25)
             level = 3
         default:
             level = 0
             self.fillColor = .red
-            intervalTime = 1
+            gun.clock.adjust(interval: 1)
         }
-        let grow = SKAction.scale(to: 1.1, duration: 0.2)
-        self.run(SKAction.sequence([grow,SKAction.scale(to: 1/1.1, duration: 0.2)]))
+        
+        
+        
+        var shrinkTime = levelTimer.length()
+        
+        print("going from level \(prior) to \(level) in \(shrinkTime)")
+        if prior < 0 {
+            let interval = min(0.2,shrinkTime)
+            shrinkTime = shrinkTime - interval
+   
+            self.run(SKAction.sequence([SKAction.scale(to: 1.5, duration: interval),SKAction.scale(to: 0.8, duration: shrinkTime)]))
+            
+        } else {
+            let shrink = SKAction.scale(to: 0.8, duration: shrinkTime)
+            self.run(shrink)
+        }
+        
+        levelTimer.update()
     }
     
     
@@ -136,7 +152,7 @@ extension TowerNode : Fireable {
         }
         print("tower died")
         if isKill {
-            run(SKAction.scale(by: CGFloat(self.fireRadius) - 0.5, duration: 2))
+            run(SKAction.scale(by: CGFloat(self.gun.radius) - 0.5, duration: 2))
             run(SKAction.sequence([SKAction.fadeOut(withDuration: 3),
                                    SKAction.removeFromParent()]))
         } else {
@@ -149,14 +165,14 @@ extension TowerNode : Fireable {
     }
     
     func targetTiles(scene:GameScene)->Set<MapPoint>{
-        guard nextLaunch < Date(timeIntervalSinceNow: 0) else { return []}
+        guard gun.clock.needsUpdate() else { return []}
         
         guard  let towerTile = scene.tileOf(node: self) else {
             return []
         }
         
-        let boatScapes:Set<Landscape> = [.water,.path]
-        return scene.mapTiles.tiles(near:towerTile,radius:fireRadius,kinds:boatScapes)
+      
+        return scene.mapTiles.tiles(near:towerTile,radius:self.gun.radius,kinds:self.gun.landscapes)
         
     }
     
@@ -172,7 +188,7 @@ extension TowerNode : Fireable {
             
             let towerScapes:Set<Landscape> = [.sand]
             
-            let checkset = scene.mapTiles.tiles(near:towerTile,radius:fireRadius,kinds:towerScapes)
+            let checkset = scene.mapTiles.tiles(near:towerTile,radius:self.gun.radius,kinds:towerScapes)
             
             var killSet:Set<MapPoint> = [towerTile]
             
@@ -206,14 +222,15 @@ extension TowerNode : Fireable {
     }
     
     func fire(at:MapPoint,scene:GameScene){
-        guard nextLaunch < Date(timeIntervalSinceNow: 0) else { return }
+        guard gun.clock.needsUpdate() else { return }
         
         if  let dest =  scene.convert(mappoint: at){
             if let place = scene.tileOf(node: self) {
                 print("firing from \(place) to \(at) which is \(dest)")
             }
-            let _ = TowerMissle(tower: self, dest: dest, speed: missleSpeed)
-            nextLaunch = Date(timeIntervalSinceNow: intervalTime)
+            let _ = TowerMissle(tower: self, dest: dest, flightDuration: gun.flightDuration)
+            gun.clock.update()
+            
             return
         }
     }

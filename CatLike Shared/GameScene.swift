@@ -144,10 +144,8 @@ class GameScene: SKScene {
         if let t = towerLocations[towerPoint] {
             
             if t.level > 0 {
-                t.level = -1
-                t.expireInterval = t.expireInterval * 0.9
-                t.expireTime = Date(timeIntervalSinceNow: t.expireInterval)
-                t.upgrade()
+                t.levelTimer.reduce(factor:0.9)
+                t.adjust(level: -1)
             }
             
         } else if let place = convert(mappoint: towerPoint), towerLocations.count < maxTowers {
