@@ -76,6 +76,7 @@ class PirateNode: SKShapeNode {
     var missleSpeed:Double = 0.8
     var waterSpeed:Double = 3
     var hitsRemain = 3
+    var fireRadius = 2
     
     var kind:ShipKind = .galley
     
@@ -97,7 +98,8 @@ class PirateNode: SKShapeNode {
             self.waterSpeed = modfier * 2
             body.restitution = 0.1
             self.hitsRemain = 1
-            self.intervalTime = 0.75
+            self.intervalTime = 3
+            self.fireRadius = 3
         case .motor:
             self.init(ellipseOf:CGSize(width: 15, height: 30))
             self.fillColor = .purple
@@ -129,13 +131,7 @@ class PirateNode: SKShapeNode {
         
     }
     
-    func die() {
-        removeAllActions()
-        yScale = -1
-        physicsBody = nil
-        run(SKAction.sequence([SKAction.fadeOut(withDuration: 3),
-                               SKAction.removeFromParent()]))
-    }
+    
     
     
     
@@ -143,9 +139,9 @@ class PirateNode: SKShapeNode {
         
         guard let board = self.parent else {return}
 
-        let sand = SKShapeNode.init(circleOfRadius: 2)
+        let wake = SKShapeNode.init(circleOfRadius: 2)
          #if os(OSX)
-        sand.fillColor = (self.fillColor.blended(withFraction: 0.6, of: .white)?.blended(withFraction: 0.4, of: .clear)) ?? .white
+        wake.fillColor = (self.fillColor.blended(withFraction: 0.6, of: .white)?.blended(withFraction: 0.4, of: .clear)) ?? .white
         #else
             var h:CGFloat = 0
             var s:CGFloat = 0
@@ -155,29 +151,93 @@ class PirateNode: SKShapeNode {
             self.fillColor.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
             sand.fillColor = UIColor(hue: h, saturation: s/2, brightness: b * 2, alpha: 0.5)
             #endif
-        sand.strokeColor = .clear
-        sand.position = self.position
+        wake.strokeColor = .clear
+        wake.position = self.position
         
-        sand.run(SKAction.sequence([
+        wake.run(SKAction.sequence([
             SKAction.scale(to: 10, duration: 4)]))
         
-        sand.run(SKAction.sequence([SKAction.fadeOut(withDuration: 7),
+        wake.run(SKAction.sequence([SKAction.fadeOut(withDuration: 7),
                                     SKAction.removeFromParent()]))
         
         
-        board.insertChild(sand, at: board.children.count - 1)
+        board.insertChild(wake, at: board.children.count - 1)
  
     }
     
-    func fire(target:MapPoint,converter:(_ mappoint:MapPoint)->CGPoint?){
+   
+}
+
+extension PirateNode : Fireable {
+    
+    func die(scene:GameScene, isKill:Bool){
+        removeAllActions()
+        yScale = -1
+        physicsBody = nil
+        run(SKAction.sequence([
+                               SKAction.removeFromParent()]))
+    }
+  
+    func targetTiles(scene:GameScene)->Set<MapPoint>{
         
+        guard nextLaunch < Date(timeIntervalSinceNow: 0) else { return  [] }
+        
+        guard  let shipTile = scene.tileOf(node: self) else {
+            return []
+        }
+        
+        let towerScapes:Set<Landscape> = [.sand]
+        return scene.mapTiles.tiles(near:shipTile,radius:fireRadius,kinds:towerScapes)
+        
+    }
+    
+    func hit(scene:GameScene){
+        self.hitsRemain -= 1
+        
+        guard  let shipTile = scene.tileOf(node: self),
+            let dest = scene.mapTiles.endIsle?.harbor,
+            let source =  scene.mapTiles.startIsle?.harbor else { return }
+        
+        if self.hitsRemain == 0 {
+            
+            
+            self.die(scene:scene, isKill:true)
+            for (i , boat) in scene.ships.enumerated() {
+                if boat == self {
+                    scene.ships.remove(at: i)
+                    scene.hud.kills += 1
+                    if scene.mapTiles.kind(point: shipTile) == .water {
+                        scene.mapTiles.changeTile(at: shipTile, to: .sand)
+                    } else {
+                        scene.mapTiles.changeTile(at: shipTile, to: .sand)
+                    }
+                    let wSet:Set<Landscape> = [.water,.path]
+                    let route = source.path(to: dest, map: scene.mapTiles, using: wSet)
+                    if route.count < 2 {
+                        scene.mapTiles.changeTile(at: shipTile, to: .path)
+                    }
+                    
+                }
+            }
+            
+            for (_ , boat) in scene.ships.enumerated() {
+                scene.adjust(ship: boat)
+            }
+            
+        }
+    }
+    
+    func fire(at:MapPoint,scene:GameScene){
         guard nextLaunch < Date(timeIntervalSinceNow: 0) else { return }
-        if  let dest = converter(target){
+        if  let dest =  scene.convert(mappoint: at){
             let _ = CannonBall(tower: self, dest: dest, speed: missleSpeed)
             nextLaunch = Date(timeIntervalSinceNow: intervalTime)
             return
         }
     }
+    
+ 
+   
 }
 
 

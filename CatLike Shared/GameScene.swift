@@ -13,9 +13,9 @@ import GameKit
 
 
 class GameScene: SKScene {
-
-    fileprivate var mapTiles = MapHandler()
-    fileprivate var hud = HUD()
+    
+    var mapTiles = MapHandler()
+    var hud = HUD()
     
     var intervalTime:TimeInterval = 5
     var lastLaunch:Date = Date.distantPast
@@ -85,6 +85,9 @@ class GameScene: SKScene {
         hud.kills = 0
     }
     
+    func tileOf(node:SKNode)->MapPoint? {
+        return self.mapTiles.map(coordinate: node.position)
+    }
     
     func convert(mappoint:MapPoint)->CGPoint? {
         
@@ -92,7 +95,7 @@ class GameScene: SKScene {
         
         let tileCenter  = background.centerOfTile(atColumn:mappoint.col,row:mappoint.row)
         return self.convert(tileCenter, from: background)
-  
+        
     }
     
     func pathOf(mappoints route:[MapPoint])->CGPath?{
@@ -146,7 +149,7 @@ class GameScene: SKScene {
                 t.expireTime = Date(timeIntervalSinceNow: t.expireInterval)
                 t.upgrade()
             }
-
+            
         } else if let place = convert(mappoint: towerPoint), towerLocations.count < maxTowers {
             let tower = TowerNode(range:90)
             
@@ -154,27 +157,13 @@ class GameScene: SKScene {
             self.addChild(tower)
             towerLocations[towerPoint] = tower
             
-            for towerAdjacentPoint in towerPoint.adj(max: mapTiles.mapAdj){
-                if mapTiles.kind(point: towerAdjacentPoint) == .water {
-                    tower.watchTiles.insert(towerAdjacentPoint)
-                    for ta2 in towerAdjacentPoint.adj(max: mapTiles.mapAdj){
-                        if mapTiles.kind(point: ta2) == .water {
-                            tower.watchTiles.insert(ta2)
-                        }
-                        
-                    }
-                    
-                }
-                
-            }
         }
     }
     
     func handle(point: CGPoint){
         
-        
         switch gameState {
-
+            
         case .start:
             gameState = .play
             isPaused = false
@@ -196,7 +185,7 @@ class GameScene: SKScene {
         default:
             break
         }
-
+        
     }
     
     
@@ -222,7 +211,7 @@ class GameScene: SKScene {
         let route = source.path(to: dest, map: mapTiles, using: wSet)
         
         if let path = pathOf(mappoints:route) {
-
+            
             let time =  ship.waterSpeed * Double(route.count)
             ship.removeAllActions()
             ship.run(SKAction.repeat(SKAction.sequence([SKAction.run(ship.spawnWake),SKAction.wait(forDuration: ship.waterSpeed/4)]), count: route.count * 2))
@@ -236,12 +225,11 @@ class GameScene: SKScene {
     }
     func launchAttack(timeOverTile:Double) {
         
-        
         if let source = mapTiles.startIsle?.harbor ,  let shipPosition = convert(mappoint:source) {
             
             let ship = PirateNode(kind:randomShipKind(), modfier:timeOverTile)
             ship.position = shipPosition
-           
+            
             self.addChild(ship)
             ships.append(ship)
             adjust(ship: ship)
@@ -266,135 +254,45 @@ class GameScene: SKScene {
             launchAttack(timeOverTile:intervalTime/8)
         }
         
-        //Look at our ships positions
-        var fleetPoints:Set<MapPoint> = []
-        var navyRetaliation:[MapPoint:PirateNode] = [:]
-        
-        for ship in ships {
-            if let shipPosition = self.mapTiles.map(coordinate: ship.position){
-                navyRetaliation[shipPosition] = ship
-            }
-            if let shipPosition = mapTiles.map(coordinate: ship.position){
-                if shipPosition == dest {
-                    gameState = .lose
-                }
-                fleetPoints.insert(shipPosition)
-            }
-            
+        if !ships.filter({ self.tileOf(node: $0) ?? MapPoint.offGrid == dest}).isEmpty {
+            gameState = .lose
         }
         
+        
+        //let shipPoints = ships.map(self.tileOf(node: $0) ?? MapPoint.offGrid}
+        let shipPoints:[MapPoint] = ships.map({self.tileOf(node: $0) ?? MapPoint.offGrid})
+        var navalTarget:[MapPoint] = []
         
         for (towerPoint,tower) in towerLocations {
-            
-            if tower.expireTime < Date(timeIntervalSinceNow: 0) {
-                
-                if tower.level > 2 {
-                  self.mapTiles.changeTile(at: towerPoint, to: .inland)
-                towerLocations[towerPoint] = nil
-                 tower.die()
-                } else {
-                    tower.expireTime = Date(timeIntervalSinceNow: tower.expireInterval)
-                    tower.upgrade()
-                }
-            } else if let shipTarget = tower.checkFire(targets: fleetPoints, converter: convert) {
-                if let ship = navyRetaliation[shipTarget] {
-                    ship.fire(target:towerPoint,converter:convert)
+            if tower.checkAge(scene: self) {
+                navalTarget.append(towerPoint)
+                let targets = tower.targetTiles(scene: self)
+                for target in shipPoints {
+                    if targets.contains(target) {
+                        tower.fire(at:target,scene:self)
+                    }
                 }
             }
-            
         }
- 
+        
+        for ship in ships  {
+            let targets = ship.targetTiles(scene: self)
+            for target in navalTarget {
+                
+                if targets.contains(target) {
+                    ship.fire(at:target,scene:self)
+                }
+            }
+        }
+        
     }
 }
 
 extension GameScene : SKPhysicsContactDelegate {
     
-    func  hit(ship:PirateNode){
-        ship.hitsRemain -= 1
-        
-        guard  let shipTile = self.mapTiles.map(coordinate: ship.position),
-            let dest = mapTiles.endIsle?.harbor,
-            let source =  mapTiles.startIsle?.harbor else { return }
-        
-        if ship.hitsRemain == 0 {
-            
-            
-            ship.die()
-            for (i , boat) in ships.enumerated() {
-                if boat == ship {
-                    ships.remove(at: i)
-                    hud.kills += 1
-                    if self.mapTiles.kind(point: shipTile) == .water {
-                        self.mapTiles.changeTile(at: shipTile, to: .sand)
-                    } else {
-                        self.mapTiles.changeTile(at: shipTile, to: .sand)
-                    }
-                    let wSet:Set<Landscape> = [.water,.path]
-                    let route = source.path(to: dest, map: mapTiles, using: wSet)
-                    if route.count < 2 {
-                        self.mapTiles.changeTile(at: shipTile, to: .path)
-                    }
-                    
-                }
-            }
-            
-            for (_ , boat) in ships.enumerated() {
-                adjust(ship: boat)
-            }
-            
-        }
-    }
     
-    func hit(tower:TowerNode){
-        
-        tower.hitsRemain -= 1
-        
-        if tower.hitsRemain == 0 {
-            guard   let towerTile = self.mapTiles.map(coordinate: tower.position),
-                let dest = mapTiles.endIsle?.harbor,
-                let source =  mapTiles.startIsle?.harbor else { return }
-            var killSet:Set<MapPoint> = [towerTile]
-            var addSet:Set<MapPoint> = [towerTile]
-            
-            for _ in 1..<3 {
-                var nextSet:Set<MapPoint> = []
-                for tile in addSet {
-                    for n in tile.adj(max: mapTiles.mapAdj) {
-                        if mapTiles.kind(point: n) == .sand &&
-                            n != dest && n != source  &&
-                            !killSet.contains(n){
-                            
-                            let keepSet:Set<Landscape> = [.top,.inland]
-                            let f = n.adj(max: mapTiles.mapAdj).filter{ keepSet.contains(mapTiles.kind(point: $0))}
-                            if f.isEmpty{
-                                killSet.insert(n)
-                            }
-                            nextSet.insert(n)
-                            
-                        }
-                    }
-                    addSet = nextSet
-                    
-                }
-            }
-            
-            for tile in killSet {
-                if let t = towerLocations[tile] {
-                    t.die()
-                    towerLocations[tile] = nil
-                }
-                self.mapTiles.changeTile(at: tile, to: .water)
-            }
-            
-            for (_ , boat) in ships.enumerated() {
-                adjust(ship: boat)
-            }
-            
-        } else {
-            tower.run(SKAction.scale(by: 0.9, duration: 0.3))
-        }
-        
-    }
+    
+    
     func didBegin(_ contact: SKPhysicsContact) {
         /*
          let other = contact.bodyA.categoryBitMask
@@ -407,25 +305,25 @@ extension GameScene : SKPhysicsContactDelegate {
             let y =  i == 0 ? contact.bodyB.node : contact.bodyA.node
             
             if let ship  = x as? PirateNode {
-                hit(ship: ship)
-                
+                ship.hit(scene: self)
                 y?.run(SKAction.removeFromParent())
                 return
             }
             
             if let t = x as? TowerNode {
-                hit(tower:t)
+                
+                t.hit(scene: self)
                 y?.run(SKAction.removeFromParent())
                 return
             }
             
         }
-
     }
-    
-    
-    
 }
+
+
+
+
 
 #if os(iOS) || os(tvOS)
     // Touch-based event handling

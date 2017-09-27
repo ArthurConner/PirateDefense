@@ -71,6 +71,8 @@ struct MapPoint{
     let row: Int
     let col: Int
     
+    static let offGrid = MapPoint(row: -2, col: -2)
+    
     func adj(max:Int)->[MapPoint]{
         var ret:[MapPoint] = []
         let vals:[(Int,Int)]
@@ -303,6 +305,30 @@ class MapHandler{
         return landscapeOf(name:name)
     }
     
+    func tiles(near place:MapPoint,radius:Int,kinds:Set<Landscape>)->Set<MapPoint>{
+        var ret:Set<MapPoint> = []
+        var visited:Set<MapPoint> = []
+        var toAdd:Set<MapPoint> = [place]
+        
+        for _ in 0..<radius {
+            var nextSet:Set<MapPoint> = []
+            for x in toAdd {
+                visited.insert(x)
+                let c = kind(point: x)
+                if kinds.contains(c){
+                   ret.insert(x)
+                }
+                for y in x.adj(max: self.mapAdj){
+                    if !visited.contains(y){
+                        nextSet.insert(y)
+                    }
+                }
+            }
+            toAdd = nextSet
+        }
+        
+        return ret
+    }
     
     func isBoundary(point:MapPoint)->Bool{
         let x = kind(point: point)

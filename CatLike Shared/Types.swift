@@ -21,3 +21,12 @@ struct PhysicsCategory {
 enum GameState: Int {
     case initial=0, start, play, win, lose, reload, pause
 }
+
+protocol Fireable {
+    
+    func die(scene:GameScene, isKill:Bool)
+    func targetTiles(scene:GameScene)->Set<MapPoint>
+    func hit(scene:GameScene)
+    func fire(at:MapPoint,scene:GameScene)
+  
+}
