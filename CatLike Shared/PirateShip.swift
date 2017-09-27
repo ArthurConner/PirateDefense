@@ -33,7 +33,7 @@ class PirateNode: SKShapeNode,  Fireable {
     var gun = PirateGun(interval:4, flightDuration:0.8, radius:3)
     var waterSpeed:Double = 3
     var hitsRemain = 3
-   
+    
     
     var kind:ShipKind = .galley
     
@@ -58,7 +58,7 @@ class PirateNode: SKShapeNode,  Fireable {
             self.hitsRemain = 1
             self.gun.clock.adjust(interval: 3)
             self.gun.radius = 1
-           
+            
         case .crusier:
             
             self.init(ellipseOf:CGSize(width: 24, height: 48))
@@ -79,7 +79,7 @@ class PirateNode: SKShapeNode,  Fireable {
             self.waterSpeed = modfier * 3
             self.hitsRemain = 4
             self.gun.radius = 5
-           // self.gun.clock.adjust(interval: 1)
+            self.gun.clock.adjust(interval: 0.7)
             
             
         case .motor:
@@ -97,7 +97,7 @@ class PirateNode: SKShapeNode,  Fireable {
             body = SKPhysicsBody(circleOfRadius: 35)
             body.restitution = 0.9
             self.waterSpeed = modfier * 8
-            self.hitsRemain = 8
+            self.hitsRemain = 6
             self.gun.clock.adjust(interval: 0.5)
         }
         
@@ -121,10 +121,10 @@ class PirateNode: SKShapeNode,  Fireable {
     func spawnWake() {
         
         guard let board = self.parent else {return}
-
+        
         let wake = SKShapeNode.init(circleOfRadius: 2)
-         #if os(OSX)
-        wake.fillColor = (self.fillColor.blended(withFraction: 0.6, of: .white)?.blended(withFraction: 0.4, of: .clear)) ?? .white
+        #if os(OSX)
+            wake.fillColor = (self.fillColor.blended(withFraction: 0.6, of: .white)?.blended(withFraction: 0.4, of: .clear)) ?? .white
         #else
             var h:CGFloat = 0
             var s:CGFloat = 0
@@ -133,7 +133,7 @@ class PirateNode: SKShapeNode,  Fireable {
             
             self.fillColor.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
             wake.fillColor = UIColor(hue: h, saturation: s/2, brightness: b * 2, alpha: 0.5)
-            #endif
+        #endif
         wake.strokeColor = .clear
         wake.position = self.position
         
@@ -145,21 +145,21 @@ class PirateNode: SKShapeNode,  Fireable {
         
         
         board.insertChild(wake, at: board.children.count - 1)
- 
+        
     }
     
-
+    
     
     func die(scene:GameScene, isKill:Bool){
         removeAllActions()
         yScale = -1
         physicsBody = nil
         run(SKAction.sequence([
-                               SKAction.removeFromParent()]))
+            SKAction.removeFromParent()]))
         
         
     }
-  
+    
     func targetTiles(scene:GameScene)->Set<MapPoint>{
         
         guard gun.clock.needsUpdate() else { return  [] }
@@ -179,7 +179,7 @@ class PirateNode: SKShapeNode,  Fireable {
             let dest = scene.mapTiles.endIsle?.harbor,
             let source =  scene.mapTiles.startIsle?.harbor else { return }
         
-    
+        
         if self.hitsRemain == 0 {
             
             
@@ -193,7 +193,7 @@ class PirateNode: SKShapeNode,  Fireable {
             var keepShip:[PirateNode] = []
             for (_ , boat) in scene.ships.enumerated() {
                 if let boatTile = scene.tileOf(node: boat), boatTile == shipTile {
-                   
+                    
                     scene.hud.kills += 1
                     if scene.mapTiles.kind(point: shipTile) == .water {
                         scene.mapTiles.changeTile(at: shipTile, to: .sand)
@@ -206,7 +206,7 @@ class PirateNode: SKShapeNode,  Fireable {
                     }
                     
                     
-
+                    
                     
                 } else {
                     keepShip.append(boat)
@@ -214,7 +214,7 @@ class PirateNode: SKShapeNode,  Fireable {
             }
             
             scene.ships = keepShip
-
+            
             if scene.mapTiles.mainRoute().count < 2 {
                 scene.mapTiles.changeTile(at: shipTile, to: .path)
                 killShips.removeAll()
@@ -236,15 +236,15 @@ class PirateNode: SKShapeNode,  Fireable {
         }
     }
     
- 
-   
+    
+    
 }
 
 class CruiserNode : PirateNode{
     var raftLeft = 2
     
     override   func die(scene:GameScene, isKill:Bool){
-    
+        
         
         if isKill, let shipTile = scene.tileOf(node: self) {
             
@@ -257,45 +257,41 @@ class CruiserNode : PirateNode{
                 if let otherTile = scene.tileOf(node: x){
                     lifeBoatTiles.remove(otherTile)
                 }
-           
+                
             }
             
             for tile in lifeBoatTiles {
                 
                 
-              if   let shipPosition = scene.convert(mappoint:tile) {
-                
-                let ship:PirateNode
-                print("we have \(raftLeft) rafts")
-                
-                if  raftLeft > 0 {
-                    let c = CruiserNode(kind: .crusier, modfier: 1)
-                    c.raftLeft = raftLeft - 1
+                if   let shipPosition = scene.convert(mappoint:tile) {
                     
-                    let w:CGFloat = 7 * CGFloat(raftLeft) // max(CGFloat(c.raftLeft) * 5,14)
-                    let h = w * 2
+                    let ship:PirateNode
+                    // print("we have \(raftLeft) rafts")
                     
-                    c.path = CGPath.init(ellipseIn: CGRect(x:-w,y:-h, width:w * 2, height:h * 2), transform: nil)
+                    if  raftLeft > 0 {
+                        let c = CruiserNode(kind: .crusier, modfier: 1)
+                        c.raftLeft = raftLeft - 1
                         
-                        //self.init(ellipseOf:CGSize(width: 24, height: 48))
-                    ship = c
+                        let w:CGFloat = 7 * CGFloat(raftLeft) // max(CGFloat(c.raftLeft) * 5,14)
+                        let h = w * 2
+                        
+                        c.path = CGPath.init(ellipseIn: CGRect(x:-w,y:-h, width:w * 2, height:h * 2), transform: nil)
+                        ship = c
+                        
+                    } else {
+                        ship = PirateNode(kind: .row, modfier: 1)
+                    }
                     
-                } else {
-                    ship = PirateNode(kind: .row, modfier: 1)
-                }
                     
-                
                     ship.position = shipPosition
-                
+                    
                     scene.addChild(ship)
                     scene.ships.append(ship)
                     scene.adjust(ship: ship)
                 }
-                
-               
-                
+
             }
-        
+            
             
         }
         
@@ -312,19 +308,19 @@ func randomShipKind()->ShipKind{
         return .galley
     }
     if x < 0.7 {
-        return .destroyer
-    }
-    
-    if x < 0.8 {
-        return .motor
-    }
-    if x < 0.9 {
         return .crusier
     }
     
+    if x < 0.85 {
+        return .motor
+    }
+    if x < 0.95 {
+        return .destroyer
+    }
+    
     return .battle
- 
-   // return .destroyer
+    
+    // return .destroyer
     
 }
 func randomShip( modfier:Double) -> PirateNode{

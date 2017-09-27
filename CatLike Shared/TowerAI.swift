@@ -46,13 +46,15 @@ class TowerAI {
         
         let sands:Set<Landscape> = [.sand]
         
-        for (loc,_) in scene.towerLocations{
+        for (loc, tower) in scene.towerLocations{
             
             possibleAddSpot.remove(loc)
             
-            for x in scene.mapTiles.tiles(near: loc, radius: 3, kinds: sands){
+            
+            for x in scene.mapTiles.tiles(near: loc, radius: 4 - tower.level, kinds: sands){
                 possibleAddSpot.remove(x)
             }
+            
             
         }
         

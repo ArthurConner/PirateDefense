@@ -266,6 +266,7 @@ class GameScene: SKScene {
         
         if let ai = self.ai {
             ai.update(scene: self)
+            self.ai = nil
         }
         
         

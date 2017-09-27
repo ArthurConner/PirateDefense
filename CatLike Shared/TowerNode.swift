@@ -188,19 +188,17 @@ extension TowerNode : Fireable {
             
             let towerScapes:Set<Landscape> = [.sand]
             
-            let checkset = scene.mapTiles.tiles(near:towerTile,radius:self.gun.radius,kinds:towerScapes)
+            let checkset = scene.mapTiles.tiles(near:towerTile,radius:self.gun.radius + 1,kinds:towerScapes)
             
             var killSet:Set<MapPoint> = [towerTile]
             
-            let landscapeToKeep:Set<Landscape> = [.top,.inland]
             
             for checkTile in checkset {
                 if checkTile != source,
                     checkTile != dest {
-                    let f = checkTile.adj(max: scene.mapTiles.mapAdj).filter{ landscapeToKeep.contains(scene.mapTiles.kind(point: $0))}
-                    if f.isEmpty{
-                        killSet.insert(checkTile)
-                    }
+                    
+                    killSet.insert(checkTile)
+                    
                 }
             }
             for tile in killSet {
@@ -210,6 +208,14 @@ extension TowerNode : Fireable {
                 }
                 scene.mapTiles.changeTile(at: tile, to: .water)
             }
+            
+            let landscapeToDrop:Set<Landscape> = [.inland]
+            
+            let il = scene.mapTiles.tiles(near:towerTile,radius:self.gun.radius,kinds:landscapeToDrop)
+            for x in il {
+                scene.mapTiles.changeTile(at: x, to: .sand)
+            }
+            
             
             for (_ , boat) in scene.ships.enumerated() {
                 scene.adjust(ship: boat)
