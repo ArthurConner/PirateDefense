@@ -191,9 +191,7 @@ class PirateNode: SKShapeNode,  Fireable {
         removeAllActions()
         yScale = -1
         physicsBody = nil
-        run(SKAction.sequence([
-            SKAction.removeFromParent()]))
-        
+        scene.remove(ship: self)
         
     }
     
@@ -220,46 +218,17 @@ class PirateNode: SKShapeNode,  Fireable {
         if self.hitsRemain == 0 {
             
             
-            var killShips:[PirateNode] = []
-            defer{
-                for x in killShips {
-                    x.die(scene: scene, isKill: false)
-                }
-            }
+           
             self.die(scene:scene, isKill:true)
-            var keepShip:[PirateNode] = []
-            for (_ , boat) in scene.ships.enumerated() {
-                if let boatTile = scene.tileOf(node: boat), boatTile == shipTile {
-                    
-                    scene.hud.kills += 1
-                    if scene.mapTiles.kind(point: shipTile) == .water {
-                        scene.mapTiles.changeTile(at: shipTile, to: .sand)
-                    } else {
-                        scene.mapTiles.changeTile(at: shipTile, to: .sand)
-                    }
-                    
-                    if boat != self {
-                        killShips.append(boat)
-                    }
-                    
-                    
-                    
-                    
-                } else {
-                    keepShip.append(boat)
-                }
-            }
-            
-            scene.ships = keepShip
+            scene.removeFrom(shipTile: shipTile)
             
             if scene.mapTiles.mainRoute().count < 2 {
                 scene.mapTiles.changeTile(at: shipTile, to: .path)
-                killShips.removeAll()
             }
             
-            for (_ , boat) in scene.ships.enumerated() {
-                scene.adjust(ship: boat)
-            }
+            scene.redirectAllShips()
+            
+           
             
         }
     }
@@ -281,24 +250,11 @@ class CruiserNode : PirateNode{
     var raftLeft = 1
     
     override  func die(scene:GameScene, isKill:Bool){
-        
-        
+
         if isKill, let shipTile = scene.tileOf(node: self) {
             
-            let water:Set<Landscape> = [.water,.path]
-            var lifeBoatTiles = scene.mapTiles.tiles(near:shipTile,radius:2,kinds:water)
-            lifeBoatTiles.remove(shipTile)
-            
-            for x in scene.ships {
-                
-                if let otherTile = scene.tileOf(node: x){
-                    lifeBoatTiles.remove(otherTile)
-                }
-                
-            }
-            
+            let lifeBoatTiles = scene.availableWater(around:shipTile)
             for tile in lifeBoatTiles {
-                
                 
                 if   let shipPosition = scene.convert(mappoint:tile) {
                     
@@ -321,10 +277,8 @@ class CruiserNode : PirateNode{
                     
                     
                     ship.position = shipPosition
-                    
-                    scene.addChild(ship)
-                    scene.ships.append(ship)
-                    scene.adjust(ship: ship)
+                    scene.add(ship:ship)
+                 
                 }
 
             }

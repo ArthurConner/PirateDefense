@@ -207,9 +207,7 @@ extension TowerNode : Fireable {
             }
             
             
-            for (_ , boat) in scene.ships.enumerated() {
-                scene.adjust(ship: boat)
-            }
+            scene.redirectAllShips()
             
         } else {
             //self.run(SKAction.scale(by: 0.9, duration: 0.3))

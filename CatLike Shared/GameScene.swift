@@ -21,7 +21,7 @@ class GameScene: SKScene {
     var lastLaunch:Date = Date.distantPast
     
     var towerLocations:[MapPoint:TowerNode] = [:]
-    var ships:[PirateNode] = []
+    fileprivate var ships:[PirateNode] = []
     let maxTowers = 7
     
     var ai:TowerAI? = TowerAI()
@@ -239,6 +239,21 @@ class GameScene: SKScene {
         
         
     }
+    
+    
+    func add(ship:PirateNode){
+      ships.append(ship)
+      self.addChild(ship)
+        adjust(ship: ship)
+        
+    }
+    
+    func remove(ship:PirateNode){
+        ship.removeFromParent()
+        
+        ships = ships.filter({$0 != ship})
+       
+    }
     func launchAttack(timeOverTile:Double) {
         
         if let source = mapTiles.startIsle?.harbor ,  let shipPosition = convert(mappoint:source) {
@@ -246,11 +261,64 @@ class GameScene: SKScene {
             let ship =  randomShip( modfier:timeOverTile)
             ship.position = shipPosition
             
-            self.addChild(ship)
-            ships.append(ship)
-            adjust(ship: ship)
+            add(ship: ship)
         }
         
+    }
+    
+    func availableWater(around tile:MapPoint)->Set<MapPoint>{
+        let water:Set<Landscape> = [.water,.path]
+        var lifeBoatTiles = mapTiles.tiles(near:tile,radius:2,kinds:water)
+        lifeBoatTiles.remove(tile)
+        
+        for x in ships {
+            
+            if let otherTile = tileOf(node: x){
+                lifeBoatTiles.remove(otherTile)
+            }
+            
+        }
+        return lifeBoatTiles
+    }
+    
+    
+    func removeFrom(shipTile:MapPoint){
+        
+        var keepShip:[PirateNode] = []
+        var killShips:[PirateNode] = []
+        defer{
+            for x in killShips {
+                remove(ship: x)
+            }
+        }
+        
+        for (_ , boat) in self.ships.enumerated() {
+            if let boatTile = self.tileOf(node: boat), boatTile == shipTile {
+                
+                self.hud.kills += 1
+                if self.mapTiles.kind(point: shipTile) == .water {
+                    self.mapTiles.changeTile(at: shipTile, to: .sand)
+                } else {
+                    self.mapTiles.changeTile(at: shipTile, to: .sand)
+                }
+                
+                if boat != self {
+                    killShips.append(boat)
+                }
+     
+                
+            } else {
+                keepShip.append(boat)
+            }
+        }
+        
+        self.ships = keepShip
+    }
+    
+    func redirectAllShips(){
+        for (_ , boat) in ships.enumerated() {
+            adjust(ship: boat)
+        }
     }
     
     
