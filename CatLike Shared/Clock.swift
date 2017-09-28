@@ -14,6 +14,7 @@ class PirateClock{
     
     private var time:Date = Date(timeIntervalSinceNow: 0)
     private var interval:TimeInterval = 5
+    var enabled = true
     
     func tickNext(){
         time = Date(timeIntervalSinceNow:0)
@@ -25,7 +26,7 @@ class PirateClock{
     }
     
     func needsUpdate()->Bool{
-        return time < Date(timeIntervalSinceNow: 0)
+        return enabled && time < Date(timeIntervalSinceNow: 0)
         
     }
     

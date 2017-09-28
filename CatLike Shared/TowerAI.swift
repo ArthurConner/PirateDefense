@@ -24,9 +24,9 @@ class TowerAI {
         defer {
             clock.update()
         }
-       
         
-        guard scene.towerLocations.count < scene.maxTowers ,
+        
+        guard scene.towersRemaining() > 0 ,
             let source =  scene.mapTiles.startIsle?.harbor  else { return }
         
         let route = scene.mapTiles.mainRoute()
@@ -46,15 +46,20 @@ class TowerAI {
         
         let sands:Set<Landscape> = [.sand]
         
-        for (loc, tower) in scene.towerLocations{
-            
-            possibleAddSpot.remove(loc)
+        for loc in possibleAddSpot{
             
             
-            for x in scene.mapTiles.tiles(near: loc, radius: 4 - tower.level, kinds: sands){
-                possibleAddSpot.remove(x)
+            if let tower = scene.tower(at: loc){
+                possibleAddSpot.remove(loc)
+                
+                if tower.hitsRemain > 4, tower.level > 2 {
+                    tower.adjust(level: -1)
+                }
+                for x in scene.mapTiles.tiles(near: loc, radius: 4 - tower.level, kinds: sands){
+                    possibleAddSpot.remove(x)
+                }
+                
             }
-            
             
         }
         
@@ -65,7 +70,7 @@ class TowerAI {
         for x in possibleAddSpot {
             let c = x.distance(manhattan: source)
             if c > bestVal {
-               bestTile = x
+                bestTile = x
                 bestVal = c
             }
         }
@@ -78,7 +83,7 @@ class TowerAI {
         towerAdd.update()
         
         
-      
+        
         
     }
     

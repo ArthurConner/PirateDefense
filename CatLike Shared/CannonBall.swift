@@ -30,6 +30,7 @@ class CannonBall:SKShapeNode {
         
         body.restitution = 0.5
         self.physicsBody = body
+        self.zPosition = 2
         
         let act = SKAction.move(to: dest, duration: speed)
         self.run(SKAction.sequence([act,

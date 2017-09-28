@@ -15,12 +15,12 @@ import GameKit
 class GameScene: SKScene {
     
     var mapTiles = MapHandler()
-    var hud = HUD()
+    fileprivate var hud = HUD()
     
     var intervalTime:TimeInterval = 5
     var lastLaunch:Date = Date.distantPast
     
-    var towerLocations:[MapPoint:TowerNode] = [:]
+    fileprivate var towerLocations:[MapPoint:TowerNode] = [:]
     fileprivate var ships:[PirateNode] = []
     let maxTowers = 7
     
@@ -145,6 +145,95 @@ class GameScene: SKScene {
         
     }
     
+    override func update(_ currentTime: TimeInterval) {
+        // Called before each frame is rendered
+        
+        super.update(currentTime)
+        if isPaused { return }
+        if gameState != .play {return}
+        
+        guard  let dest = mapTiles.endIsle?.harbor else { return }
+        
+        //Do we need to launch a new wave
+        if lastLaunch < Date(timeIntervalSinceNow: 0){
+            lastLaunch = Date(timeIntervalSinceNow:intervalTime)
+            intervalTime = intervalTime * 0.99
+            launchAttack(timeOverTile:intervalTime/8)
+        }
+        
+        if !ships.filter({ self.tileOf(node: $0) ?? MapPoint.offGrid == dest}).isEmpty {
+            gameState = .lose
+        }
+        
+        
+        if let ai = self.ai {
+            ai.update(scene: self)
+            self.ai = nil
+        }
+        
+        
+        //let shipPoints = ships.map(self.tileOf(node: $0) ?? MapPoint.offGrid}
+        let shipPoints:[MapPoint] = ships.map({self.tileOf(node: $0) ?? MapPoint.offGrid})
+        var navalTarget:[MapPoint] = []
+        
+        for (towerPoint,tower) in towerLocations {
+            if tower.checkAge(scene: self) {
+                navalTarget.append(towerPoint)
+                let targets = tower.targetTiles(scene: self)
+                for target in shipPoints {
+                    if targets.contains(target) {
+                        tower.fire(at:target,scene:self)
+                    }
+                }
+            }
+        }
+        
+        for ship in ships  {
+            let targets = ship.targetTiles(scene: self)
+            for target in navalTarget {
+                
+                if targets.contains(target) {
+                    ship.fire(at:target,scene:self)
+                }
+            }
+        }
+        
+    }
+    
+    
+}
+
+extension GameScene {
+    
+    func add(towerAt towerPoint:MapPoint){
+        if let place = convert(mappoint: towerPoint){
+        let tower = TowerNode(range:90)
+        
+        tower.position = place
+        self.addChild(tower)
+        towerLocations[towerPoint] = tower
+        tower.adjust(level:0)
+    }
+    }
+    
+    
+    func remove(tower:TowerNode) {
+        
+        if  let towerTile = tileOf(node: tower) {
+            towerLocations[towerTile] = nil
+            tower.removeFromParent()
+        }
+        
+    }
+    
+    func tower(at:MapPoint) -> TowerNode? {
+        return towerLocations[at]
+    }
+    
+    func towersRemaining()->Int{
+        return  maxTowers - towerLocations.count
+    }
+    
     func manageTower(point: CGPoint){
         guard let towerPoint = mapTiles.map(coordinate: point),
             mapTiles.kind(point: towerPoint) == .sand else { return }
@@ -158,13 +247,8 @@ class GameScene: SKScene {
                 
             }
             
-        } else if let place = convert(mappoint: towerPoint), towerLocations.count < maxTowers {
-            let tower = TowerNode(range:90)
-            
-            tower.position = place
-            self.addChild(tower)
-            towerLocations[towerPoint] = tower
-            tower.adjust(level:0)
+        } else if towerLocations.count < maxTowers {
+          add(towerAt: towerPoint)
         
             
         }
@@ -212,6 +296,11 @@ class GameScene: SKScene {
     }
     #endif
     
+}
+
+
+extension GameScene {
+    
     func adjust(ship:PirateNode){
         
         guard let dest = mapTiles.endIsle?.harbor,
@@ -233,7 +322,7 @@ class GameScene: SKScene {
             ship.run(SKAction.repeat(SKAction.sequence([SKAction.run(ship.spawnWake),SKAction.wait(forDuration: ship.waterSpeed/4)]), count: route.count * 2))
             
             let followLine = SKAction.follow( path, asOffset: false, orientToPath: true, duration: time)
-            ship.run(SKAction.sequence([followLine,SKAction.run(ship.clearIdle)]))
+            ship.run(followLine)
             
         }
         
@@ -252,6 +341,7 @@ class GameScene: SKScene {
         ship.removeFromParent()
         
         ships = ships.filter({$0 != ship})
+        hud.kills += 1
        
     }
     func launchAttack(timeOverTile:Double) {
@@ -321,64 +411,9 @@ class GameScene: SKScene {
         }
     }
     
+
     
-    override func update(_ currentTime: TimeInterval) {
-        // Called before each frame is rendered
-        
-        super.update(currentTime)
-        if isPaused { return }
-        if gameState != .play {return}
-        
-        guard  let dest = mapTiles.endIsle?.harbor else { return }
-        
-        //Do we need to launch a new wave
-        if lastLaunch < Date(timeIntervalSinceNow: 0){
-            lastLaunch = Date(timeIntervalSinceNow:intervalTime)
-            intervalTime = intervalTime * 0.99
-            launchAttack(timeOverTile:intervalTime/8)
-        }
-        
-        if !ships.filter({ self.tileOf(node: $0) ?? MapPoint.offGrid == dest}).isEmpty {
-            gameState = .lose
-        }
-        
-        if !ships.filter({$0.didIdle}).isEmpty {
-            gameState = .lose
-        }
-        
-        if let ai = self.ai {
-            ai.update(scene: self)
-            self.ai = nil
-        }
-        
-        
-        //let shipPoints = ships.map(self.tileOf(node: $0) ?? MapPoint.offGrid}
-        let shipPoints:[MapPoint] = ships.map({self.tileOf(node: $0) ?? MapPoint.offGrid})
-        var navalTarget:[MapPoint] = []
-        
-        for (towerPoint,tower) in towerLocations {
-            if tower.checkAge(scene: self) {
-                navalTarget.append(towerPoint)
-                let targets = tower.targetTiles(scene: self)
-                for target in shipPoints {
-                    if targets.contains(target) {
-                        tower.fire(at:target,scene:self)
-                    }
-                }
-            }
-        }
-        
-        for ship in ships  {
-            let targets = ship.targetTiles(scene: self)
-            for target in navalTarget {
-                
-                if targets.contains(target) {
-                    ship.fire(at:target,scene:self)
-                }
-            }
-        }
-        
-    }
+
 }
 
 extension GameScene : SKPhysicsContactDelegate {

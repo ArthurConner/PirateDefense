@@ -18,7 +18,7 @@ class TowerMissle:SKShapeNode {
         self.fillColor = .red
         self.position = tower.position
         
-        
+        self.zPosition = 3
         guard let p = tower.parent else {return}
         p.addChild(self)
         let body = SKPhysicsBody(circleOfRadius: 4)
@@ -136,18 +136,22 @@ extension TowerNode : Fireable {
     func die(scene:GameScene, isKill:Bool){
         removeAllActions()
         physicsBody = nil
-        if  let towerTile = scene.tileOf(node: self) {
-            scene.towerLocations[towerTile] = nil
-            
-        }
+        self.gun.clock.enabled = false
+        self.levelTimer.enabled = false
+        self.strokeColor = .clear
+       
         //print("tower died")
         if isKill {
             run(SKAction.scale(by: CGFloat(self.gun.radius) - 0.5, duration: 2))
-            run(SKAction.sequence([SKAction.fadeOut(withDuration: 3),
-                                   SKAction.removeFromParent()]))
+            run(SKAction.sequence([SKAction.fadeOut(withDuration: 4),
+                                   SKAction.run {
+                                    scene.remove(tower: self)
+                }]))
         } else {
-            run(SKAction.sequence([SKAction.fadeOut(withDuration: 0.2),
-                                   SKAction.removeFromParent()]))
+            run(SKAction.sequence([SKAction.fadeOut(withDuration: 0.1),
+                                   SKAction.run {
+                                    scene.remove(tower: self)
+                }]))
             
             
         }
@@ -192,9 +196,8 @@ extension TowerNode : Fireable {
                 }
             }
             for tile in killSet {
-                if let t = scene.towerLocations[tile] {
+                if let t = scene.tower(at:tile) {
                     t.die(scene: scene, isKill: true)
-                    scene.towerLocations[tile] = nil
                 }
                 scene.mapTiles.changeTile(at: tile, to: .water)
             }

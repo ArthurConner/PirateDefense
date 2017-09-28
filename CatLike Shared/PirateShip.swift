@@ -33,9 +33,6 @@ class PirateNode: SKShapeNode,  Fireable {
     var gun = PirateGun(interval:4, flightDuration:0.8, radius:3)
     var waterSpeed:Double = 3
     var hitsRemain = 3
-     var didIdle = false
-    
-    
     var kind:ShipKind = .galley
     
     convenience init(kind aKind:ShipKind, modfier:Double) {
@@ -61,6 +58,7 @@ class PirateNode: SKShapeNode,  Fireable {
             self.hitsRemain = 1
             self.gun.clock.adjust(interval: 3)
             self.gun.radius = 1
+            
             
         case .crusier:
             
@@ -105,10 +103,10 @@ class PirateNode: SKShapeNode,  Fireable {
         }
         
         self.kind = aKind
-         self.zPosition = 3
+        self.zPosition = 3
         self.strokeColor = .black
         self.gun.landscapes =   [.sand]
-        
+        self.gun.clock.tickNext()
         body.allowsRotation = false
         
         body.categoryBitMask = PhysicsCategory.Ship
@@ -117,12 +115,7 @@ class PirateNode: SKShapeNode,  Fireable {
         self.physicsBody = body
         
     }
-    
-    func clearIdle(){
-        self.didIdle = true
-    }
-    
-    
+
     
     func addTrail(name: String) -> SKEmitterNode {
         let trail = SKEmitterNode(fileNamed: name)!
@@ -189,9 +182,7 @@ class PirateNode: SKShapeNode,  Fireable {
     
     func die(scene:GameScene, isKill:Bool){
         removeAllActions()
-        yScale = -1
         physicsBody = nil
-        scene.remove(ship: self)
         
     }
     
@@ -210,15 +201,12 @@ class PirateNode: SKShapeNode,  Fireable {
     func hit(scene:GameScene){
         self.hitsRemain -= 1
         
-        guard  let shipTile = scene.tileOf(node: self),
-            let dest = scene.mapTiles.endIsle?.harbor,
-            let source =  scene.mapTiles.startIsle?.harbor else { return }
+        guard  let shipTile = scene.tileOf(node: self) else { return }
         
         
         if self.hitsRemain == 0 {
-            
-            
-           
+            scene.mapTiles.changeTile(at: shipTile, to: .path)
+ 
             self.die(scene:scene, isKill:true)
             scene.removeFrom(shipTile: shipTile)
             
@@ -227,9 +215,7 @@ class PirateNode: SKShapeNode,  Fireable {
             }
             
             scene.redirectAllShips()
-            
-           
-            
+
         }
     }
     
@@ -247,7 +233,7 @@ class PirateNode: SKShapeNode,  Fireable {
 }
 
 class CruiserNode : PirateNode{
-    var raftLeft = 1
+    var raftLeft = 2
     
     override  func die(scene:GameScene, isKill:Bool){
 
@@ -278,6 +264,7 @@ class CruiserNode : PirateNode{
                     
                     ship.position = shipPosition
                     scene.add(ship:ship)
+                    ship.gun.clock.update()
                  
                 }
 
