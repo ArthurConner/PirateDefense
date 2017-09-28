@@ -155,6 +155,7 @@ class GameScene: SKScene {
                 t.levelTimer.reduce(factor:0.9)
                 t.level = -1
                 t.adjust(level: -1)
+                
             }
             
         } else if let place = convert(mappoint: towerPoint), towerLocations.count < maxTowers {
@@ -164,6 +165,7 @@ class GameScene: SKScene {
             self.addChild(tower)
             towerLocations[towerPoint] = tower
             tower.adjust(level:0)
+        
             
         }
     }
@@ -214,6 +216,12 @@ class GameScene: SKScene {
         
         guard let dest = mapTiles.endIsle?.harbor,
             let source =  self.mapTiles.map(coordinate: ship.position) else { return }
+        
+        
+        guard dest != source else {
+            self.gameState = .lose
+            return
+        }
         
         let wSet:Set<Landscape> = [.water,.path]
         let route = source.path(to: dest, map: mapTiles, using: wSet)

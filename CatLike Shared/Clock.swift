@@ -15,6 +15,9 @@ class PirateClock{
     private var time:Date = Date(timeIntervalSinceNow: 0)
     private var interval:TimeInterval = 5
     
+    func tickNext(){
+        time = Date(timeIntervalSinceNow:0)
+    }
   
     
     func update(){

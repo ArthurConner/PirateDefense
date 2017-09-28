@@ -39,11 +39,11 @@ class TowerNode: SKShapeNode {
     
 
     var gun = PirateGun(interval:1, flightDuration:0.2, radius:3)
-    var levelTimer = PirateClock(10)
+    var levelTimer = PirateClock(6)
  
     var level = 0
-    let maxHealth = 10
-    var hitsRemain = 10
+    let maxHealth = 6
+    var hitsRemain = 6
 
     convenience init(range:CGFloat) {
         
@@ -64,6 +64,8 @@ class TowerNode: SKShapeNode {
         self.physicsBody = body
         
     }
+    
+   
     
     func checkAge(scene:GameScene)->Bool{
         if levelTimer.needsUpdate(){
@@ -89,15 +91,15 @@ class TowerNode: SKShapeNode {
        
         switch nextL {
         case 0:
-            gun.clock.adjust(interval: 1.5)
+            gun.clock.adjust(interval: 1)
             level = 1
         case 1:
    
-             gun.clock.adjust(interval: 2)
+             gun.clock.adjust(interval: 1.5)
             level = 2
             
         case 2:
-            gun.clock.adjust(interval: 2.25)
+            gun.clock.adjust(interval: 2)
             level = 3
         default:
             level = 0
@@ -121,6 +123,7 @@ class TowerNode: SKShapeNode {
         }
         
         levelTimer.update()
+        self.gun.clock.tickNext()
     }
     
     

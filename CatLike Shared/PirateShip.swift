@@ -278,9 +278,9 @@ class PirateNode: SKShapeNode,  Fireable {
 }
 
 class CruiserNode : PirateNode{
-    var raftLeft = 2
+    var raftLeft = 1
     
-    override   func die(scene:GameScene, isKill:Bool){
+    override  func die(scene:GameScene, isKill:Bool){
         
         
         if isKill, let shipTile = scene.tileOf(node: self) {
