@@ -33,6 +33,7 @@ class PirateNode: SKShapeNode,  Fireable {
     var gun = PirateGun(interval:4, flightDuration:0.8, radius:3)
     var waterSpeed:Double = 3
     var hitsRemain = 3
+     var didIdle = false
     
     
     var kind:ShipKind = .galley
@@ -40,6 +41,8 @@ class PirateNode: SKShapeNode,  Fireable {
     convenience init(kind aKind:ShipKind, modfier:Double) {
         
         let body:SKPhysicsBody
+        
+       
         
         switch aKind {
         case .galley:
@@ -102,6 +105,7 @@ class PirateNode: SKShapeNode,  Fireable {
         }
         
         self.kind = aKind
+         self.zPosition = 3
         self.strokeColor = .black
         self.gun.landscapes =   [.sand]
         
@@ -114,14 +118,45 @@ class PirateNode: SKShapeNode,  Fireable {
         
     }
     
+    func clearIdle(){
+        self.didIdle = true
+    }
     
     
     
+    func addTrail(name: String) -> SKEmitterNode {
+        let trail = SKEmitterNode(fileNamed: name)!
+        trail.zPosition = -1
+        return trail
+    }
+    
+    func removeTrail(trail: SKEmitterNode) {
+        trail.numParticlesToEmit = 1
+        //trail.run(SKAction.removeFromParentAfterDelay(1.0))
+        
+        trail.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1.0),
+                                    SKAction.removeFromParent()]))
+    }
     
     func spawnWake() {
         
         guard let board = self.parent else {return}
+        /*
+        let wake = addTrail(name: "SmokeTrail")
+        run(SKAction.sequence([
+            SKAction.wait(forDuration: 3.0),
+            SKAction.run() {
+                self.removeTrail(trail:wake)
+            }
+            ]))
+    
         
+ 
+        
+        board.addChild(wake)
+        */
+    
+       
         let wake = SKShapeNode.init(circleOfRadius: 2)
         #if os(OSX)
             wake.fillColor = (self.fillColor.blended(withFraction: 0.6, of: .white)?.blended(withFraction: 0.4, of: .clear)) ?? .white
@@ -143,8 +178,10 @@ class PirateNode: SKShapeNode,  Fireable {
         wake.run(SKAction.sequence([SKAction.fadeOut(withDuration: 7),
                                     SKAction.removeFromParent()]))
         
+         wake.zPosition = 2
         
         board.insertChild(wake, at: board.children.count - 1)
+
         
     }
     

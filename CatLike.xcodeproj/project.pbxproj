@@ -50,6 +50,9 @@
 		0E53B5BB1F79BE050020A31C /* HUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5BA1F79BE050020A31C /* HUD.swift */; };
 		0E53B5BC1F79BE050020A31C /* HUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5BA1F79BE050020A31C /* HUD.swift */; };
 		0E53B5BD1F79BE050020A31C /* HUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5BA1F79BE050020A31C /* HUD.swift */; };
+		0E8B654B1F7C7318000BF07D /* SmokeTrail.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0E8B65491F7C717D000BF07D /* SmokeTrail.sks */; };
+		0E8B654C1F7C7319000BF07D /* SmokeTrail.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0E8B65491F7C717D000BF07D /* SmokeTrail.sks */; };
+		0E8B654D1F7C7319000BF07D /* SmokeTrail.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0E8B65491F7C717D000BF07D /* SmokeTrail.sks */; };
 		0EFC5E441F7C0A65007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
 		0EFC5E451F7C0FC3007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
 		0EFC5E461F7C0FC4007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
@@ -92,6 +95,8 @@
 		0E53B5B21F796CC60020A31C /* PirateShip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PirateShip.swift; sourceTree = "<group>"; };
 		0E53B5B61F7991100020A31C /* TowerNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerNode.swift; sourceTree = "<group>"; };
 		0E53B5BA1F79BE050020A31C /* HUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUD.swift; sourceTree = "<group>"; };
+		0E8B65491F7C717D000BF07D /* SmokeTrail.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = SmokeTrail.sks; sourceTree = "<group>"; };
+		0E8B654A1F7C718A000BF07D /* CollectNormal.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = CollectNormal.sks; sourceTree = "<group>"; };
 		0EFC5E431F7C0A65007D5AB6 /* Clock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clock.swift; sourceTree = "<group>"; };
 		0EFC5E471F7C201F007D5AB6 /* CannonBall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannonBall.swift; sourceTree = "<group>"; };
 		0EFC5E4B1F7C3E9C007D5AB6 /* TowerAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerAI.swift; sourceTree = "<group>"; };
@@ -144,6 +149,8 @@
 				4AA689541F78A1E60086F3C1 /* ShipWake.sks */,
 				0E45011F1F742E50008493C2 /* MapHandler.swift */,
 				0E4500D01F742D1A008493C2 /* GameScene.swift */,
+				0E8B65491F7C717D000BF07D /* SmokeTrail.sks */,
+				0E8B654A1F7C718A000BF07D /* CollectNormal.sks */,
 				0E53B5B21F796CC60020A31C /* PirateShip.swift */,
 				0EFC5E471F7C201F007D5AB6 /* CannonBall.swift */,
 				0E53B5B61F7991100020A31C /* TowerNode.swift */,
@@ -303,6 +310,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0E8B654B1F7C7318000BF07D /* SmokeTrail.sks in Resources */,
 				0E4501031F742D1A008493C2 /* GameScene.sks in Resources */,
 				0E4500DF1F742D1A008493C2 /* Main.storyboard in Resources */,
 				0E4501001F742D1A008493C2 /* Actions.sks in Resources */,
@@ -318,6 +326,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0E8B654C1F7C7319000BF07D /* SmokeTrail.sks in Resources */,
 				0E4500F01F742D1A008493C2 /* Main.storyboard in Resources */,
 				0E4501041F742D1A008493C2 /* GameScene.sks in Resources */,
 				4AA689561F78A1E60086F3C1 /* ShipWake.sks in Resources */,
@@ -332,6 +341,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0E8B654D1F7C7319000BF07D /* SmokeTrail.sks in Resources */,
 				0E4500FE1F742D1A008493C2 /* Main.storyboard in Resources */,
 				0E4501051F742D1A008493C2 /* GameScene.sks in Resources */,
 				4AA689571F78A1E60086F3C1 /* ShipWake.sks in Resources */,

@@ -223,7 +223,7 @@ class GameScene: SKScene {
             ship.run(SKAction.repeat(SKAction.sequence([SKAction.run(ship.spawnWake),SKAction.wait(forDuration: ship.waterSpeed/4)]), count: route.count * 2))
             
             let followLine = SKAction.follow( path, asOffset: false, orientToPath: true, duration: time)
-            ship.run(followLine)
+            ship.run(SKAction.sequence([followLine,SKAction.run(ship.clearIdle)]))
             
         }
         
@@ -261,6 +261,10 @@ class GameScene: SKScene {
         }
         
         if !ships.filter({ self.tileOf(node: $0) ?? MapPoint.offGrid == dest}).isEmpty {
+            gameState = .lose
+        }
+        
+        if !ships.filter({$0.didIdle}).isEmpty {
             gameState = .lose
         }
         
