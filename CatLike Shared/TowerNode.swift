@@ -42,6 +42,7 @@ class TowerNode: SKShapeNode {
     var levelTimer = PirateClock(10)
  
     var level = 0
+    let maxHealth = 10
     var hitsRemain = 10
 
     convenience init(range:CGFloat) {
@@ -88,32 +89,18 @@ class TowerNode: SKShapeNode {
        
         switch nextL {
         case 0:
-            #if os(OSX)
-                self.fillColor = NSColor.red.blended(withFraction: 0.25, of: .white) ?? .purple
-            #else
-                self.fillColor = UIColor.purple
-            #endif
             gun.clock.adjust(interval: 1.5)
             level = 1
         case 1:
-            #if os(OSX)
-                self.fillColor = NSColor.red.blended(withFraction: 0.75, of: .white) ?? .orange
-            #else
-                self.fillColor = UIColor.blue
-            #endif
-            
-          
+   
              gun.clock.adjust(interval: 2)
             level = 2
             
         case 2:
-            self.fillColor = .white
- 
             gun.clock.adjust(interval: 2.25)
             level = 3
         default:
             level = 0
-            self.fillColor = .red
             gun.clock.adjust(interval: 1)
         }
         
@@ -125,11 +112,11 @@ class TowerNode: SKShapeNode {
         if prior < 0 {
             let interval = min(0.2,shrinkTime)
             shrinkTime = shrinkTime - interval
-   
-            self.run(SKAction.sequence([SKAction.scale(to: 1.5, duration: interval),SKAction.scale(to: 0.8, duration: shrinkTime)]))
+            
+            self.run(SKAction.sequence([SKAction.scaleX(to: 1, y: 1, duration: interval),SKAction.scale(by: 0.6, duration: shrinkTime)]))
             
         } else {
-            let shrink = SKAction.scale(to: 0.8, duration: shrinkTime)
+            let shrink = SKAction.scale(by: 0.6, duration: shrinkTime)
             self.run(shrink)
         }
         
@@ -222,7 +209,14 @@ extension TowerNode : Fireable {
             }
             
         } else {
-            self.run(SKAction.scale(by: 0.9, duration: 0.3))
+            //self.run(SKAction.scale(by: 0.9, duration: 0.3))
+            let ratio = CGFloat(hitsRemain)/CGFloat(maxHealth)
+            #if os(OSX)
+                self.fillColor = NSColor.white.blended(withFraction: ratio, of: .red) ?? .purple
+            #else
+                self.fillColor = UIColor.purple
+            #endif
+            
         }
         
     }

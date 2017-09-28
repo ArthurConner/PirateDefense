@@ -153,6 +153,7 @@ class GameScene: SKScene {
             
             if t.level > 0 {
                 t.levelTimer.reduce(factor:0.9)
+                t.level = -1
                 t.adjust(level: -1)
             }
             
@@ -162,6 +163,7 @@ class GameScene: SKScene {
             tower.position = place
             self.addChild(tower)
             towerLocations[towerPoint] = tower
+            tower.adjust(level:0)
             
         }
     }
