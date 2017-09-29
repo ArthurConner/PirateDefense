@@ -145,6 +145,22 @@ class GameScene: SKScene {
         
     }
     
+    
+    #if os(watchOS)
+    override func sceneDidLoad() {
+    self.setUpScene()
+    }
+    #else
+    override func didMove(to view: SKView) {
+        setupWorldPhysics()
+        self.setUpScene()
+        self.addChild(hud)
+        self.ai = nil
+    }
+    #endif
+    
+    
+    
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
         
@@ -168,7 +184,7 @@ class GameScene: SKScene {
         
         if let ai = self.ai {
             ai.update(scene: self)
-            self.ai = nil
+            
         }
         
         
@@ -283,19 +299,7 @@ extension GameScene {
     }
     
     
-    
-    #if os(watchOS)
-    override func sceneDidLoad() {
-    self.setUpScene()
-    }
-    #else
-    override func didMove(to view: SKView) {
-        setupWorldPhysics()
-        self.setUpScene()
-        self.addChild(hud)
-    }
-    #endif
-    
+
 }
 
 

@@ -115,10 +115,10 @@ class TowerNode: SKShapeNode {
             let interval = min(0.2,shrinkTime)
             shrinkTime = shrinkTime - interval
             
-            self.run(SKAction.sequence([SKAction.scaleX(to: 1, y: 1, duration: interval),SKAction.scale(by: 0.6, duration: shrinkTime)]))
+            self.run(SKAction.sequence([SKAction.scaleX(to: 1, y: 1, duration: interval),SKAction.scale(by: 0.8, duration: shrinkTime)]))
             
         } else {
-            let shrink = SKAction.scale(by: 0.6, duration: shrinkTime)
+            let shrink = SKAction.scale(by: 0.8, duration: shrinkTime)
             self.run(shrink)
         }
         
@@ -148,10 +148,7 @@ extension TowerNode : Fireable {
                                     scene.remove(tower: self)
                 }]))
         } else {
-            run(SKAction.sequence([SKAction.fadeOut(withDuration: 0.1),
-                                   SKAction.run {
-                                    scene.remove(tower: self)
-                }]))
+             scene.remove(tower: self)
             
             
         }

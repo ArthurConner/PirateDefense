@@ -51,6 +51,9 @@ class HUD: SKNode {
         addChild(label)
         label.fontSize = fontSize
         label.position = position
+        //label.color  = .black
+        label.fontColor = .purple
+    
     }
     
     func updateTimer(time: Int) {
