@@ -35,8 +35,11 @@ class PirateNode: SKSpriteNode,  Fireable {
     var hitsRemain = 3
     var kind:ShipKind = .galley
     
+     #if os(OSX)
     var wakeColor = NSColor.white
-    
+    #else
+    var wakeColor = UIColor.white
+    #endif
     
     static func makeShip(kind aKind:ShipKind, modfier:Double)->PirateNode {
         
@@ -158,7 +161,7 @@ class PirateNode: SKSpriteNode,  Fireable {
             var b:CGFloat = 0
             var a:CGFloat = 0
             
-            self.fillColor.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
+            self.wakeColor.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
             wake.fillColor = UIColor(hue: h, saturation: s/2, brightness: b * 2, alpha: 0.5)
         #endif
         wake.strokeColor = .clear
