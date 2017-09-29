@@ -47,13 +47,13 @@ class TowerNode: SKShapeNode {
 
     convenience init(range:CGFloat) {
         
-        self.init(circleOfRadius:20)
+        self.init(circleOfRadius:18)
         self.fillColor = .red
         self.strokeColor = .black
         self.lineWidth = 3
         self.gun.landscapes = [.water,.path]
         
-        let body = SKPhysicsBody(circleOfRadius: 20)
+        let body = SKPhysicsBody(circleOfRadius: 18)
         
         body.allowsRotation = false
         body.categoryBitMask = PhysicsCategory.Tower

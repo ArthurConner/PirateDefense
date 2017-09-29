@@ -528,14 +528,14 @@ class MapHandler{
         }
         
         self.createHarbors()
-        
+        /*
         for c in 0..<map.numberOfColumns {
             changeTile(at: MapPoint(row:0,col:c), to: .top)
             
             changeTile(at: MapPoint(row:1,col:c), to: .top)
             changeTile(at: MapPoint(row:map.numberOfRows-1,col:c), to: .top)
         }
-        
+        */
  
         if let s = self.startIsle?.harbor, mainRoute().count > 4 {
             
