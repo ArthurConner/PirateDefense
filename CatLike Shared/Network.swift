@@ -13,7 +13,7 @@ enum GameNotif:String {
    
     case NeedMap = "GameMessage.needMap"
     case SendingDelta = "GameMessage.SendingDelta"
-    
+    case launchShip = "GameMessage.launchShip"
     var notification : Notification.Name  {
         return Notification.Name(rawValue: self.rawValue )
     }
@@ -23,7 +23,9 @@ struct GameInfo:Codable {
     
     var tileDelta:[MapPoint:Landscape] = [:]
     var ships:[String:ShipProxy] = [:]
-    var interval = 0.1
+    var towers:[String:TowerProxy] = [:]
+    
+    var interval = 0.5
     
     mutating func clear(){
         tileDelta.removeAll()
@@ -31,7 +33,7 @@ struct GameInfo:Codable {
     }
 }
 
-class GameMessage:NSObject {
+class GameMessage:NSObject, Codable {
     let info:GameInfo
     
     init(info i:GameInfo) {
@@ -39,6 +41,17 @@ class GameMessage:NSObject {
         self.info = i
         super.init()
     }
+}
+
+class ShipLaunchMessage:NSObject, Codable {
+    let ship:ShipProxy
+    
+    init(ship i:ShipProxy) {
+        
+        self.ship = i
+        super.init()
+    }
+    
 }
 
 

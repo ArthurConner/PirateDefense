@@ -65,7 +65,7 @@
                                                 <action selector="newDocument:" target="Ady-hI-5gd" id="4Si-XN-c54"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Showboat" id="ONm-ra-URE">
+                                        <menuItem title="Show Boat Picker" id="ONm-ra-URE">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
                                                 <segue destination="Dd6-rk-qTM" kind="show" id="nAG-ln-ba2"/>

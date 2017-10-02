@@ -107,7 +107,7 @@ class GameScene: SKScene {
         guard let f1 = route.first, var p1 = convert(mappoint:f1) else { return nil}
         
         let path = CGMutablePath()
-       
+        
         
         p1 = startOveride ?? p1
         
@@ -162,10 +162,44 @@ class GameScene: SKScene {
             mapTiles.deltas.ships[ship.shipID] = ship.proxy()
         }
         
+        mapTiles.deltas.towers.removeAll()
+        
+        for ( _ , tower) in self.towerLocations {
+            mapTiles.deltas.towers[tower.towerID] = tower.proxy()
+        }
+        
         let obj = GameMessage(info:mapTiles.deltas)
         NotificationCenter.default.post(name: GameNotif.SendingDelta.notification, object: obj)
         mapTiles.deltas.clear()
     }
+    
+    
+    @objc func launchFromRemote(note:NSNotification){
+        
+        guard let shipInfo = note.object as? ShipLaunchMessage else {
+            print( "Got a shipInfo with the wrong object \(note)")
+            return
+        }
+        
+        if let source = mapTiles.startIsle?.harbor ,  let shipPosition = convert(mappoint:source) {
+            
+            //maybe we should turn this off?
+            lastLaunch = Date(timeIntervalSinceNow:10)
+            
+            let ship =  PirateNode.makeShip(kind: shipInfo.ship.kind, modfier:intervalTime/8)
+            ship.position = shipPosition
+            
+            // self.
+            
+            add(ship: ship)
+        }
+        
+        
+        
+        
+    }
+    
+    
     override func didMove(to view: SKView) {
         setupWorldPhysics()
         self.setUpScene()
@@ -173,6 +207,8 @@ class GameScene: SKScene {
         self.ai = nil
         
         NotificationCenter.default.addObserver(self, selector: #selector(sendMap), name: GameNotif.NeedMap.notification, object: nil)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(launchFromRemote), name: GameNotif.launchShip.notification, object: nil)
     }
     #endif
     
@@ -271,13 +307,13 @@ extension GameScene {
     
     func add(towerAt towerPoint:MapPoint){
         if let place = convert(mappoint: towerPoint){
-        let tower = TowerNode(range:90)
-        
-        tower.position = place
-        self.addChild(tower)
-        towerLocations[towerPoint] = tower
-        tower.adjust(level:0)
-    }
+            let tower = TowerNode(range:90)
+            
+            tower.position = place
+            self.addChild(tower)
+            towerLocations[towerPoint] = tower
+            tower.adjust(level:0)
+        }
     }
     
     
@@ -312,16 +348,16 @@ extension GameScene {
             }
             
         } else if towerLocations.count < maxTowers {
-          add(towerAt: towerPoint)
-        
+            add(towerAt: towerPoint)
+            
             
         }
     }
     
-
     
     
-
+    
+    
 }
 
 
@@ -357,8 +393,8 @@ extension GameScene {
     
     
     func add(ship:PirateNode){
-      ships.append(ship)
-      self.addChild(ship)
+        ships.append(ship)
+        self.addChild(ship)
         adjust(ship: ship)
         
     }
@@ -368,7 +404,7 @@ extension GameScene {
         
         ships = ships.filter({$0 != ship})
         hud.kills += 1
-       
+        
     }
     func launchAttack(timeOverTile:Double) {
         
@@ -421,7 +457,7 @@ extension GameScene {
                 if boat != self {
                     killShips.append(boat)
                 }
-     
+                
                 
             } else {
                 keepShip.append(boat)
@@ -437,9 +473,9 @@ extension GameScene {
         }
     }
     
-
     
-
+    
+    
 }
 
 extension GameScene : SKPhysicsContactDelegate {

@@ -35,12 +35,20 @@ class TowerMissle:SKShapeNode {
     }
     
 }
+
+struct TowerProxy: Codable {
+    let postition:CGPoint
+    let level:Int
+    let towerID:String
+}
 class TowerNode: SKShapeNode {
     
 
     var gun = PirateGun(interval:1, flightDuration:0.2, radius:3)
     var levelTimer = PirateClock(6)
  
+     let towerID = "\(Date.timeIntervalSinceReferenceDate)_\(GKRandomSource.sharedRandom().nextUniform())"
+    
     var level = 0
     let maxHealth = 6
     var hitsRemain = 6
@@ -63,6 +71,10 @@ class TowerNode: SKShapeNode {
 
         self.physicsBody = body
         
+    }
+    
+    func proxy()->TowerProxy {
+        return TowerProxy(postition: self.position, level: self.level, towerID: self.towerID)
     }
     
    
