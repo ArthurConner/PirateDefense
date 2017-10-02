@@ -156,9 +156,15 @@ class GameScene: SKScene {
     
     @objc func sendMap(){
         
+        mapTiles.deltas.ships.removeAll()
+        
+        for ship in ships {
+            mapTiles.deltas.ships[ship.shipID] = ship.proxy()
+        }
+        
         let obj = GameMessage(info:mapTiles.deltas)
-      //  NotificationCenter.default.post(name: <#T##NSNotification.Name#>, object: <#T##Any?#>)
         NotificationCenter.default.post(name: GameNotif.SendingDelta.notification, object: obj)
+        mapTiles.deltas.clear()
     }
     override func didMove(to view: SKView) {
         setupWorldPhysics()

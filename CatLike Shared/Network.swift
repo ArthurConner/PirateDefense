@@ -22,11 +22,12 @@ enum GameNotif:String {
 struct GameInfo:Codable {
     
     var tileDelta:[MapPoint:Landscape] = [:]
-    
-    
+    var ships:[String:ShipProxy] = [:]
+    var interval = 0.1
     
     mutating func clear(){
         tileDelta.removeAll()
+        ships.removeAll()
     }
 }
 

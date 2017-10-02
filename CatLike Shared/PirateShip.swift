@@ -10,7 +10,7 @@ import Foundation
 import GameKit
 
 
-enum ShipKind {
+enum ShipKind: Int, Codable {
     case galley
     case row
     case motor
@@ -24,16 +24,27 @@ enum ShipKind {
 
 
 
+struct ShipProxy : Codable{
+
+    let kind:ShipKind
+    let shipID:String
+    let position:CGPoint
+    let angle:CGFloat
+}
+
 
 
 class PirateNode: SKSpriteNode,  Fireable {
     
 
+   
     
     var gun = PirateGun(interval:4, flightDuration:0.8, radius:3)
     var waterSpeed:Double = 3
     var hitsRemain = 3
     var kind:ShipKind = .galley
+    
+    let shipID = "\(Date.timeIntervalSinceReferenceDate)_\(GKRandomSource.sharedRandom().nextUniform())"
     
      #if os(OSX)
     var wakeColor = NSColor.white
@@ -130,6 +141,10 @@ class PirateNode: SKSpriteNode,  Fireable {
         ship.run(SKAction.scale(by: 0.5, duration: 0.1))
         
         return ship
+    }
+    
+    func proxy()->ShipProxy {
+        return ShipProxy(kind:self.kind , shipID: self.shipID, position: self.position, angle:self.zRotation)
     }
 
 
