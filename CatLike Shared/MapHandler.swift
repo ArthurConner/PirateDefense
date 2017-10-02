@@ -11,7 +11,10 @@ import SpriteKit
 import GameplayKit
 
 
-enum Landscape {
+enum Landscape : Int, Codable {
+
+    
+    
     case unknown
     case dest
     case inland
@@ -67,7 +70,7 @@ fileprivate func landscapeOf(name:String)->Landscape{
 
 
 
-struct MapPoint{
+struct MapPoint:Codable{
     let row: Int
     let col: Int
     
@@ -305,6 +308,8 @@ class MapHandler{
     var islands:[Island] = []
     var startIsle:Island?
     var endIsle:Island?
+    
+    var deltas = GameInfo()
     
     func kind(point:MapPoint)->Landscape{
         guard let tiles = tiles ,
@@ -594,6 +599,8 @@ class MapHandler{
         }
         
         tiles.setTileGroup(waterTile, forColumn: at.col, row: at.row)
+        self.deltas.tileDelta[at] = to
     }
+    
     
 }

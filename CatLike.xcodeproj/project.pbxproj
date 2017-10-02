@@ -50,6 +50,16 @@
 		0E53B5BB1F79BE050020A31C /* HUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5BA1F79BE050020A31C /* HUD.swift */; };
 		0E53B5BC1F79BE050020A31C /* HUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5BA1F79BE050020A31C /* HUD.swift */; };
 		0E53B5BD1F79BE050020A31C /* HUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5BA1F79BE050020A31C /* HUD.swift */; };
+		0EB31FB71F82963100F9D1A7 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB31FB61F82963100F9D1A7 /* Network.swift */; };
+		0EB31FB81F82963100F9D1A7 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB31FB61F82963100F9D1A7 /* Network.swift */; };
+		0EB31FB91F82963100F9D1A7 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB31FB61F82963100F9D1A7 /* Network.swift */; };
+		0EB31FBB1F829B5500F9D1A7 /* BoatScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB31FBA1F829B5500F9D1A7 /* BoatScene.swift */; };
+		0EB31FBC1F829B5500F9D1A7 /* BoatScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB31FBA1F829B5500F9D1A7 /* BoatScene.swift */; };
+		0EB31FBD1F829B5500F9D1A7 /* BoatScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB31FBA1F829B5500F9D1A7 /* BoatScene.swift */; };
+		0EB31FBF1F829E2E00F9D1A7 /* BoatScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0EB31FBE1F829E2E00F9D1A7 /* BoatScene.sks */; };
+		0EB31FC01F829E2E00F9D1A7 /* BoatScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0EB31FBE1F829E2E00F9D1A7 /* BoatScene.sks */; };
+		0EB31FC11F829E2E00F9D1A7 /* BoatScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0EB31FBE1F829E2E00F9D1A7 /* BoatScene.sks */; };
+		0EB5B6DB1F82B3EC000F2D44 /* BoatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB5B6DA1F82B3EC000F2D44 /* BoatViewController.swift */; };
 		0EFC5E441F7C0A65007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
 		0EFC5E451F7C0FC3007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
 		0EFC5E461F7C0FC4007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
@@ -89,6 +99,10 @@
 		0E53B5B21F796CC60020A31C /* PirateShip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PirateShip.swift; sourceTree = "<group>"; };
 		0E53B5B61F7991100020A31C /* TowerNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerNode.swift; sourceTree = "<group>"; };
 		0E53B5BA1F79BE050020A31C /* HUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUD.swift; sourceTree = "<group>"; };
+		0EB31FB61F82963100F9D1A7 /* Network.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
+		0EB31FBA1F829B5500F9D1A7 /* BoatScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoatScene.swift; sourceTree = "<group>"; };
+		0EB31FBE1F829E2E00F9D1A7 /* BoatScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = BoatScene.sks; sourceTree = "<group>"; };
+		0EB5B6DA1F82B3EC000F2D44 /* BoatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoatViewController.swift; sourceTree = "<group>"; };
 		0EFC5E431F7C0A65007D5AB6 /* Clock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clock.swift; sourceTree = "<group>"; };
 		0EFC5E471F7C201F007D5AB6 /* CannonBall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannonBall.swift; sourceTree = "<group>"; };
 		0EFC5E4B1F7C3E9C007D5AB6 /* TowerAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerAI.swift; sourceTree = "<group>"; };
@@ -137,8 +151,11 @@
 			children = (
 				0E4500CE1F742D1A008493C2 /* Actions.sks */,
 				0E4500CF1F742D1A008493C2 /* GameScene.sks */,
+				0EB31FBE1F829E2E00F9D1A7 /* BoatScene.sks */,
+				0EB31FB61F82963100F9D1A7 /* Network.swift */,
 				0E45011F1F742E50008493C2 /* MapHandler.swift */,
 				0E4500D01F742D1A008493C2 /* GameScene.swift */,
+				0EB31FBA1F829B5500F9D1A7 /* BoatScene.swift */,
 				0E53B5B21F796CC60020A31C /* PirateShip.swift */,
 				0EFC5E471F7C201F007D5AB6 /* CannonBall.swift */,
 				0E53B5B61F7991100020A31C /* TowerNode.swift */,
@@ -189,6 +206,7 @@
 			children = (
 				0E4500F81F742D1A008493C2 /* AppDelegate.swift */,
 				0E4500FA1F742D1A008493C2 /* GameViewController.swift */,
+				0EB5B6DA1F82B3EC000F2D44 /* BoatViewController.swift */,
 				0E4500FC1F742D1A008493C2 /* Main.storyboard */,
 				0E4500FF1F742D1A008493C2 /* Info.plist */,
 			);
@@ -298,6 +316,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0EB31FBF1F829E2E00F9D1A7 /* BoatScene.sks in Resources */,
 				0E4501031F742D1A008493C2 /* GameScene.sks in Resources */,
 				0E4500DF1F742D1A008493C2 /* Main.storyboard in Resources */,
 				0E4501001F742D1A008493C2 /* Actions.sks in Resources */,
@@ -312,6 +331,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0EB31FC01F829E2E00F9D1A7 /* BoatScene.sks in Resources */,
 				0E4500F01F742D1A008493C2 /* Main.storyboard in Resources */,
 				0E4501041F742D1A008493C2 /* GameScene.sks in Resources */,
 				0E45010A1F742D1A008493C2 /* Assets.xcassets in Resources */,
@@ -325,6 +345,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0EB31FC11F829E2E00F9D1A7 /* BoatScene.sks in Resources */,
 				0E4500FE1F742D1A008493C2 /* Main.storyboard in Resources */,
 				0E4501051F742D1A008493C2 /* GameScene.sks in Resources */,
 				0E45010B1F742D1A008493C2 /* Assets.xcassets in Resources */,
@@ -343,6 +364,8 @@
 			files = (
 				0EFC5E4C1F7C3E9C007D5AB6 /* TowerAI.swift in Sources */,
 				0E4501061F742D1A008493C2 /* GameScene.swift in Sources */,
+				0EB31FB71F82963100F9D1A7 /* Network.swift in Sources */,
+				0EB31FBB1F829B5500F9D1A7 /* BoatScene.swift in Sources */,
 				0E4500DC1F742D1A008493C2 /* GameViewController.swift in Sources */,
 				0E53B5B31F796CC60020A31C /* PirateShip.swift in Sources */,
 				0EFC5E481F7C201F007D5AB6 /* CannonBall.swift in Sources */,
@@ -361,6 +384,8 @@
 			files = (
 				0EFC5E4D1F7C434B007D5AB6 /* TowerAI.swift in Sources */,
 				0E4501071F742D1A008493C2 /* GameScene.swift in Sources */,
+				0EB31FB81F82963100F9D1A7 /* Network.swift in Sources */,
+				0EB31FBC1F829B5500F9D1A7 /* BoatScene.swift in Sources */,
 				0E4500ED1F742D1A008493C2 /* GameViewController.swift in Sources */,
 				0E53B5B41F796CC60020A31C /* PirateShip.swift in Sources */,
 				0EFC5E491F7C2047007D5AB6 /* CannonBall.swift in Sources */,
@@ -379,6 +404,8 @@
 			files = (
 				0EFC5E4E1F7C434C007D5AB6 /* TowerAI.swift in Sources */,
 				0E4501081F742D1A008493C2 /* GameScene.swift in Sources */,
+				0EB31FB91F82963100F9D1A7 /* Network.swift in Sources */,
+				0EB31FBD1F829B5500F9D1A7 /* BoatScene.swift in Sources */,
 				0E4500FB1F742D1A008493C2 /* GameViewController.swift in Sources */,
 				0E53B5B51F796CC60020A31C /* PirateShip.swift in Sources */,
 				0EFC5E4A1F7C2048007D5AB6 /* CannonBall.swift in Sources */,
@@ -387,6 +414,7 @@
 				0E53B5B91F7991100020A31C /* TowerNode.swift in Sources */,
 				0E53B5BD1F79BE050020A31C /* HUD.swift in Sources */,
 				0E53B5B11F796C350020A31C /* Types.swift in Sources */,
+				0EB5B6DB1F82B3EC000F2D44 /* BoatViewController.swift in Sources */,
 				0E4501221F742E50008493C2 /* MapHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

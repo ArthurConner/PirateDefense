@@ -32,6 +32,8 @@ class GameScene: SKScene {
         }
     }
     
+    //var isSending = false
+    
     /*
      
      lazy var componentSystems: [GKComponentSystem] = {
@@ -151,14 +153,54 @@ class GameScene: SKScene {
     self.setUpScene()
     }
     #else
+    
+    @objc func sendMap(){
+        
+        let obj = GameMessage(info:mapTiles.deltas)
+      //  NotificationCenter.default.post(name: <#T##NSNotification.Name#>, object: <#T##Any?#>)
+        NotificationCenter.default.post(name: GameNotif.SendingDelta.notification, object: obj)
+    }
     override func didMove(to view: SKView) {
         setupWorldPhysics()
         self.setUpScene()
         self.addChild(hud)
         self.ai = nil
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(sendMap), name: GameNotif.NeedMap.notification, object: nil)
     }
     #endif
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    func handle(point: CGPoint){
+        
+        switch gameState {
+            
+        case .start:
+            gameState = .play
+            isPaused = false
+            
+        case .play:
+            manageTower(point: point)
+        case .win, .lose:
+            self.restart()
+        case .reload:
+            if let touchedNode =
+                atPoint(point) as? SKLabelNode {
+                if touchedNode.name == HUDMessages.yes {
+                    isPaused = false
+                    gameState = .play
+                } else if touchedNode.name == HUDMessages.no {
+                    self.clear()
+                }
+            }
+        default:
+            break
+        }
+        
+    }
     
     
     override func update(_ currentTime: TimeInterval) {
@@ -270,33 +312,7 @@ extension GameScene {
         }
     }
     
-    func handle(point: CGPoint){
-        
-        switch gameState {
-            
-        case .start:
-            gameState = .play
-            isPaused = false
-            
-        case .play:
-            manageTower(point: point)
-        case .win, .lose:
-            self.restart()
-        case .reload:
-            if let touchedNode =
-                atPoint(point) as? SKLabelNode {
-                if touchedNode.name == HUDMessages.yes {
-                    isPaused = false
-                    gameState = .play
-                } else if touchedNode.name == HUDMessages.no {
-                    self.clear()
-                }
-            }
-        default:
-            break
-        }
-        
-    }
+
     
     
 
