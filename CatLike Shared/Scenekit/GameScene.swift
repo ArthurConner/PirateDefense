@@ -169,7 +169,9 @@ class GameScene: SKScene {
         }
         
         let obj = GameMessage(info:mapTiles.deltas)
-        NotificationCenter.default.post(name: GameNotif.SendingDelta.notification, object: obj)
+      
+        PirateServiceManager.shared.send(obj, kind: .SendingDelta)
+        
         mapTiles.deltas.clear()
     }
     

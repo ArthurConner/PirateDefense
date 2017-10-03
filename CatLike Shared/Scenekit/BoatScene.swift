@@ -19,7 +19,8 @@ class BoatButton:SKSpriteNode {
         
         print("launching ship")
         let message = ShipLaunchMessage(ship: ShipProxy(kind: self.kind, shipID: "", position: CGPoint.zero, angle: 0))
-        NotificationCenter.default.post(name: GameNotif.launchShip.notification, object: message)
+  
+        PirateServiceManager.shared.send(message, kind: .launchShip)
     }
     
     
@@ -84,6 +85,7 @@ class BoatScene : SKScene {
     fileprivate var towers:[String:TowerNode] = [:]
     fileprivate var ships:[String:PirateNode] = [:]
     
+    var showButtons = true
     
     class func newGameScene() -> BoatScene {
         // Load 'GameScene.sks' as an SKScene.
@@ -118,7 +120,11 @@ class BoatScene : SKScene {
         
         
         if deltaClock.needsUpdate() {
-            NotificationCenter.default.post(name: GameNotif.NeedMap.notification, object: nil)
+          
+            
+            PirateServiceManager.shared.send(NeedMapMessage(), kind: .NeedMap)
+            deltaClock.update()
+            
         }
         
         
@@ -136,6 +142,7 @@ class BoatScene : SKScene {
         mapTiles.refreshMap()
         gameState = .play
         
+        if showButtons {
         let boats:[ShipKind] = [.crusier,.galley,.motor,.destroyer,.battle]
         
         
@@ -162,6 +169,8 @@ class BoatScene : SKScene {
             }
             
         }
+        }
+        
         
     }
     

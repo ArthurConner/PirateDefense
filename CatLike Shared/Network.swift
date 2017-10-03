@@ -120,6 +120,13 @@ class GameMessage:NSObject, Codable {
     }
 }
 
+
+class NeedMapMessage:NSObject, Codable {
+    let hiBit = 2
+    
+    
+}
+
 class ShipLaunchMessage:NSObject, Codable {
     let ship:ShipProxy
     

@@ -78,6 +78,9 @@ class PirateServiceManager : NSObject {
         } catch let error {
             ErrorHandler.handle(.networkIssue, "Unable to send message \(error)")
         }
+        
+        
+          NotificationCenter.default.post(name: kind.notification, object: x)
     }
     
     
