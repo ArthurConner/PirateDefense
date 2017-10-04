@@ -19,6 +19,11 @@ class GameViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        if let   buttonItem  = splitViewController?.displayModeButtonItem{
+            self.navigationItem.leftBarButtonItem = buttonItem
+            self.navigationItem.leftItemsSupplementBackButton = true
+        }
+        
         
     }
     
@@ -32,6 +37,8 @@ class GameViewController: UIViewController {
         } else {
             return .all
         }
+        
+    
     }
     
     override func didReceiveMemoryWarning() {
@@ -39,15 +46,16 @@ class GameViewController: UIViewController {
         // Release any cached data, images, etc that aren't in use.
     }
     
-    override var prefersStatusBarHidden: Bool {
-        return true
-    }
+  
 }
 
 extension GameViewController:GameTypeModeDelegate {
     func didSet(game: GameTypeModes) {
         let nextGame:SKScene?
         
+        if let nav = self.navigationController {
+            print(nav)
+        }
         switch game{
         case .tower:
             nextGame = GameScene.newGameScene()
@@ -64,7 +72,10 @@ extension GameViewController:GameTypeModeDelegate {
         if let scene = nextGame {
             
             let skView = self.view as! SKView
-            skView.presentScene(scene)
+            
+            let trans = SKTransition.doorsOpenHorizontal(withDuration: 3)
+            skView.presentScene(scene, transition:trans)
+            
             
             skView.ignoresSiblingOrder = true
             skView.showsFPS = true

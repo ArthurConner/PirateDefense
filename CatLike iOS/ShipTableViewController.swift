@@ -18,6 +18,16 @@ protocol GameTypeModeDelegate {
     func didSet(game:GameTypeModes)
 }
 
+
+extension UISplitViewController {
+    func toggleMasterView() {
+        let barButtonItem = self.displayModeButtonItem
+        if let action  = barButtonItem.action {
+            UIApplication.shared.sendAction(action, to: barButtonItem.target, from: nil, for: nil)
+        }
+    }
+}
+
 class ShipTableViewController: UITableViewController {
     
     
@@ -155,13 +165,29 @@ class ShipTableViewController: UITableViewController {
             
             if let split = splitViewController {
                 let controllers = split.viewControllers
-                if let detailViewController = controllers[controllers.count-1] as? GameTypeModeDelegate {
+
+                
+                if let nav = controllers[controllers.count-1] as? UINavigationController,
+                    let detailViewController = nav.topViewController as?  GameTypeModeDelegate {
                     detailViewController.didSet(game: self.gameState)
                 }
+                split.toggleMasterView()
             }
             
         }
     }
+    
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showDetail" {
+            if let   controller = (segue.destination as! UINavigationController).topViewController as? GameViewController{
+
+                controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
+                controller.navigationItem.leftItemsSupplementBackButton = true
+            }
+        }
+    }
+    
     
     /*
      // Override to support conditional editing of the table view.
