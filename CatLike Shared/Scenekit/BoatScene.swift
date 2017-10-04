@@ -210,7 +210,7 @@ class BoatScene : SKScene {
             if let _ = self.ships[shI] {
                 
             } else {
-                let addShip = PirateNode.makeShip(kind: proxy.kind, modfier: 1)
+                let addShip = PirateNode.makeShip(kind: proxy.kind, modfier: 1, route: Voyage.offGrid())
                 ships[shI] = addShip
                 addShip.position = proxy.position
                 self.addChild(addShip)

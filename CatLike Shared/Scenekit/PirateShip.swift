@@ -44,6 +44,8 @@ class PirateNode: SKSpriteNode,  Fireable {
     var hitsRemain = 3
     var kind:ShipKind = .galley
     
+    var route = Voyage.offGrid()
+    
     let shipID = "\(Date.timeIntervalSinceReferenceDate)_\(GKRandomSource.sharedRandom().nextUniform())"
     
      #if os(OSX)
@@ -52,7 +54,7 @@ class PirateNode: SKSpriteNode,  Fireable {
     var wakeColor = UIColor.white
     #endif
     
-    static func makeShip(kind aKind:ShipKind, modfier:Double)->PirateNode {
+    static func makeShip(kind aKind:ShipKind, modfier:Double, route r:Voyage)->PirateNode {
         
         let body:SKPhysicsBody
         
@@ -125,7 +127,7 @@ class PirateNode: SKSpriteNode,  Fireable {
         
     
        
-       
+       ship.route = r
        
         ship.kind = aKind
         ship.zPosition = 3
@@ -147,6 +149,13 @@ class PirateNode: SKSpriteNode,  Fireable {
         return ShipProxy(kind:self.kind , shipID: self.shipID, position: self.position, angle:self.zRotation)
     }
 
+    func didFinish(map handler:MapHandler)->Bool{
+        guard let me = handler.map(coordinate: self.position) else { return true}
+        
+        return me == route.finish
+        
+        
+    }
 
     func spawnWake() {
         
@@ -227,8 +236,11 @@ class PirateNode: SKSpriteNode,  Fireable {
             self.die(scene:scene, isKill:true)
             scene.removeFrom(shipTile: shipTile)
             
-            if scene.mapTiles.mainRoute().count < 2 {
-                scene.mapTiles.changeTile(at: shipTile, to: .path)
+            
+            for trip in scene.mapTiles.voyages {
+                if  trip.shortestRoute(map: scene.mapTiles, using: waterSet).count < 2 {
+                    scene.mapTiles.changeTile(at: shipTile, to: .path)
+                }
             }
             
             scene.redirectAllShips()
@@ -266,14 +278,14 @@ class CruiserNode : PirateNode{
                     // print("we have \(raftLeft) rafts")
                     
                     if  raftLeft > 0,
-                        let c = PirateNode.makeShip(kind: .crusier, modfier: 2) as? CruiserNode{
+                        let c = PirateNode.makeShip(kind: .crusier, modfier: 2, route: self.route) as? CruiserNode{
                         
                         c.raftLeft = raftLeft - 1
 
                         ship = c
                         
                     } else {
-                        ship = PirateNode.makeShip(kind: .row, modfier: 1)
+                        ship = PirateNode.makeShip(kind: .row, modfier: 1, route: self.route)
                     }
                     
                     
@@ -317,17 +329,11 @@ func randomShipKind()->ShipKind{
     // return .destroyer
     
 }
-func randomShip( modfier:Double) -> PirateNode{
+func randomShip( modfier:Double, route:Voyage) -> PirateNode{
     
     let kind = randomShipKind()
-    /*
-    guard kind != .crusier else {
-      
-        return CruiserNode(kind: kind, modfier: modfier)
- 
-    }
-    */
-    return PirateNode.makeShip(kind:kind, modfier:modfier)
+
+    return PirateNode.makeShip(kind:kind, modfier:modfier, route: route)
     
 }
 

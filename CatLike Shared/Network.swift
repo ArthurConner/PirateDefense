@@ -57,13 +57,14 @@ func redirectNotification(data:Data) {
         ret = .SendingDelta
     case 3:
         ret = .launchShip
+        print("received launch ship")
     default:
         return
     }
     
     
     let edata = data.subdata(in:splitPoint..<data.endIndex)
-    print("got a command of size \(edata.count) with code \(ret)")
+   // print("got a command of size \(edata.count) with code \(ret)")
     
     var obj:NSObject?
     

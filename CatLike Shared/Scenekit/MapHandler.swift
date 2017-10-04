@@ -12,7 +12,7 @@ import GameplayKit
 
 
 enum Landscape : Int, Codable {
-
+    
     
     
     case unknown
@@ -24,6 +24,9 @@ enum Landscape : Int, Codable {
     case tower
     case sand
 }
+
+let waterSet:Set<Landscape> = [.water,.path]
+
 
 fileprivate func nameOf(landscape:Landscape)->String{
     switch landscape {
@@ -70,99 +73,11 @@ fileprivate func landscapeOf(name:String)->Landscape{
 
 
 
-struct MapPoint:Codable{
-    let row: Int
-    let col: Int
-    
-    static let offGrid = MapPoint(row: -2, col: -2)
-    
-    init(row:Int,col:Int) {
-        self.row = row
-        self.col = col
-    }
-    
-    func adj(max:Int)->[MapPoint]{
-        var ret:[MapPoint] = []
-        let vals:[(Int,Int)]
-        
-        if  self.row % 2 == 1 {
-            vals  = [(0,-1),(1,0),(1,1),(0,1),(-1,1),(-1,0)]
-            
-        } else {
-            vals  = [(0,-1),(1,-1),(1,0),(0,1),(-1,0),(-1,-1)]
-        }
-        for c in vals {
-            let arow = row + c.0
-            let acol = col + c.1
-            
-            if (arow >= 0) && (arow < max) && (acol >= 0) && (acol < max) {
-                ret.append(MapPoint(row: arow, col: acol))
-            }
-        }
-        
-        return ret
-    }
-    
-    func distance(manhattan:MapPoint)->Int{
-        return abs(self.row - manhattan.row) + abs(self.col - manhattan.col)
-    }
-}
-extension MapPoint:Equatable{
-    public static func ==(lhs: MapPoint, rhs: MapPoint) -> Bool{
-        return (lhs.row == rhs.row) && (lhs.col == rhs.col)
-    }
-    
-}
 
-extension MapPoint:Hashable {
-    var hashValue: Int {
-        return row.hashValue ^ col.hashValue &* 16777619
-    }
-    
-    
-    
-    func path(to dest:MapPoint,map:MapHandler, using:Set<Landscape>)->[MapPoint]{
-        
-        var visited:[MapPoint:MapPoint] = [self:self]
-        var nextLevel = [self]
-        
-        while !nextLevel.isEmpty{
-            var addMe:Set<MapPoint> = []
-            for x in nextLevel {
-                for ad in x.adj(max: map.mapAdj){
-                    if visited[ad] == nil {
-                        visited[ad] = x
-                        if ad == dest {
-                            var ret = [dest]
-                            var current = x
-                            while current != self {
-                                ret.append(current)
-                                current = visited[current] ?? x
-                            }
-                            ret.append(self)
-                            return ret.reversed()
-                        }
-                        // if
-                        if using.contains(map.kind(point: ad)){
-                            addMe.insert(ad)
-                        }
-                        
-                    } else {
-                        // print("No")
-                    }
-                }
-            }
-            
-            nextLevel = Array(addMe)
-        }
-        return []
-        
-    }
-    
-    
-}
 
-class Island {
+
+
+fileprivate class Island {
     
     weak var map:MapHandler?
     var terain:[Landscape:Set<MapPoint>] = [:]
@@ -295,7 +210,7 @@ class Island {
             }
             
         }
-
+        
     }
     
 }
@@ -305,11 +220,12 @@ class MapHandler{
     var tiles : SKTileMapNode?
     let tileSet = SKTileSet(named: "PlunderSet")
     let mapAdj = 24
-    var islands:[Island] = []
-    var startIsle:Island?
-    var endIsle:Island?
+    fileprivate var islands:[Island] = []
+    fileprivate var startIslands:[Island] = []
+    fileprivate var endIsle:Island?
     
     var deltas = GameInfo()
+    var voyages:[Voyage] = []
     
     func kind(point:MapPoint)->Landscape{
         guard let tiles = tiles ,
@@ -330,7 +246,7 @@ class MapHandler{
                 visited.insert(x)
                 let c = kind(point: x)
                 if kinds.contains(c){
-                   ret.insert(x)
+                    ret.insert(x)
                 }
                 for y in x.adj(max: self.mapAdj){
                     if !visited.contains(y){
@@ -383,27 +299,28 @@ class MapHandler{
         return ret
         
     }
-
+    
     func createHarbors(){
+        startIslands.removeAll()
         
         class WaterFront {
             var haborPoint:MapPoint
             var isle:Island
             var coast:Set<MapPoint>
             
-            let wSet:Set<Landscape> = [.water,.path]
+            
             
             init?(_ land:Island,_ map:MapHandler){
                 self.isle = land
                 guard let sandTerain =  land.terain[.sand] else { return nil }
                 coast = sandTerain
                 
-                let wSet:Set<Landscape> = [.water,.path]
+                
                 
                 let foo = coast
                 for x in foo {
                     
-                    let list = x.adj(max: 20).filter({ wSet.contains(map.kind(point: $0))})
+                    let list = x.adj(max: 20).filter({ waterSet.contains(map.kind(point: $0))})
                     if list.isEmpty {
                         coast.remove(x)
                     }
@@ -420,11 +337,11 @@ class MapHandler{
             
             func makeMaxPoint(other:MapPoint,map:MapHandler){
                 
-                var bestVal = haborPoint.path(to: other, map: map, using: wSet).count
+                var bestVal = haborPoint.path(to: other, map: map, using: waterSet).count
                 
                 for x in self.coast {
                     
-                    let checkVal = x.path(to: other, map: map, using: wSet).count
+                    let checkVal = x.path(to: other, map: map, using: waterSet).count
                     
                     if checkVal > bestVal {
                         bestVal = checkVal
@@ -451,33 +368,50 @@ class MapHandler{
         }
         
         
-        let sIsle = islands[0]
-        self.startIsle = sIsle
+        let dIsle = islands[0]
+        guard  let destWaterfront = WaterFront(dIsle,self) else {
+            return
+        }
         
-        let dIsle = islands[1]
         self.endIsle = dIsle
         
+        startIslands.removeAll()
+        var sWaters:[WaterFront] = []
+        for i in 1..<islands.count {
+            let x = islands[i]
+            if let h = WaterFront(x,self) {
+                startIslands.append(x)
+                sWaters.append(h)
+            }
+        }
+        //let sWaters = islands.dropFirst().flatMap({WaterFront($0,self)})
         
-        guard let start =  WaterFront(sIsle,self),
-            let dest =  WaterFront(dIsle,self) else { return
+        guard !sWaters.isEmpty else { return }
+        
+        for _ in 0..<3{
+            
+            for startWaterFront in sWaters {
+                startWaterFront.makeMaxPoint(other: destWaterfront.haborPoint, map: self)
+                destWaterfront.makeMaxPoint(other: startWaterFront.haborPoint, map: self)
+                
+            }
+            
+            
         }
         
-      
-        for _ in 0..<3 {
-            start.makeMaxPoint(other: dest.haborPoint, map: self)
-            dest.makeMaxPoint(other: start.haborPoint, map: self)
+        for startWaterFront in sWaters {
+            startWaterFront.updateIsland(map: self)
+            
         }
         
-        
-        start.updateIsland(map: self)
-        dest.updateIsland(map: self)
- 
-        
+        destWaterfront.updateIsland(map: self)
+
     }
     
     func refreshMap(){
         guard let map = tiles else { return }
         self.islands.removeAll()
+        self.voyages.removeAll()
         
         
         while self.islands.count < 3 {
@@ -493,7 +427,7 @@ class MapHandler{
                 }
             }
             
-          
+            
             var startIslands:[Island] = []
             for _ in 0..<4 {
                 
@@ -533,33 +467,52 @@ class MapHandler{
         }
         
         self.createHarbors()
-        /*
-        for c in 0..<map.numberOfColumns {
-            changeTile(at: MapPoint(row:0,col:c), to: .top)
-            
-            changeTile(at: MapPoint(row:1,col:c), to: .top)
-            changeTile(at: MapPoint(row:map.numberOfRows-1,col:c), to: .top)
-        }
-        */
- 
-        if let s = self.startIsle?.harbor, mainRoute().count > 4 {
-            
-         self.changeTile(at: s, to: .tower)
-            
-        } else {
+        
+        guard !startIslands.isEmpty, let d = self.endIsle?.harbor else {
             refreshMap()
+            return
         }
+        
+        self.voyages.removeAll()
+        print("making trips")
+        for startIsle in startIslands {
+            if  let s = startIsle.harbor {
+                let v = Voyage(start: s, finish: d)
+                self.voyages.append(v)
+                //let v2 = Voyage(start:d, finish:s)
+                //self.voyages.append(v2)
+                
+                print("now going from \(v)")
+                
+            }
+            
+        }
+        
+        guard !voyages.isEmpty else {
+            refreshMap()
+            return
+        }
+        
+        for x in self.voyages {
+            
+            if x.shortestRoute(map: self, using: waterSet).count > 4 {
+                self.changeTile(at: x.start, to: .tower)
+            } else {
+                refreshMap()
+                return
+            }
+        }
+        
+        
     }
     
     
     
-    func mainRoute()->[MapPoint]{
+    func randomRoute()->Voyage?{
         
-        guard let s = self.startIsle?.harbor,
-            let d = self.endIsle?.harbor  else { return [] }
-        let wSet:Set<Landscape> = [.water,.path]
+        guard !voyages.isEmpty else { return nil}
         
-        return s.path(to:d,map:self, using:wSet)
+        return voyages[GKRandomSource.sharedRandom().nextInt(upperBound: voyages.count)]
         
     }
     
@@ -593,7 +546,7 @@ class MapHandler{
         guard let tiles = tiles  else {
             return
         }
-
+        
         guard  let waterTile = tileSet?.tileGroups.first(where: {$0.name == name}) else {
             fatalError("No \(name) tile definition found")
         }

@@ -183,21 +183,14 @@ class GameScene: SKScene {
             return
         }
         
-        if let source = mapTiles.startIsle?.harbor ,  let shipPosition = convert(mappoint:source) {
-            
-            //maybe we should turn this off?
+        if let  trip = mapTiles.randomRoute() ,  let shipPosition = convert(mappoint:trip.start) {
+
             lastLaunch = Date(timeIntervalSinceNow:10)
-            
-            let ship =  PirateNode.makeShip(kind: shipInfo.ship.kind, modfier:intervalTime/8)
+            let ship =  PirateNode.makeShip(kind: shipInfo.ship.kind, modfier:intervalTime/8, route:trip)
             ship.position = shipPosition
-            
-            // self.
-            
             add(ship: ship)
         }
-        
-        
-        
+
         
     }
     
@@ -254,7 +247,7 @@ class GameScene: SKScene {
         if isPaused { return }
         if gameState != .play {return}
         
-        guard  let dest = mapTiles.endIsle?.harbor else { return }
+       
         
         //Do we need to launch a new wave
         if lastLaunch < Date(timeIntervalSinceNow: 0){
@@ -263,7 +256,7 @@ class GameScene: SKScene {
             launchAttack(timeOverTile:intervalTime/8)
         }
         
-        if !ships.filter({ self.tileOf(node: $0) ?? MapPoint.offGrid == dest}).isEmpty {
+        if !ships.filter({ $0.didFinish(map:mapTiles)}).isEmpty {
             gameState = .lose
         }
         
@@ -367,7 +360,9 @@ extension GameScene {
     
     func adjust(ship:PirateNode){
         
-        guard let dest = mapTiles.endIsle?.harbor,
+        let dest = ship.route.finish
+        
+        guard
             let source =  self.mapTiles.map(coordinate: ship.position) else { return }
         
         
@@ -376,8 +371,8 @@ extension GameScene {
             return
         }
         
-        let wSet:Set<Landscape> = [.water,.path]
-        let route = source.path(to: dest, map: mapTiles, using: wSet)
+        
+        let route = source.path(to: dest, map: mapTiles, using: waterSet)
         
         if let path = pathOf(mappoints:route, startOveride:ship.position) {
             
@@ -410,9 +405,9 @@ extension GameScene {
     }
     func launchAttack(timeOverTile:Double) {
         
-        if let source = mapTiles.startIsle?.harbor ,  let shipPosition = convert(mappoint:source) {
+        if let trip = mapTiles.randomRoute(),  let shipPosition = convert(mappoint:trip.start) {
             
-            let ship =  randomShip( modfier:timeOverTile)
+            let ship =  randomShip( modfier:timeOverTile, route: trip)
             ship.position = shipPosition
             
             add(ship: ship)

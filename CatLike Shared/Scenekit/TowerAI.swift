@@ -7,7 +7,7 @@
 //
 
 import Foundation
-
+import GameKit
 
 class TowerAI {
     
@@ -26,10 +26,9 @@ class TowerAI {
         }
         
         
-        guard scene.towersRemaining() > 0 ,
-            let source =  scene.mapTiles.startIsle?.harbor  else { return }
-        
-        let route = scene.mapTiles.mainRoute()
+        guard scene.towersRemaining() > 0 , let trip =  scene.mapTiles.randomRoute()  else { return }
+
+        let route = trip.shortestRoute(map:scene.mapTiles, using:waterSet)
         guard route.count > 4 else { return }
         
         var possibleAddSpot:Set<MapPoint> = []
@@ -65,10 +64,10 @@ class TowerAI {
         
         guard var bestTile = possibleAddSpot.first else { return }
         
-        var bestVal = bestTile.distance(manhattan: source)
+        var bestVal = bestTile.distance(manhattan: trip.start)
         
         for x in possibleAddSpot {
-            let c = x.distance(manhattan: source)
+            let c = x.distance(manhattan: trip.start)
             if c > bestVal {
                 bestTile = x
                 bestVal = c

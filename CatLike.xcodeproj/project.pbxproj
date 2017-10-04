@@ -38,6 +38,9 @@
 		0E4501281F743493008493C2 /* PirateTileSet.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0E4501271F743493008493C2 /* PirateTileSet.sks */; };
 		0E4501291F743493008493C2 /* PirateTileSet.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0E4501271F743493008493C2 /* PirateTileSet.sks */; };
 		0E45012A1F743493008493C2 /* PirateTileSet.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0E4501271F743493008493C2 /* PirateTileSet.sks */; };
+		0E49DBF11F85547900A09774 /* MapPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E49DBF01F85547900A09774 /* MapPoint.swift */; };
+		0E49DBF21F85567500A09774 /* MapPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E49DBF01F85547900A09774 /* MapPoint.swift */; };
+		0E49DBF31F85567600A09774 /* MapPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E49DBF01F85547900A09774 /* MapPoint.swift */; };
 		0E53B5AF1F796C350020A31C /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5AE1F796C350020A31C /* Types.swift */; };
 		0E53B5B01F796C350020A31C /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5AE1F796C350020A31C /* Types.swift */; };
 		0E53B5B11F796C350020A31C /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5AE1F796C350020A31C /* Types.swift */; };
@@ -102,6 +105,7 @@
 		0E4501181F742D42008493C2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0E45011F1F742E50008493C2 /* MapHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapHandler.swift; sourceTree = "<group>"; };
 		0E4501271F743493008493C2 /* PirateTileSet.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = PirateTileSet.sks; sourceTree = "<group>"; };
+		0E49DBF01F85547900A09774 /* MapPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapPoint.swift; sourceTree = "<group>"; };
 		0E53B5AE1F796C350020A31C /* Types.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
 		0E53B5B21F796CC60020A31C /* PirateShip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PirateShip.swift; sourceTree = "<group>"; };
 		0E53B5B61F7991100020A31C /* TowerNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerNode.swift; sourceTree = "<group>"; };
@@ -223,6 +227,7 @@
 			isa = PBXGroup;
 			children = (
 				0E45011F1F742E50008493C2 /* MapHandler.swift */,
+				0E49DBF01F85547900A09774 /* MapPoint.swift */,
 				0E4500D01F742D1A008493C2 /* GameScene.swift */,
 				0EB31FBA1F829B5500F9D1A7 /* BoatScene.swift */,
 				0E53B5B21F796CC60020A31C /* PirateShip.swift */,
@@ -393,6 +398,7 @@
 				0E53B5B31F796CC60020A31C /* PirateShip.swift in Sources */,
 				0EFC5E481F7C201F007D5AB6 /* CannonBall.swift in Sources */,
 				0EFC5E441F7C0A65007D5AB6 /* Clock.swift in Sources */,
+				0E49DBF11F85547900A09774 /* MapPoint.swift in Sources */,
 				0E4500DA1F742D1A008493C2 /* AppDelegate.swift in Sources */,
 				0E53B5B71F7991100020A31C /* TowerNode.swift in Sources */,
 				0E53B5BB1F79BE050020A31C /* HUD.swift in Sources */,
@@ -407,6 +413,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0EFC5E4D1F7C434B007D5AB6 /* TowerAI.swift in Sources */,
+				0E49DBF21F85567500A09774 /* MapPoint.swift in Sources */,
 				0E4501071F742D1A008493C2 /* GameScene.swift in Sources */,
 				0EA97F801F82E6DF003EBB40 /* NetworkPeer.swift in Sources */,
 				0EB31FB81F82963100F9D1A7 /* Network.swift in Sources */,
@@ -438,6 +445,7 @@
 				0EFC5E4A1F7C2048007D5AB6 /* CannonBall.swift in Sources */,
 				0EFC5E461F7C0FC4007D5AB6 /* Clock.swift in Sources */,
 				0EA97F811F82E6DF003EBB40 /* NetworkPeer.swift in Sources */,
+				0E49DBF31F85567600A09774 /* MapPoint.swift in Sources */,
 				0E4500F91F742D1A008493C2 /* AppDelegate.swift in Sources */,
 				0E53B5B91F7991100020A31C /* TowerNode.swift in Sources */,
 				0E53B5BD1F79BE050020A31C /* HUD.swift in Sources */,

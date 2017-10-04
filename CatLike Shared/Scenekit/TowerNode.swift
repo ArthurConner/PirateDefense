@@ -184,10 +184,7 @@ extension TowerNode : Fireable {
         hitsRemain -= 1
         
         if hitsRemain == 0 {
-            guard   let towerTile  = scene.tileOf(node: self),
-                let dest = scene.mapTiles.endIsle?.harbor,
-                let source =  scene.mapTiles.startIsle?.harbor  else
-            { return }
+            guard   let towerTile  = scene.tileOf(node: self) else   { return }
             
             let towerScapes:Set<Landscape> = [.sand]
             
@@ -197,13 +194,14 @@ extension TowerNode : Fireable {
             
             
             for checkTile in checkset {
-                if checkTile != source,
-                    checkTile != dest {
-                    
-                    killSet.insert(checkTile)
-                    
-                }
+                killSet.insert(checkTile)
             }
+            
+            for trip in scene.mapTiles.voyages{
+                killSet.remove(trip.start)
+                killSet.remove(trip.finish)
+            }
+            
             for tile in killSet {
                 if let t = scene.tower(at:tile) {
                     t.die(scene: scene, isKill: true)
