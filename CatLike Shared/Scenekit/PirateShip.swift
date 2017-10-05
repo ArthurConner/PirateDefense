@@ -139,7 +139,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         ship.kind = aKind
         ship.zPosition = 3
         
-        ship.gun.landscapes =   [.sand]
+        ship.gun.landscapes =   [.sand,.water,.path]
         ship.gun.clock.tickNext()
         body.allowsRotation = false
         

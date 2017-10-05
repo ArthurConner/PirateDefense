@@ -20,6 +20,9 @@ class GameScene: SKScene {
     var intervalTime:TimeInterval = 5
     var lastLaunch:Date = Date.distantPast
     
+    
+    let pavementClock = PirateClock(1)
+    
     fileprivate var towers:[TowerNode] = []
     fileprivate var ships:[PirateNode] = []
     let maxTowers = 7
@@ -86,7 +89,8 @@ class GameScene: SKScene {
         ships.removeAll()
         towers.removeAll()
         intervalTime = 5
-        
+        lastLaunch = Date(timeIntervalSinceNow:0)
+        pavementClock.adjust(interval:5)
     }
     func restart(){
         clear()
@@ -175,7 +179,7 @@ class GameScene: SKScene {
         }
         
         let obj = GameMessage(info:mapTiles.deltas)
-      
+        
         PirateServiceManager.shared.send(obj, kind: .SendingDelta)
         
         mapTiles.deltas.clear()
@@ -190,13 +194,13 @@ class GameScene: SKScene {
         }
         
         if let  trip = mapTiles.randomRoute() ,  let shipPosition = convert(mappoint:trip.start) {
-
+            
             lastLaunch = Date(timeIntervalSinceNow:10)
             let ship =  PirateNode.makeShip(kind: shipInfo.ship.kind, modfier:intervalTime/8, route:trip)
             ship.position = shipPosition
             add(ship: ship)
         }
-
+        
         
     }
     
@@ -253,7 +257,7 @@ class GameScene: SKScene {
         if isPaused { return }
         if gameState != .play {return}
         
-       
+        
         
         //Do we need to launch a new wave
         if lastLaunch < Date(timeIntervalSinceNow: 0){
@@ -269,9 +273,12 @@ class GameScene: SKScene {
         
         if let ai = self.ai {
             ai.update(scene: self)
-            
         }
         
+        if pavementClock.needsUpdate() {
+           // launchTroll()
+            pavementClock.update()
+        }
         
         //let shipPoints = ships.map(self.tileOf(node: $0) ?? MapPoint.offGrid}
         let shipPoints:[MapPoint] = ships.map({self.tileOf(node: $0) ?? MapPoint.offGrid})
@@ -329,7 +336,7 @@ extension GameScene {
                 return
             }
         }
-
+        
         
     }
     
@@ -380,7 +387,7 @@ extension GameScene {
         guard
             let source =  self.mapTiles.map(coordinate: ship.position) else { return }
         
-    
+        
         
         let route = source.path(to: dest, map: mapTiles, using: traveler.allowedTiles())
         
@@ -415,12 +422,43 @@ extension GameScene {
     }
     func launchAttack(timeOverTile:Double) {
         
+        
         if let trip = mapTiles.randomRoute(),  let shipPosition = convert(mappoint:trip.start) {
             
             let ship =  randomShip( modfier:timeOverTile, route: trip)
             ship.position = shipPosition
             
             add(ship: ship)
+            
+            
+            
+            
+        }
+        
+        
+        
+    }
+    
+    func launchTroll(){
+        
+        if let trip = mapTiles.randomRoute(),   let trollPosition = convert(mappoint: trip.finish) {
+            
+            
+            let troll = SandTower(timeOverTile: 1.5, route: Voyage(start: trip.finish, finish: trip.start))
+            
+            
+            troll.position = trollPosition
+            troll.fillColor = .purple
+            
+            self.towers.append(troll)
+            self.addChild(troll)
+            
+            adjust(traveler: troll)
+            
+            
+            pavementClock.adjust(interval: Double(troll.route.shortestRoute(map: mapTiles, using: waterSet).count) * troll.waterSpeed * 0.8 )
+            pavementClock.update()
+            
         }
         
     }
@@ -482,7 +520,7 @@ extension GameScene {
                 adjust(traveler: boat)
             }
         }
- 
+        
     }
     
     

@@ -41,7 +41,7 @@ struct TowerProxy: Codable {
     let level:Int
     let towerID:String
 }
-class TowerNode: SKShapeNode {
+class TowerNode: SKShapeNode , Fireable {
     
 
     var gun = PirateGun(interval:1, flightDuration:0.2, radius:3)
@@ -140,10 +140,7 @@ class TowerNode: SKShapeNode {
     
     
     
-}
 
-
-extension TowerNode : Fireable {
     
     func die(scene:GameScene, isKill:Bool){
         removeAllActions()
@@ -186,7 +183,7 @@ extension TowerNode : Fireable {
         if hitsRemain == 0 {
             guard   let towerTile  = scene.tileOf(node: self) else   { return }
             
-            let towerScapes:Set<Landscape> = [.sand]
+            let towerScapes:Set<Landscape> = [.sand,.water,.path]
             
             let checkset = scene.mapTiles.tiles(near:towerTile,radius:self.gun.radius + 1,kinds:towerScapes)
             
@@ -244,6 +241,132 @@ extension TowerNode : Fireable {
         }
     }
     
+    
+    
+}
+
+class SandTower: TowerNode, Navigatable {
+    var waterSpeed: Double = 1
+    
+    var route = Voyage.offGrid()
+    var prior:MapPoint?
+    
+    func allowedTiles() -> Set<Landscape> {
+        return waterSet
+    }
+    
+    
+    
+    convenience init(timeOverTile:Double, route nextR:Voyage) {
+        
+        self.init(ellipseOf: CGSize(width: 30, height: 60))
+        self.fillColor = .purple
+        self.strokeColor = .clear
+        self.lineWidth = 3
+     
+        self.waterSpeed = timeOverTile * 2
+        self.route = nextR
+        self.hitsRemain = 1
+        
+
+
+        
+        
+        
+        let body = SKPhysicsBody(circleOfRadius: 30)
+        
+        body.allowsRotation = false
+        body.categoryBitMask = PhysicsCategory.Tower
+        body.isDynamic = false
+        
+        body.restitution = 0.5
+        
+        self.physicsBody = body
+        
+    }
+    
+    func spawnWake() {
+        /*
+        guard let board = self.parent else {return}
+
+        let wake = SKShapeNode.init(circleOfRadius: 2)
+        wake.fillColor = .yellow
+        wake.strokeColor = .clear
+        wake.position = self.position
+        
+        wake.run(SKAction.sequence([
+            SKAction.scale(to: 8, duration: 5)]))
+        
+        wake.run(SKAction.sequence([SKAction.fadeOut(withDuration: 7),
+                                    SKAction.removeFromParent()]))
+        
+        wake.zPosition = 2
+        
+        board.insertChild(wake, at: board.children.count - 1)
+ */
+    }
+    
+    override func checkAge(scene:GameScene)->Bool{
+
+        
+        guard let pos = scene.tileOf(node: self) else { return true}
+        
+        if pos == route.finish {
+            scene.remove(tower: self)
+            return false
+        }
+        
+        guard gun.clock.needsUpdate() else {
+            
+            if prior == nil {
+                self.prior = pos
+            }
+            
+            return true
+            
+        }
+        
+        
+        guard let p = self.prior,
+            p != pos
+            else { return true}
+        
+        let oldpath = pos.path(to: p, map: scene.mapTiles, using: allowedTiles())
+        
+        guard oldpath.count > 1 else { return true}
+        
+        let nextTile = oldpath[1]
+        
+        guard waterSet.contains(scene.mapTiles.kind(point: nextTile)) else {
+            gun.clock.update()
+            return true
+        }
+        
+        
+        scene.mapTiles.changeTile(at: nextTile, to: .sand)
+        
+        
+        for trip in scene.mapTiles.voyages {
+            if  trip.shortestRoute(map: scene.mapTiles, using: waterSet).count < 2 {
+                scene.mapTiles.changeTile(at: nextTile, to: .path)
+            }
+        }
+        
+        scene.redirectAllShips()
+        gun.clock.update()
+        self.prior = nil
+        
+        return true
+    }
+    
+    override func fire(at:MapPoint,scene:GameScene){
+        return
+    }
+    
+    override  func die(scene:GameScene, isKill:Bool){
+        super.die(scene: scene, isKill: isKill)
+        scene.remove(tower: self)
+    }
     
     
 }
