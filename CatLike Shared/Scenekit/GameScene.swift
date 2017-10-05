@@ -276,7 +276,7 @@ class GameScene: SKScene {
         }
         
         if pavementClock.needsUpdate() {
-           // launchTroll()
+            launchTroll()
             pavementClock.update()
         }
         
@@ -444,9 +444,10 @@ extension GameScene {
         if let trip = mapTiles.randomRoute(),   let trollPosition = convert(mappoint: trip.finish) {
             
             
-            let troll = SandTower(timeOverTile: 1.5, route: Voyage(start: trip.finish, finish: trip.start))
+           // let troll = SandTower(timeOverTile: 1.5, route: Voyage(start: trip.finish, finish: trip.start))
+            let troll = DefenderTower(timeOverTile: 1, route: Voyage(start: trip.finish, finish: trip.start))
             
-            
+            //troll.gun.clock.adjust(interval: 0.2)
             troll.position = trollPosition
             troll.fillColor = .purple
             

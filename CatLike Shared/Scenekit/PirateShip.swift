@@ -114,7 +114,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             
         case .motor:
             ship = PirateNode(imageNamed: "Motor" )
-            ship.wakeColor = .purple
+            ship.wakeColor = .green
             body = SKPhysicsBody(circleOfRadius: 15)
             body.restitution = 0.1
             ship.waterSpeed = modfier / 1.4

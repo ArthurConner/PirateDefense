@@ -371,3 +371,90 @@ class SandTower: TowerNode, Navigatable {
     
 }
 
+
+class DefenderTower: TowerNode, Navigatable {
+    var waterSpeed: Double = 1
+    
+    var route = Voyage.offGrid()
+    var prior:MapPoint?
+    
+    func allowedTiles() -> Set<Landscape> {
+        return waterSet
+    }
+    
+    
+    
+    convenience init(timeOverTile:Double, route nextR:Voyage) {
+        
+        self.init(ellipseOf: CGSize(width: 25, height: 58))
+        self.fillColor = .black
+        self.strokeColor = .clear
+        self.lineWidth = 3
+        
+        self.waterSpeed = timeOverTile * 2
+        self.route = nextR
+        self.hitsRemain = 3
+        self.gun.landscapes = [.water,.path]
+
+        let body = SKPhysicsBody(circleOfRadius: 10)
+        
+        body.allowsRotation = false
+        body.categoryBitMask = PhysicsCategory.Tower
+        body.isDynamic = false
+        
+        body.restitution = 0.5
+        
+        self.physicsBody = body
+        
+    }
+    
+    func spawnWake() {
+       
+         guard let board = self.parent else {return}
+         
+         let wake = SKShapeNode.init(circleOfRadius: 2)
+         wake.fillColor = .red
+         wake.strokeColor = .clear
+         wake.position = self.position
+         
+         wake.run(SKAction.sequence([
+         SKAction.scale(to: 8, duration: 5)]))
+         
+         wake.run(SKAction.sequence([SKAction.fadeOut(withDuration: 7),
+         SKAction.removeFromParent()]))
+         
+         wake.zPosition = 2
+         
+         board.insertChild(wake, at: board.children.count - 1)
+ 
+    }
+    
+    override func checkAge(scene:GameScene)->Bool{
+        
+        
+        guard let pos = scene.tileOf(node: self) else { return true}
+        
+        if pos == route.finish {
+            scene.remove(tower: self)
+            scene.gameState = .win
+            return false
+        }
+        
+        return true
+    }
+    
+
+    
+    override  func die(scene:GameScene, isKill:Bool){
+        super.die(scene: scene, isKill: isKill)
+        scene.remove(tower: self)
+    }
+    
+    override  func hit(scene:GameScene) {
+        super.hit(scene: scene)
+        self.fillColor = .purple
+    }
+    
+    
+}
+
