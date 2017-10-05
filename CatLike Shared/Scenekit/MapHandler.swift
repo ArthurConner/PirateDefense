@@ -413,8 +413,9 @@ class MapHandler{
         self.islands.removeAll()
         self.voyages.removeAll()
         
+        let iLimit = 2 +  GKRandomSource.sharedRandom().nextInt(upperBound: 5)
         
-        while self.islands.count < 3 {
+        while self.islands.count < iLimit {
             
             self.islands.removeAll()
             
@@ -429,7 +430,7 @@ class MapHandler{
             
             
             var startIslands:[Island] = []
-            for _ in 0..<4 {
+            for _ in 0..<iLimit + 2 {
                 
                 let isle = Island(map: self)
                 

@@ -41,6 +41,12 @@
 		0E49DBF11F85547900A09774 /* MapPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E49DBF01F85547900A09774 /* MapPoint.swift */; };
 		0E49DBF21F85567500A09774 /* MapPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E49DBF01F85547900A09774 /* MapPoint.swift */; };
 		0E49DBF31F85567600A09774 /* MapPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E49DBF01F85547900A09774 /* MapPoint.swift */; };
+		0E49DBF51F85A91700A09774 /* WelcomeScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0E49DBF41F85A91700A09774 /* WelcomeScene.sks */; };
+		0E49DBF61F85A91700A09774 /* WelcomeScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0E49DBF41F85A91700A09774 /* WelcomeScene.sks */; };
+		0E49DBF71F85A91700A09774 /* WelcomeScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0E49DBF41F85A91700A09774 /* WelcomeScene.sks */; };
+		0E49DBFD1F85A9DD00A09774 /* WelcomeScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E49DBFC1F85A9DD00A09774 /* WelcomeScene.swift */; };
+		0E49DBFE1F85A9DD00A09774 /* WelcomeScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E49DBFC1F85A9DD00A09774 /* WelcomeScene.swift */; };
+		0E49DBFF1F85A9DD00A09774 /* WelcomeScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E49DBFC1F85A9DD00A09774 /* WelcomeScene.swift */; };
 		0E53B5AF1F796C350020A31C /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5AE1F796C350020A31C /* Types.swift */; };
 		0E53B5B01F796C350020A31C /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5AE1F796C350020A31C /* Types.swift */; };
 		0E53B5B11F796C350020A31C /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5AE1F796C350020A31C /* Types.swift */; };
@@ -106,6 +112,8 @@
 		0E45011F1F742E50008493C2 /* MapHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapHandler.swift; sourceTree = "<group>"; };
 		0E4501271F743493008493C2 /* PirateTileSet.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = PirateTileSet.sks; sourceTree = "<group>"; };
 		0E49DBF01F85547900A09774 /* MapPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapPoint.swift; sourceTree = "<group>"; };
+		0E49DBF41F85A91700A09774 /* WelcomeScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = WelcomeScene.sks; sourceTree = "<group>"; };
+		0E49DBFC1F85A9DD00A09774 /* WelcomeScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeScene.swift; sourceTree = "<group>"; };
 		0E53B5AE1F796C350020A31C /* Types.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
 		0E53B5B21F796CC60020A31C /* PirateShip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PirateShip.swift; sourceTree = "<group>"; };
 		0E53B5B61F7991100020A31C /* TowerNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerNode.swift; sourceTree = "<group>"; };
@@ -166,6 +174,7 @@
 				0E4500CE1F742D1A008493C2 /* Actions.sks */,
 				0E4500CF1F742D1A008493C2 /* GameScene.sks */,
 				0EB31FBE1F829E2E00F9D1A7 /* BoatScene.sks */,
+				0E49DBF41F85A91700A09774 /* WelcomeScene.sks */,
 				0EB31FB61F82963100F9D1A7 /* Network.swift */,
 				0EA97F7E1F82E6DF003EBB40 /* NetworkPeer.swift */,
 				0EA97F821F82EA5B003EBB40 /* ErrorHandler.swift */,
@@ -226,6 +235,7 @@
 		0EA97F7D1F82E6A9003EBB40 /* Scenekit */ = {
 			isa = PBXGroup;
 			children = (
+				0E49DBFC1F85A9DD00A09774 /* WelcomeScene.swift */,
 				0E45011F1F742E50008493C2 /* MapHandler.swift */,
 				0E49DBF01F85547900A09774 /* MapPoint.swift */,
 				0E4500D01F742D1A008493C2 /* GameScene.swift */,
@@ -345,6 +355,7 @@
 				0EB31FBF1F829E2E00F9D1A7 /* BoatScene.sks in Resources */,
 				0E4501031F742D1A008493C2 /* GameScene.sks in Resources */,
 				0E4500DF1F742D1A008493C2 /* Main.storyboard in Resources */,
+				0E49DBF51F85A91700A09774 /* WelcomeScene.sks in Resources */,
 				0E4501001F742D1A008493C2 /* Actions.sks in Resources */,
 				0E4500E21F742D1A008493C2 /* LaunchScreen.storyboard in Resources */,
 				0E45011C1F742D42008493C2 /* Assets.xcassets in Resources */,
@@ -358,6 +369,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0EB31FC01F829E2E00F9D1A7 /* BoatScene.sks in Resources */,
+				0E49DBF61F85A91700A09774 /* WelcomeScene.sks in Resources */,
 				0E4500F01F742D1A008493C2 /* Main.storyboard in Resources */,
 				0E4501041F742D1A008493C2 /* GameScene.sks in Resources */,
 				0E45010A1F742D1A008493C2 /* Assets.xcassets in Resources */,
@@ -372,6 +384,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0EB31FC11F829E2E00F9D1A7 /* BoatScene.sks in Resources */,
+				0E49DBF71F85A91700A09774 /* WelcomeScene.sks in Resources */,
 				0E4500FE1F742D1A008493C2 /* Main.storyboard in Resources */,
 				0E4501051F742D1A008493C2 /* GameScene.sks in Resources */,
 				0E45010B1F742D1A008493C2 /* Assets.xcassets in Resources */,
@@ -403,6 +416,7 @@
 				0E53B5B71F7991100020A31C /* TowerNode.swift in Sources */,
 				0E53B5BB1F79BE050020A31C /* HUD.swift in Sources */,
 				0EA97F831F82EA5B003EBB40 /* ErrorHandler.swift in Sources */,
+				0E49DBFD1F85A9DD00A09774 /* WelcomeScene.swift in Sources */,
 				0E53B5AF1F796C350020A31C /* Types.swift in Sources */,
 				0E4501201F742E50008493C2 /* MapHandler.swift in Sources */,
 			);
@@ -418,6 +432,7 @@
 				0EA97F801F82E6DF003EBB40 /* NetworkPeer.swift in Sources */,
 				0EB31FB81F82963100F9D1A7 /* Network.swift in Sources */,
 				0EB31FBC1F829B5500F9D1A7 /* BoatScene.swift in Sources */,
+				0E49DBFE1F85A9DD00A09774 /* WelcomeScene.swift in Sources */,
 				0E4500ED1F742D1A008493C2 /* GameViewController.swift in Sources */,
 				0E53B5B41F796CC60020A31C /* PirateShip.swift in Sources */,
 				0EFC5E491F7C2047007D5AB6 /* CannonBall.swift in Sources */,
@@ -450,6 +465,7 @@
 				0E53B5B91F7991100020A31C /* TowerNode.swift in Sources */,
 				0E53B5BD1F79BE050020A31C /* HUD.swift in Sources */,
 				0E53B5B11F796C350020A31C /* Types.swift in Sources */,
+				0E49DBFF1F85A9DD00A09774 /* WelcomeScene.swift in Sources */,
 				0EB5B6DB1F82B3EC000F2D44 /* BoatViewController.swift in Sources */,
 				0E4501221F742E50008493C2 /* MapHandler.swift in Sources */,
 			);

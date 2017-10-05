@@ -25,6 +25,8 @@ class GameViewController: UIViewController {
         }
         
         
+        didSet(game: .unknown)
+        
     }
     
     override var shouldAutorotate: Bool {
@@ -64,7 +66,7 @@ extension GameViewController:GameTypeModeDelegate {
             b.showButtons = false
             nextGame = b
         case .unknown:
-            nextGame = nil
+            nextGame = WelcomeScene.newGameScene()
             
         }
         

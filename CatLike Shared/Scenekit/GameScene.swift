@@ -199,7 +199,7 @@ class GameScene: SKScene {
         setupWorldPhysics()
         self.setUpScene()
         self.addChild(hud)
-        self.ai = nil
+       // self.ai = nil
         
         NotificationCenter.default.addObserver(self, selector: #selector(sendMap), name: GameNotif.NeedMap.notification, object: nil)
         
