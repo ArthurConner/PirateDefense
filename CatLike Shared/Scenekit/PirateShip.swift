@@ -34,17 +34,24 @@ struct ShipProxy : Codable{
 
 
 
-class PirateNode: SKSpriteNode,  Fireable {
+class PirateNode: SKSpriteNode,  Fireable, Navigatable {
+    
+    
     
 
    
     
     var gun = PirateGun(interval:4, flightDuration:0.8, radius:3)
-    var waterSpeed:Double = 3
+    
     var hitsRemain = 3
     var kind:ShipKind = .galley
     
+    var waterSpeed:Double = 3
     var route = Voyage.offGrid()
+    
+    func allowedTiles() -> Set<Landscape> {
+        return waterSet
+    }
     
     let shipID = "\(Date.timeIntervalSinceReferenceDate)_\(GKRandomSource.sharedRandom().nextUniform())"
     

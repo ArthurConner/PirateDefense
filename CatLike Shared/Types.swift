@@ -30,3 +30,11 @@ protocol Fireable {
     func fire(at:MapPoint,scene:GameScene)
   
 }
+
+protocol Navigatable {
+    
+    var waterSpeed:Double{get set}
+    var route:Voyage {get set}
+    func allowedTiles()->Set<Landscape>
+    func spawnWake()
+}
