@@ -19,9 +19,11 @@ class GameScene: SKScene {
     
     var intervalTime:TimeInterval = 5
     var lastLaunch:Date = Date.distantPast
-    
+    var playableRect = CGRect.zero
     
     let pavementClock = PirateClock(1)
+    let livesLabel = SKLabelNode(fontNamed: "Chalkduster")
+    let catsLabel = SKLabelNode(fontNamed: "Chalkduster")
     
     fileprivate var towers:[TowerNode] = []
     fileprivate var ships:[PirateNode] = []
@@ -88,6 +90,7 @@ class GameScene: SKScene {
         
         ships.removeAll()
         towers.removeAll()
+       updateLabels()
         intervalTime = 5
         lastLaunch = Date(timeIntervalSinceNow:0)
         pavementClock.adjust(interval:5)
@@ -155,6 +158,53 @@ class GameScene: SKScene {
         mapTiles.refreshMap()
         gameState = .start
         
+         let maxAspectRatio:CGFloat = 16.0/9.0
+        let playableHeight = size.width / maxAspectRatio
+        let playableMargin = (size.height-playableHeight)/2.0
+        playableRect = CGRect(x: 0, y: playableMargin,
+                              width: size.width,
+                              height: playableHeight)
+      
+
+       // livesLabel.fontColor = SKColor.black
+        livesLabel.fontSize = 32
+        livesLabel.zPosition = 150
+        livesLabel.horizontalAlignmentMode = .left
+        livesLabel.verticalAlignmentMode = .bottom
+        livesLabel.position = CGPoint(
+            x: -playableRect.size.width/2 + CGFloat(20),
+            y: -playableRect.size.height/2 + CGFloat(20) - 100)
+        self.addChild(livesLabel)
+        
+        
+        
+
+       // catsLabel.fontColor = SKColor.black
+        catsLabel.fontSize = 32
+        catsLabel.zPosition = 150
+        catsLabel.horizontalAlignmentMode = .right
+        catsLabel.verticalAlignmentMode = .bottom
+        catsLabel.position = CGPoint(x: playableRect.size.width/2 - CGFloat(20),
+                                     y: -playableRect.size.height/2 + CGFloat(20) - 100 )
+        self.addChild(catsLabel)
+        updateLabels()
+    }
+    
+    func updateLabels() {
+        
+        
+        catsLabel.text = "Towers Remaining: \(towersRemaining())"
+        if towersRemaining() > 0 {
+            catsLabel.fontColor = .white
+        } else {
+            catsLabel.text = "No towers left"
+            catsLabel.fontColor = .red
+        }
+        
+        livesLabel.text = "Ships: \(hud.kills)"
+        if hud.kills < 1 {
+            livesLabel.text = ""
+        }
     }
     
     
@@ -324,10 +374,16 @@ extension GameScene {
             towers.append(tower)
             tower.adjust(level:0)
         }
+        
+        updateLabels()
     }
     
     
     func remove(tower:TowerNode) {
+        
+        defer{
+           updateLabels()
+        }
         
         for (i, x) in towers.enumerated(){
             if x.towerID == tower.towerID {
@@ -337,6 +393,7 @@ extension GameScene {
             }
         }
         
+       
         
     }
     
@@ -418,6 +475,7 @@ extension GameScene {
         
         ships = ships.filter({$0 != ship})
         hud.kills += 1
+        updateLabels()
         
     }
     func launchAttack(timeOverTile:Double) {
@@ -453,6 +511,7 @@ extension GameScene {
             
             self.towers.append(troll)
             self.addChild(troll)
+            updateLabels()
             
             adjust(traveler: troll)
             

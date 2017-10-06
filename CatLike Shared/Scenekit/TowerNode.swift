@@ -150,12 +150,27 @@ class TowerNode: SKShapeNode , Fireable {
         self.strokeColor = .clear
        
         //print("tower died")
+        
+
+        
+        
         if isKill {
-            run(SKAction.scale(by: CGFloat(self.gun.radius) - 0.5, duration: 2))
-            run(SKAction.sequence([SKAction.fadeOut(withDuration: 4),
-                                   SKAction.run {
-                                    scene.remove(tower: self)
-                }]))
+            
+            
+            let boom = SKShapeNode.init(circleOfRadius: 20)
+            
+            boom.path = self.path
+            boom.position = self.position
+            boom.fillColor = self.fillColor
+            boom.strokeColor = .clear
+            scene.addChild(boom)
+            
+                
+            boom.run(SKAction.scale(by: CGFloat(self.gun.radius) - 0.5, duration: 2))
+            boom.run(SKAction.sequence([SKAction.fadeOut(withDuration: 4),
+                                   SKAction.removeFromParent()]))
+            
+            scene.remove(tower: self)
         } else {
              scene.remove(tower: self)
             
@@ -269,7 +284,7 @@ class SandTower: TowerNode, Navigatable {
         self.hitsRemain = 1
         
 
-
+        self.zPosition = 3
         
         
         
@@ -365,7 +380,7 @@ class SandTower: TowerNode, Navigatable {
     
     override  func die(scene:GameScene, isKill:Bool){
         super.die(scene: scene, isKill: isKill)
-        scene.remove(tower: self)
+      //  scene.remove(tower: self)
     }
     
     
@@ -403,7 +418,7 @@ class DefenderTower: TowerNode, Navigatable {
         body.isDynamic = false
         
         body.restitution = 0.5
-        
+        self.zPosition = 3
         self.physicsBody = body
         
     }
@@ -447,7 +462,7 @@ class DefenderTower: TowerNode, Navigatable {
     
     override  func die(scene:GameScene, isKill:Bool){
         super.die(scene: scene, isKill: isKill)
-        scene.remove(tower: self)
+      //  scene.remove(tower: self)
     }
     
     override  func hit(scene:GameScene) {
