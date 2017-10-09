@@ -20,10 +20,12 @@ class GameScene: SKScene {
     var intervalTime:TimeInterval = 5
     var lastLaunch:Date = Date.distantPast
     var playableRect = CGRect.zero
+    var boatLevel  = 3
+    var nextIsSandShip = false
     
-    let pavementClock = PirateClock(1)
-    let livesLabel = SKLabelNode(fontNamed: "Chalkduster")
-    let catsLabel = SKLabelNode(fontNamed: "Chalkduster")
+    let counterShipClock = PirateClock(1)
+    let shipsKilledLabel = SKLabelNode(fontNamed: "Chalkduster")
+    let towersRemainingLabel = SKLabelNode(fontNamed: "Chalkduster")
     
     fileprivate var towers:[TowerNode] = []
     fileprivate var ships:[PirateNode] = []
@@ -39,22 +41,9 @@ class GameScene: SKScene {
     
     
     func towerTiles()->Set<MapPoint>{
-        
         return  Set<MapPoint>(towers.flatMap({tileOf(node:$0)}))
-        
     }
-    //var isSending = false
     
-    /*
-     
-     lazy var componentSystems: [GKComponentSystem] = {
-     let animationSystem = GKComponentSystem(
-     componentClass: AnimationComponent.self)
-     let firingSystem = GKComponentSystem(componentClass: FiringComponent.self)
-     return [animationSystem, firingSystem]
-     }()
-     
-     */
     
     class func newGameScene() -> GameScene {
         // Load 'GameScene.sks' as an SKScene.
@@ -90,10 +79,11 @@ class GameScene: SKScene {
         
         ships.removeAll()
         towers.removeAll()
-       updateLabels()
+        updateLabels()
         intervalTime = 5
+        boatLevel = 3
         lastLaunch = Date(timeIntervalSinceNow:0)
-        pavementClock.adjust(interval:5)
+        counterShipClock.adjust(interval:5)
     }
     func restart(){
         clear()
@@ -107,12 +97,9 @@ class GameScene: SKScene {
     }
     
     func convert(mappoint:MapPoint)->CGPoint? {
-        
         guard let background = mapTiles.tiles else {return nil }
-        
         let tileCenter  = background.centerOfTile(atColumn:mappoint.col,row:mappoint.row)
         return self.convert(tileCenter, from: background)
-        
     }
     
     func pathOf(mappoints route:[MapPoint], startOveride:CGPoint? = nil)->CGPath?{
@@ -120,10 +107,7 @@ class GameScene: SKScene {
         guard let f1 = route.first, var p1 = convert(mappoint:f1) else { return nil}
         
         let path = CGMutablePath()
-        
-        
         p1 = startOveride ?? p1
-        
         path.move(to: p1)
         
         for (i, hex) in route.enumerated() {
@@ -139,14 +123,6 @@ class GameScene: SKScene {
     
     
     func setupWorldPhysics() {
-        
-        /*
-         guard let background = mapTiles.tiles else {return  }
-         background.physicsBody =
-         SKPhysicsBody(edgeLoopFrom: background.frame)
-         
-         background.physicsBody?.categoryBitMask = PhysicsCategory.Edge
-         */
         physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
         physicsWorld.contactDelegate = self
     }
@@ -158,52 +134,44 @@ class GameScene: SKScene {
         mapTiles.refreshMap()
         gameState = .start
         
-         let maxAspectRatio:CGFloat = 16.0/9.0
+        let maxAspectRatio:CGFloat = 16.0/9.0
         let playableHeight = size.width / maxAspectRatio
         let playableMargin = (size.height-playableHeight)/2.0
         playableRect = CGRect(x: 0, y: playableMargin,
                               width: size.width,
                               height: playableHeight)
-      
 
-       // livesLabel.fontColor = SKColor.black
-        livesLabel.fontSize = 32
-        livesLabel.zPosition = 150
-        livesLabel.horizontalAlignmentMode = .left
-        livesLabel.verticalAlignmentMode = .bottom
-        livesLabel.position = CGPoint(
+        shipsKilledLabel.fontSize = 32
+        shipsKilledLabel.zPosition = 150
+        shipsKilledLabel.horizontalAlignmentMode = .left
+        shipsKilledLabel.verticalAlignmentMode = .bottom
+        shipsKilledLabel.position = CGPoint(
             x: -playableRect.size.width/2 + CGFloat(20),
             y: -playableRect.size.height/2 + CGFloat(20) - 100)
-        self.addChild(livesLabel)
+        self.addChild(shipsKilledLabel)
         
-        
-        
-
-       // catsLabel.fontColor = SKColor.black
-        catsLabel.fontSize = 32
-        catsLabel.zPosition = 150
-        catsLabel.horizontalAlignmentMode = .right
-        catsLabel.verticalAlignmentMode = .bottom
-        catsLabel.position = CGPoint(x: playableRect.size.width/2 - CGFloat(20),
-                                     y: -playableRect.size.height/2 + CGFloat(20) - 100 )
-        self.addChild(catsLabel)
+        towersRemainingLabel.fontSize = 32
+        towersRemainingLabel.zPosition = 150
+        towersRemainingLabel.horizontalAlignmentMode = .right
+        towersRemainingLabel.verticalAlignmentMode = .bottom
+        towersRemainingLabel.position = CGPoint(x: playableRect.size.width/2 - CGFloat(20),
+                                                y: -playableRect.size.height/2 + CGFloat(20) - 100 )
+        self.addChild(towersRemainingLabel)
         updateLabels()
     }
     
     func updateLabels() {
-        
-        
-        catsLabel.text = "Towers Remaining: \(towersRemaining())"
+        towersRemainingLabel.text = "Towers Remaining: \(towersRemaining())"
         if towersRemaining() > 0 {
-            catsLabel.fontColor = .white
+            towersRemainingLabel.fontColor = .white
         } else {
-            catsLabel.text = "No towers left"
-            catsLabel.fontColor = .red
+            towersRemainingLabel.text = "No towers left"
+            towersRemainingLabel.fontColor = .red
         }
         
-        livesLabel.text = "Ships: \(hud.kills)"
+        shipsKilledLabel.text = "Ships: \(hud.kills)"
         if hud.kills < 1 {
-            livesLabel.text = ""
+            shipsKilledLabel.text = ""
         }
     }
     
@@ -299,7 +267,6 @@ class GameScene: SKScene {
         
     }
     
-    
     override func update(_ currentTime: TimeInterval) {
         // Called before each frame is rendered
         
@@ -307,8 +274,7 @@ class GameScene: SKScene {
         if isPaused { return }
         if gameState != .play {return}
         
-        
-        
+
         //Do we need to launch a new wave
         if lastLaunch < Date(timeIntervalSinceNow: 0){
             lastLaunch = Date(timeIntervalSinceNow:intervalTime)
@@ -325,9 +291,14 @@ class GameScene: SKScene {
             ai.update(scene: self)
         }
         
-        if pavementClock.needsUpdate() {
-            launchTroll()
-            pavementClock.update()
+        if counterShipClock.needsUpdate() {
+            if (nextIsSandShip) {
+                launchSandShip()
+            } else {
+                launchVictoryShip()
+            }
+            nextIsSandShip = !nextIsSandShip
+            counterShipClock.update()
         }
         
         //let shipPoints = ships.map(self.tileOf(node: $0) ?? MapPoint.offGrid}
@@ -355,17 +326,14 @@ class GameScene: SKScene {
                 }
             }
         }
-        
     }
-    
-    
+ 
 }
 
 extension GameScene {
     
     func add(towerAt towerPoint:MapPoint){
-        
-        
+
         if let place = convert(mappoint: towerPoint){
             let tower = TowerNode(range:90)
             
@@ -382,7 +350,7 @@ extension GameScene {
     func remove(tower:TowerNode) {
         
         defer{
-           updateLabels()
+            updateLabels()
         }
         
         for (i, x) in towers.enumerated(){
@@ -392,9 +360,7 @@ extension GameScene {
                 return
             }
         }
-        
-       
-        
+
     }
     
     func tower(at:MapPoint) -> TowerNode? {
@@ -417,20 +383,14 @@ extension GameScene {
                 t.levelTimer.reduce(factor:0.9)
                 t.level = -1
                 t.adjust(level: -1)
-                
             }
             
         } else if towersRemaining() > 0 {
             add(towerAt: towerPoint)
-            
-            
+  
         }
     }
-    
-    
-    
-    
-    
+ 
 }
 
 
@@ -485,39 +445,54 @@ extension GameScene {
             
             let ship =  randomShip( modfier:timeOverTile, route: trip)
             ship.position = shipPosition
-            
             add(ship: ship)
+
+        }
+
+    }
+    
+    func launchVictoryShip(){
+        
+        if let trip = mapTiles.randomRoute(),   let startingPostion = convert(mappoint: trip.finish) {
+
+            let victoryShip = DefenderTower(timeOverTile: 1, route: Voyage(start: trip.finish, finish: trip.start))
+
+            victoryShip.position = startingPostion
+            victoryShip.fillColor = .purple
+            victoryShip.hitsRemain = boatLevel
+            boatLevel += 2
+            
+            self.towers.append(victoryShip)
+            self.addChild(victoryShip)
+            updateLabels()
+            
+            adjust(traveler: victoryShip)
             
             
-            
+            counterShipClock.adjust(interval: Double(victoryShip.route.shortestRoute(map: mapTiles, using: waterSet).count) * victoryShip.waterSpeed * 0.4 )
+            counterShipClock.update()
             
         }
         
-        
-        
     }
     
-    func launchTroll(){
+    func launchSandShip(){
         
         if let trip = mapTiles.randomRoute(),   let trollPosition = convert(mappoint: trip.finish) {
             
+            let sandShip = SandTower(timeOverTile: 1, route: Voyage(start: trip.finish, finish: trip.start))
             
-           // let troll = SandTower(timeOverTile: 1.5, route: Voyage(start: trip.finish, finish: trip.start))
-            let troll = DefenderTower(timeOverTile: 1, route: Voyage(start: trip.finish, finish: trip.start))
-            
-            //troll.gun.clock.adjust(interval: 0.2)
-            troll.position = trollPosition
-            troll.fillColor = .purple
-            
-            self.towers.append(troll)
-            self.addChild(troll)
+            sandShip.position = trollPosition
+            sandShip.fillColor = .blue
+
+            self.towers.append(sandShip)
+            self.addChild(sandShip)
             updateLabels()
             
-            adjust(traveler: troll)
-            
-            
-            pavementClock.adjust(interval: Double(troll.route.shortestRoute(map: mapTiles, using: waterSet).count) * troll.waterSpeed * 0.8 )
-            pavementClock.update()
+            adjust(traveler: sandShip)
+
+            counterShipClock.adjust(interval: Double(sandShip.route.shortestRoute(map: mapTiles, using: waterSet).count) * sandShip.waterSpeed * 0.4 )
+            counterShipClock.update()
             
         }
         
@@ -529,7 +504,6 @@ extension GameScene {
         lifeBoatTiles.remove(tile)
         
         for x in ships {
-            
             if let otherTile = tileOf(node: x){
                 lifeBoatTiles.remove(otherTile)
             }
@@ -552,7 +526,7 @@ extension GameScene {
         for (_ , boat) in self.ships.enumerated() {
             if let boatTile = self.tileOf(node: boat), boatTile == shipTile {
                 
-                self.hud.kills += 1
+                //self.hud.kills += 1
                 if self.mapTiles.kind(point: shipTile) == .water {
                     self.mapTiles.changeTile(at: shipTile, to: .sand)
                 } else {
@@ -575,7 +549,6 @@ extension GameScene {
     func redirectAllShips(){
         
         for x in children {
-            
             if let boat = x as? Navigatable {
                 adjust(traveler: boat)
             }
@@ -583,23 +556,12 @@ extension GameScene {
         
     }
     
-    
-    
-    
 }
 
 extension GameScene : SKPhysicsContactDelegate {
-    
-    
-    
-    
+ 
     func didBegin(_ contact: SKPhysicsContact) {
-        /*
-         let other = contact.bodyA.categoryBitMask
-         == PhysicsCategory.Ship ?
-         contact.bodyB : contact.bodyA
-         */
-        
+
         for (i,x) in [contact.bodyA.node, contact.bodyB.node].enumerated() {
             
             let y =  i == 0 ? contact.bodyB.node : contact.bodyA.node

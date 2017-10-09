@@ -279,7 +279,7 @@ class SandTower: TowerNode, Navigatable {
         self.strokeColor = .clear
         self.lineWidth = 3
      
-        self.waterSpeed = timeOverTile * 2
+        self.waterSpeed = timeOverTile 
         self.route = nextR
         self.hitsRemain = 1
         

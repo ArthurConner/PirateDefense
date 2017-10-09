@@ -314,12 +314,9 @@ class MapHandler{
                 self.isle = land
                 guard let sandTerain =  land.terain[.sand] else { return nil }
                 coast = sandTerain
-                
-                
-                
+
                 let foo = coast
                 for x in foo {
-                    
                     let list = x.adj(max: 20).filter({ waterSet.contains(map.kind(point: $0))})
                     if list.isEmpty {
                         coast.remove(x)
@@ -377,7 +374,8 @@ class MapHandler{
         
         startIslands.removeAll()
         var sWaters:[WaterFront] = []
-        for i in 1..<islands.count {
+        //islands.count
+        for i in 1..<2 {
             let x = islands[i]
             if let h = WaterFront(x,self) {
                 startIslands.append(x)
@@ -387,9 +385,7 @@ class MapHandler{
         //let sWaters = islands.dropFirst().flatMap({WaterFront($0,self)})
         
         guard !sWaters.isEmpty else { return }
-        
         for _ in 0..<3{
-            
             for startWaterFront in sWaters {
                 startWaterFront.makeMaxPoint(other: destWaterfront.haborPoint, map: self)
                 destWaterfront.makeMaxPoint(other: startWaterFront.haborPoint, map: self)

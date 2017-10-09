@@ -27,39 +27,22 @@ class BoatButton:SKSpriteNode {
     static func makeButton(kind aKind:ShipKind)->BoatButton {
    
         let ship:BoatButton
-        
-        
-        
+
         switch aKind {
         case .galley:
             ship = BoatButton(imageNamed: "Galley" )
         case .row:
             ship = BoatButton(imageNamed: "Row" )
-    
-            
-            
         case .crusier:
-            
             ship = BoatButton(imageNamed: "Crusier" )
-
-            
         case .destroyer:
-            
             ship = BoatButton(imageNamed: "Destroyer" )
-  
-            
-    
         case .motor:
             ship = BoatButton(imageNamed: "Motor" )
-    
         case .battle:
              ship = BoatButton(imageNamed: "Battleship" )
         }
-        
-        
-        
-        
-        
+
         
         ship.kind = aKind
         ship.zPosition = 3
