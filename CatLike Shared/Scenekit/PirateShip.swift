@@ -50,7 +50,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     var route = Voyage.offGrid()
     
     func allowedTiles() -> Set<Landscape> {
-        return waterSet
+        return routeSet
     }
     
     let shipID = "\(Date.timeIntervalSinceReferenceDate)_\(GKRandomSource.sharedRandom().nextUniform())"
@@ -214,8 +214,21 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     
     
     func die(scene:GameScene, isKill:Bool){
+        
+        guard  let shipTile = scene.tileOf(node: self) else { return }
+        
         removeAllActions()
         physicsBody = nil
+        
+
+        scene.removeFrom(shipTile: shipTile)
+        
+        if scene.possibleToSand(at:shipTile){
+            
+            scene.redirectAllShips()
+        }
+        
+
         
     }
     
@@ -241,16 +254,6 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             scene.mapTiles.changeTile(at: shipTile, to: .path)
  
             self.die(scene:scene, isKill:true)
-            scene.removeFrom(shipTile: shipTile)
-            
-            
-            for trip in scene.mapTiles.voyages {
-                if  trip.shortestRoute(map: scene.mapTiles, using: waterSet).count < 2 {
-                    scene.mapTiles.changeTile(at: shipTile, to: .path)
-                }
-            }
-            
-            scene.redirectAllShips()
 
         }
     }

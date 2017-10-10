@@ -31,6 +31,8 @@ class GameScene: SKScene {
     fileprivate var ships:[PirateNode] = []
     let maxTowers = 7
     
+    var routeDebug:[String:[MapPoint]] = [:]
+    
     var ai:TowerAI? = TowerAI()
     
     var gameState: GameState = .initial {
@@ -42,6 +44,13 @@ class GameScene: SKScene {
     
     func towerTiles()->Set<MapPoint>{
         return  Set<MapPoint>(towers.flatMap({tileOf(node:$0)}))
+    }
+    
+    func navigatableBoats(at point:MapPoint)->[Navigatable]{
+        
+        let p1 = self.children.filter({self.tileOf(node: $0) == point})
+        return p1.flatMap{$0 as? Navigatable}
+        
     }
     
     
@@ -84,6 +93,7 @@ class GameScene: SKScene {
         boatLevel = 3
         lastLaunch = Date(timeIntervalSinceNow:0)
         counterShipClock.adjust(interval:5)
+        nextIsSandShip = false
     }
     func restart(){
         clear()
@@ -140,7 +150,7 @@ class GameScene: SKScene {
         playableRect = CGRect(x: 0, y: playableMargin,
                               width: size.width,
                               height: playableHeight)
-
+        
         shipsKilledLabel.fontSize = 32
         shipsKilledLabel.zPosition = 150
         shipsKilledLabel.horizontalAlignmentMode = .left
@@ -274,12 +284,12 @@ class GameScene: SKScene {
         if isPaused { return }
         if gameState != .play {return}
         
-
+        
         //Do we need to launch a new wave
         if lastLaunch < Date(timeIntervalSinceNow: 0){
             lastLaunch = Date(timeIntervalSinceNow:intervalTime)
             intervalTime = intervalTime * 0.99
-            launchAttack(timeOverTile:intervalTime/8)
+            launchAttack(timeOverTile:max(2.5,intervalTime)/8)
         }
         
         if !ships.filter({ $0.didFinish(map:mapTiles)}).isEmpty {
@@ -292,7 +302,7 @@ class GameScene: SKScene {
         }
         
         if counterShipClock.needsUpdate() {
-            if (nextIsSandShip) {
+            if (nextIsSandShip) && towersRemaining() > 0 {
                 launchSandShip()
             } else {
                 launchVictoryShip()
@@ -327,13 +337,13 @@ class GameScene: SKScene {
             }
         }
     }
- 
+    
 }
 
 extension GameScene {
     
     func add(towerAt towerPoint:MapPoint){
-
+        
         if let place = convert(mappoint: towerPoint){
             let tower = TowerNode(range:90)
             
@@ -360,7 +370,7 @@ extension GameScene {
                 return
             }
         }
-
+        
     }
     
     func tower(at:MapPoint) -> TowerNode? {
@@ -387,10 +397,10 @@ extension GameScene {
             
         } else if towersRemaining() > 0 {
             add(towerAt: towerPoint)
-  
+            
         }
     }
- 
+    
 }
 
 
@@ -400,15 +410,85 @@ extension GameScene {
         
         let dest = traveler.route.finish
         
-        guard let ship = traveler as? SKNode else {return}
-        guard
-            let source =  self.mapTiles.map(coordinate: ship.position) else { return }
+        guard let ship = traveler as? SKNode,
+            let source =  self.mapTiles.map(coordinate: ship.position),  let de = infoOf(node: ship)  else { return }
         
         
+        let k = mapTiles.kind(point: source)
         
-        let route = source.path(to: dest, map: mapTiles, using: traveler.allowedTiles())
+        func debug(tile:MapPoint)->String{
+            
+            let k = mapTiles.kind(point: tile)
+            let navs  = self.navigatableBoats(at: tile)
+            
+            let towers = navs.flatMap({$0 as? TowerNode}).map{return $0.towerID}.joined(separator: ", ")
+            let ships =  navs.flatMap({$0 as? PirateNode}).map{return $0.shipID}.joined(separator: ", ")
+            
+            return "row:\(tile.row),col:\(tile.col),kind:\(k),towers:\(towers),ships:\(ships)"
+            
+        }
         
-        if let path = pathOf(mappoints:route, startOveride:ship.position) {
+        //!traveler.allowedTiles().contains(k) &&
+        if  k == .sand {
+            
+            if let f = traveler as? Fireable {
+                
+                print("")
+                if let key = self.infoOf(node: ship) , let oldR = routeDebug[key]{
+                    print("\(key) ran ashore at \(debug(tile:source)) \npath is:")
+                    
+                    for x in oldR {
+                        print("\(debug(tile:x))")
+                        
+                        //FIXME: somehow we go to points that aren't on the path
+                        if x == source {
+                            print("ran ashore")
+                            f.die(scene: self, isKill: true)
+                            return
+                        }
+                    }
+             
+                     print(" but not on the map")
+ 
+                }
+               
+            } else if let n = traveler as? SKNode {
+                n.removeFromParent()
+                return
+            }
+            
+            
+            
+            
+        }
+        
+        var route = source.path(to: dest, map: mapTiles, using: traveler.allowedTiles())
+        
+        for r in route {
+            
+            if mapTiles.kind(point: r) == .sand{
+                print("we are going over sand at \(debug(tile:r))")
+                
+                for p in route {
+                    print(debug(tile: p))
+                }
+                route = [source,source]
+                
+                
+                if let key = self.infoOf(node: ship) , let oldR = routeDebug[key]{
+                    print("\(key)\npath was:")
+                    
+                    for x in oldR {
+                        print("\(debug(tile:x))")
+                    }
+                    
+                    print(" but not on the map")
+                    
+                }
+            }
+        }
+        
+        if let path = pathOf(mappoints:route, startOveride:ship.position){
             
             let time =  traveler.waterSpeed * Double(route.count)
             ship.removeAllActions()
@@ -416,6 +496,8 @@ extension GameScene {
             
             let followLine = SKAction.follow( path, asOffset: false, orientToPath: true, duration: time)
             ship.run(followLine)
+            
+            routeDebug[de] = route
             
         }
         
@@ -446,17 +528,17 @@ extension GameScene {
             let ship =  randomShip( modfier:timeOverTile, route: trip)
             ship.position = shipPosition
             add(ship: ship)
-
+            
         }
-
+        
     }
     
     func launchVictoryShip(){
         
         if let trip = mapTiles.randomRoute(),   let startingPostion = convert(mappoint: trip.finish) {
-
+            
             let victoryShip = DefenderTower(timeOverTile: 1, route: Voyage(start: trip.finish, finish: trip.start))
-
+            
             victoryShip.position = startingPostion
             victoryShip.fillColor = .purple
             victoryShip.hitsRemain = boatLevel
@@ -484,13 +566,13 @@ extension GameScene {
             
             sandShip.position = trollPosition
             sandShip.fillColor = .blue
-
+            
             self.towers.append(sandShip)
             self.addChild(sandShip)
             updateLabels()
             
             adjust(traveler: sandShip)
-
+            
             counterShipClock.adjust(interval: Double(sandShip.route.shortestRoute(map: mapTiles, using: waterSet).count) * sandShip.waterSpeed * 0.4 )
             counterShipClock.update()
             
@@ -546,40 +628,119 @@ extension GameScene {
         self.ships = keepShip
     }
     
+    
+    func infoOf(node:SKNode)->String?{
+        if let n = node  as? PirateNode {
+            return "ship \(n.kind) \(n.shipID)"
+        }
+        
+        if let n = node as? TowerNode  {
+            return "tower  \(n.towerID)"
+        }
+        
+        return nil
+    }
+    
     func redirectAllShips(){
         
         for x in children {
-            if let boat = x as? Navigatable {
+            
+            if let boat = x as? Navigatable, let debug = infoOf(node: x) {
+                
+                print(debug)
                 adjust(traveler: boat)
             }
         }
         
     }
     
+    
+    func possibleToSand(at point:MapPoint)->Bool{
+        
+        
+        let ships = self.navigatableBoats(at: point)
+        
+        guard ships.flatMap({$0 as? TowerNode}).isEmpty else { return false }
+        
+        
+        
+        mapTiles.changeTile(at: point, to: .sand)
+        
+        
+        for trip in mapTiles.voyages {
+            if  trip.shortestRoute(map: mapTiles, using: waterSet).count < 2 {
+                mapTiles.changeTile(at: point, to: .water)
+                return false
+            }
+        }
+        
+        print("changed to sand \(point)")
+        
+   
+        return true
+        
+    }
+    
 }
 
 extension GameScene : SKPhysicsContactDelegate {
- 
+    
     func didBegin(_ contact: SKPhysicsContact) {
-
-        for (i,x) in [contact.bodyA.node, contact.bodyB.node].enumerated() {
-            
-            let y =  i == 0 ? contact.bodyB.node : contact.bodyA.node
-            
-            if let ship  = x as? PirateNode {
-                ship.hit(scene: self)
-                y?.run(SKAction.removeFromParent())
-                return
-            }
-            
-            if let t = x as? TowerNode {
-                
-                t.hit(scene: self)
-                y?.run(SKAction.removeFromParent())
-                return
+        
+        
+        if let p1 = contact.bodyA.node as? PirateNode,
+            let p2 = contact.bodyB.node as? PirateNode {
+            print("\(p1) ship colided with ship \(p2)")
+            return
+        }
+        
+        if let p1 = contact.bodyA.node as? TowerNode,
+            let p2 = contact.bodyB.node as? TowerNode {
+            print("\(p1) tower colided with tower \(p2)")
+            return
+        }
+        
+        
+        
+        for x in [contact.bodyA.node, contact.bodyB.node]{
+            if let target = x as? Fireable {
+                target.hit(scene: self)
+            } else {
+                x?.run(SKAction.removeFromParent())
             }
             
         }
+        /*
+         for (i,x) in [contact.bodyA.node, contact.bodyB.node].enumerated() {
+         
+         
+         
+         
+         
+         if let p1 = contact.bodyB.node as? Fireable {
+         p1.hit(scene: self)
+         }
+         
+         if let p2 = contact.bodyA.node as? Fireable {
+         p2.hit(scene: self)
+         }
+         if let ship  = x as? PirateNode {
+         ship.hit(scene: self)
+         
+         if let other =
+         y?.run(SKAction.removeFromParent())
+         return
+         }
+         
+         let y =  i == 0 ? contact.bodyB.node : contact.bodyA.node
+         if let t = x as? TowerNode {
+         t.hit(scene: self)
+         y?.run(SKAction.removeFromParent())
+         return
+         }
+         
+         }
+         */
     }
 }
 
