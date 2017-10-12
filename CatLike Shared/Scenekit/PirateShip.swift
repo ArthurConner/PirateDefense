@@ -50,7 +50,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     var route = Voyage.offGrid()
     
     func allowedTiles() -> Set<Landscape> {
-        return waterSet
+        return routeSet
     }
     
     let shipID = "\(Date.timeIntervalSinceReferenceDate)_\(GKRandomSource.sharedRandom().nextUniform())"

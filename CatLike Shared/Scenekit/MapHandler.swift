@@ -26,7 +26,7 @@ enum Landscape : Int, Codable {
 }
 
 let waterSet:Set<Landscape> = [.water,.path]
-
+let routeSet:Set<Landscape> = [.water,.path,.dest,.tower]
 
 fileprivate func nameOf(landscape:Landscape)->String{
     switch landscape {

@@ -443,7 +443,7 @@ extension GameScene {
         
         if let trip = mapTiles.randomRoute(),  let shipPosition = convert(mappoint:trip.start) {
             
-            let ship =  randomShip( modfier:timeOverTile, route: trip)
+            let ship =  randomShip( modfier:max(2.5,intervalTime), route: trip)
             ship.position = shipPosition
             add(ship: ship)
 

@@ -267,7 +267,7 @@ class SandTower: TowerNode, Navigatable {
     var prior:MapPoint?
     
     func allowedTiles() -> Set<Landscape> {
-        return waterSet
+        return routeSet
     }
     
     
@@ -394,7 +394,7 @@ class DefenderTower: TowerNode, Navigatable {
     var prior:MapPoint?
     
     func allowedTiles() -> Set<Landscape> {
-        return waterSet
+        return routeSet
     }
     
     
