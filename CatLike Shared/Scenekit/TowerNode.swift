@@ -138,8 +138,6 @@ class TowerNode: SKShapeNode , Fireable {
         self.gun.clock.tickNext()
     }
     
-    
-    
 
     
     func die(scene:GameScene, isKill:Bool){
@@ -148,14 +146,8 @@ class TowerNode: SKShapeNode , Fireable {
         self.gun.clock.enabled = false
         self.levelTimer.enabled = false
         self.strokeColor = .clear
-       
-        //print("tower died")
-        
 
-        
-        
         if isKill {
-            
             
             let boom = SKShapeNode.init(circleOfRadius: 20)
             
@@ -165,7 +157,6 @@ class TowerNode: SKShapeNode , Fireable {
             boom.strokeColor = .clear
             scene.addChild(boom)
             
-                
             boom.run(SKAction.scale(by: CGFloat(self.gun.radius) - 0.5, duration: 2))
             boom.run(SKAction.sequence([SKAction.fadeOut(withDuration: 4),
                                    SKAction.removeFromParent()]))
@@ -200,7 +191,7 @@ class TowerNode: SKShapeNode , Fireable {
             
             let towerScapes:Set<Landscape> = [.sand,.water,.path]
             
-            let checkset = scene.mapTiles.tiles(near:towerTile,radius:self.gun.radius + 1,kinds:towerScapes)
+            let checkset = scene.mapTiles.tiles(near:towerTile,radius:self.gun.radius,kinds:towerScapes)
             
             var killSet:Set<MapPoint> = [towerTile]
             
@@ -282,18 +273,14 @@ class SandTower: TowerNode, Navigatable {
         self.waterSpeed = timeOverTile 
         self.route = nextR
         self.hitsRemain = 1
-        
-
         self.zPosition = 3
-        
-        
-        
+    
         let body = SKPhysicsBody(circleOfRadius: 30)
         
         body.allowsRotation = false
         body.categoryBitMask = PhysicsCategory.Tower
         body.isDynamic = false
-        
+        body.contactTestBitMask = PhysicsCategory.Ship
         body.restitution = 0.5
         
         self.physicsBody = body
@@ -301,29 +288,11 @@ class SandTower: TowerNode, Navigatable {
     }
     
     func spawnWake() {
-        /*
-        guard let board = self.parent else {return}
 
-        let wake = SKShapeNode.init(circleOfRadius: 2)
-        wake.fillColor = .yellow
-        wake.strokeColor = .clear
-        wake.position = self.position
-        
-        wake.run(SKAction.sequence([
-            SKAction.scale(to: 8, duration: 5)]))
-        
-        wake.run(SKAction.sequence([SKAction.fadeOut(withDuration: 7),
-                                    SKAction.removeFromParent()]))
-        
-        wake.zPosition = 2
-        
-        board.insertChild(wake, at: board.children.count - 1)
- */
     }
     
     override func checkAge(scene:GameScene)->Bool{
 
-        
         guard let pos = scene.tileOf(node: self) else { return true}
         
         if pos == route.finish {
@@ -336,11 +305,9 @@ class SandTower: TowerNode, Navigatable {
             if prior == nil {
                 self.prior = pos
             }
-            
             return true
             
         }
-        
         
         guard let p = self.prior,
             p != pos
@@ -350,39 +317,34 @@ class SandTower: TowerNode, Navigatable {
         
         guard oldpath.count > 1 else { return true}
         
+       
+        
         let nextTile = oldpath[1]
+        
+        guard scene.navigatableBoats(at: nextTile).isEmpty else { return true}
         
         guard waterSet.contains(scene.mapTiles.kind(point: nextTile)) else {
             gun.clock.update()
             return true
         }
         
-        
-        scene.mapTiles.changeTile(at: nextTile, to: .sand)
-        
-        
-        for trip in scene.mapTiles.voyages {
-            if  trip.shortestRoute(map: scene.mapTiles, using: waterSet).count < 2 {
-                scene.mapTiles.changeTile(at: nextTile, to: .path)
-            }
+        if (scene.possibleToSand(at:nextTile)){
+            gun.clock.update()
+            self.prior = nil
+            
+            scene.redirectAllShips()
+            
+            return true
+
         }
         
-        scene.redirectAllShips()
-        gun.clock.update()
-        self.prior = nil
-        
-        return true
+       return false
     }
     
     override func fire(at:MapPoint,scene:GameScene){
         return
     }
-    
-    override  func die(scene:GameScene, isKill:Bool){
-        super.die(scene: scene, isKill: isKill)
-      //  scene.remove(tower: self)
-    }
-    
+ 
     
 }
 
@@ -391,7 +353,7 @@ class DefenderTower: TowerNode, Navigatable {
     var waterSpeed: Double = 1
     
     var route = Voyage.offGrid()
-    var prior:MapPoint?
+
     
     func allowedTiles() -> Set<Landscape> {
         return routeSet
@@ -415,6 +377,7 @@ class DefenderTower: TowerNode, Navigatable {
         
         body.allowsRotation = false
         body.categoryBitMask = PhysicsCategory.Tower
+        body.contactTestBitMask = PhysicsCategory.Ship
         body.isDynamic = false
         
         body.restitution = 0.5
@@ -445,8 +408,7 @@ class DefenderTower: TowerNode, Navigatable {
     }
     
     override func checkAge(scene:GameScene)->Bool{
-        
-        
+
         guard let pos = scene.tileOf(node: self) else { return true}
         
         if pos == route.finish {
@@ -459,16 +421,7 @@ class DefenderTower: TowerNode, Navigatable {
     }
     
 
-    
-    override  func die(scene:GameScene, isKill:Bool){
-        super.die(scene: scene, isKill: isKill)
-      //  scene.remove(tower: self)
-    }
-    
-    override  func hit(scene:GameScene) {
-        super.hit(scene: scene)
-        self.fillColor = .purple
-    }
+
     
     
 }
