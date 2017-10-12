@@ -17,8 +17,10 @@ class GameScene: SKScene {
     var mapTiles = MapHandler()
     fileprivate var hud = HUD()
     
-    var intervalTime:TimeInterval = 5
-    var lastLaunch:Date = Date.distantPast
+  //  var intervalTime:TimeInterval = 5
+  //  var lastLaunch:Date = Date.distantPast
+    
+    var launchClock = PirateClock(5)
     var playableRect = CGRect.zero
     var boatLevel  = 3
     var nextIsSandShip = false
@@ -89,9 +91,12 @@ class GameScene: SKScene {
         ships.removeAll()
         towers.removeAll()
         updateLabels()
-        intervalTime = 5
+        launchClock.adjust(interval:5)
+        launchClock.tickNext()
+        
         boatLevel = 3
-        lastLaunch = Date(timeIntervalSinceNow:0)
+        
+        
         counterShipClock.adjust(interval:5)
         nextIsSandShip = false
     }
@@ -223,8 +228,10 @@ class GameScene: SKScene {
         
         if let  trip = mapTiles.randomRoute() ,  let shipPosition = convert(mappoint:trip.start) {
             
-            lastLaunch = Date(timeIntervalSinceNow:10)
-            let ship =  PirateNode.makeShip(kind: shipInfo.ship.kind, modfier:intervalTime/8, route:trip)
+           
+           
+            let ship =  PirateNode.makeShip(kind: shipInfo.ship.kind, modfier:launchClock.length()/8, route:trip)
+             launchClock.adjust(interval: 10)
             ship.position = shipPosition
             add(ship: ship)
         }
@@ -286,10 +293,9 @@ class GameScene: SKScene {
         
         
         //Do we need to launch a new wave
-        if lastLaunch < Date(timeIntervalSinceNow: 0){
-            lastLaunch = Date(timeIntervalSinceNow:intervalTime)
-            intervalTime = intervalTime * 0.99
-            launchAttack(timeOverTile:max(2.5,intervalTime)/8)
+        if launchClock.needsUpdate(){
+            launchClock.reduce(factor: 0.99)
+            launchAttack(timeOverTile:max(2.5,launchClock.length())/8)
         }
         
         if !ships.filter({ $0.didFinish(map:mapTiles)}).isEmpty {
@@ -408,6 +414,28 @@ extension GameScene {
     
     func adjust(traveler:Navigatable ){
         
+        
+        let dest = traveler.route.finish
+        
+        guard let ship = traveler as? SKNode else {return}
+        guard
+            let source =  self.mapTiles.map(coordinate: ship.position) else { return }
+        
+        
+        
+        let route = source.path(to: dest, map: mapTiles, using: traveler.allowedTiles())
+        
+        if let path = pathOf(mappoints:route, startOveride:ship.position) {
+            
+            let time =  traveler.waterSpeed * Double(route.count)
+            ship.removeAllActions()
+            ship.run(SKAction.repeat(SKAction.sequence([SKAction.run(traveler.spawnWake),SKAction.wait(forDuration: traveler.waterSpeed/4)]), count: route.count * 2))
+            
+            let followLine = SKAction.follow( path, asOffset: false, orientToPath: true, duration: time)
+            ship.run(followLine)
+            
+        }
+        /*
         let dest = traveler.route.finish
         
         guard let ship = traveler as? SKNode,
@@ -501,7 +529,7 @@ extension GameScene {
             
         }
         
-        
+        */
     }
     
     
@@ -525,7 +553,7 @@ extension GameScene {
         
         if let trip = mapTiles.randomRoute(),  let shipPosition = convert(mappoint:trip.start) {
             
-            let ship =  randomShip( modfier:max(2.5,intervalTime), route: trip)
+            let ship =  randomShip( modfier:timeOverTile, route: trip)
             ship.position = shipPosition
             add(ship: ship)
             
@@ -608,15 +636,13 @@ extension GameScene {
         for (_ , boat) in self.ships.enumerated() {
             if let boatTile = self.tileOf(node: boat), boatTile == shipTile {
                 
-                //self.hud.kills += 1
-                if self.mapTiles.kind(point: shipTile) == .water {
-                    self.mapTiles.changeTile(at: shipTile, to: .sand)
-                } else {
-                    self.mapTiles.changeTile(at: shipTile, to: .sand)
-                }
-                
+      
                 if boat != self {
                     killShips.append(boat)
+                }
+                
+                if possibleToSand(at: shipTile) {
+                    print("changed on kill")
                 }
                 
                 
@@ -645,9 +671,7 @@ extension GameScene {
         
         for x in children {
             
-            if let boat = x as? Navigatable, let debug = infoOf(node: x) {
-                
-                print(debug)
+            if let boat = x as? Navigatable {
                 adjust(traveler: boat)
             }
         }
@@ -662,10 +686,7 @@ extension GameScene {
         
         guard ships.flatMap({$0 as? TowerNode}).isEmpty else { return false }
         
-        
-        
         mapTiles.changeTile(at: point, to: .sand)
-        
         
         for trip in mapTiles.voyages {
             if  trip.shortestRoute(map: mapTiles, using: waterSet).count < 2 {
@@ -676,7 +697,6 @@ extension GameScene {
         
         print("changed to sand \(point)")
         
-   
         return true
         
     }

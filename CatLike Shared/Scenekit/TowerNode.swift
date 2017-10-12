@@ -216,7 +216,7 @@ class TowerNode: SKShapeNode , Fireable {
             
             let il = scene.mapTiles.tiles(near:towerTile,radius:self.gun.radius,kinds:landscapeToDrop)
             for x in il {
-                scene.mapTiles.changeTile(at: x, to: .sand)
+              let _ =  scene.possibleToSand(at: x)
             }
             
             
