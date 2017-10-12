@@ -79,6 +79,15 @@
 		0EB31FC01F829E2E00F9D1A7 /* BoatScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0EB31FBE1F829E2E00F9D1A7 /* BoatScene.sks */; };
 		0EB31FC11F829E2E00F9D1A7 /* BoatScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 0EB31FBE1F829E2E00F9D1A7 /* BoatScene.sks */; };
 		0EB5B6DB1F82B3EC000F2D44 /* BoatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB5B6DA1F82B3EC000F2D44 /* BoatViewController.swift */; };
+		0EE8F7EA1F901B7E00F6B105 /* Gun Cannon.caf in Resources */ = {isa = PBXBuildFile; fileRef = 0EE8F7E71F901B7E00F6B105 /* Gun Cannon.caf */; };
+		0EE8F7EC1F901B7E00F6B105 /* Sink.caf in Resources */ = {isa = PBXBuildFile; fileRef = 0EE8F7E91F901B7E00F6B105 /* Sink.caf */; };
+		0EE8F7ED1F901B8700F6B105 /* Gun Cannon.caf in Resources */ = {isa = PBXBuildFile; fileRef = 0EE8F7E71F901B7E00F6B105 /* Gun Cannon.caf */; };
+		0EE8F7EE1F901B8800F6B105 /* Gun Cannon.caf in Resources */ = {isa = PBXBuildFile; fileRef = 0EE8F7E71F901B7E00F6B105 /* Gun Cannon.caf */; };
+		0EE8F7EF1F901D7700F6B105 /* Sink.caf in Resources */ = {isa = PBXBuildFile; fileRef = 0EE8F7E91F901B7E00F6B105 /* Sink.caf */; };
+		0EE8F7F01F901D7800F6B105 /* Sink.caf in Resources */ = {isa = PBXBuildFile; fileRef = 0EE8F7E91F901B7E00F6B105 /* Sink.caf */; };
+		0EE8F7F41F901F4B00F6B105 /* SeaStorm.caf in Resources */ = {isa = PBXBuildFile; fileRef = 0EE8F7F31F901F4B00F6B105 /* SeaStorm.caf */; };
+		0EE8F7F51F901F4F00F6B105 /* SeaStorm.caf in Resources */ = {isa = PBXBuildFile; fileRef = 0EE8F7F31F901F4B00F6B105 /* SeaStorm.caf */; };
+		0EE8F7F61F901F4F00F6B105 /* SeaStorm.caf in Resources */ = {isa = PBXBuildFile; fileRef = 0EE8F7F31F901F4B00F6B105 /* SeaStorm.caf */; };
 		0EFC5E441F7C0A65007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
 		0EFC5E451F7C0FC3007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
 		0EFC5E461F7C0FC4007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
@@ -129,6 +138,9 @@
 		0EB31FBA1F829B5500F9D1A7 /* BoatScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoatScene.swift; sourceTree = "<group>"; };
 		0EB31FBE1F829E2E00F9D1A7 /* BoatScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = BoatScene.sks; sourceTree = "<group>"; };
 		0EB5B6DA1F82B3EC000F2D44 /* BoatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoatViewController.swift; sourceTree = "<group>"; };
+		0EE8F7E71F901B7E00F6B105 /* Gun Cannon.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Gun Cannon.caf"; sourceTree = "<group>"; };
+		0EE8F7E91F901B7E00F6B105 /* Sink.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sink.caf; sourceTree = "<group>"; };
+		0EE8F7F31F901F4B00F6B105 /* SeaStorm.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = SeaStorm.caf; sourceTree = "<group>"; };
 		0EFC5E431F7C0A65007D5AB6 /* Clock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clock.swift; sourceTree = "<group>"; };
 		0EFC5E471F7C201F007D5AB6 /* CannonBall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannonBall.swift; sourceTree = "<group>"; };
 		0EFC5E4B1F7C3E9C007D5AB6 /* TowerAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerAI.swift; sourceTree = "<group>"; };
@@ -177,6 +189,7 @@
 			isa = PBXGroup;
 			children = (
 				0E4500CE1F742D1A008493C2 /* Actions.sks */,
+				0EE8F7E61F901B7E00F6B105 /* sounds */,
 				0E4500CF1F742D1A008493C2 /* GameScene.sks */,
 				0EB31FBE1F829E2E00F9D1A7 /* BoatScene.sks */,
 				0E49DBF41F85A91700A09774 /* WelcomeScene.sks */,
@@ -252,6 +265,16 @@
 				0E53B5BA1F79BE050020A31C /* HUD.swift */,
 			);
 			path = Scenekit;
+			sourceTree = "<group>";
+		};
+		0EE8F7E61F901B7E00F6B105 /* sounds */ = {
+			isa = PBXGroup;
+			children = (
+				0EE8F7E71F901B7E00F6B105 /* Gun Cannon.caf */,
+				0EE8F7F31F901F4B00F6B105 /* SeaStorm.caf */,
+				0EE8F7E91F901B7E00F6B105 /* Sink.caf */,
+			);
+			path = sounds;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -357,6 +380,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0EE8F7F41F901F4B00F6B105 /* SeaStorm.caf in Resources */,
 				0EB31FBF1F829E2E00F9D1A7 /* BoatScene.sks in Resources */,
 				0E4501031F742D1A008493C2 /* GameScene.sks in Resources */,
 				0E3080DD1F87DB1C00A57FC5 /* GLIMSTIC.TTF in Resources */,
@@ -365,8 +389,10 @@
 				0E4501001F742D1A008493C2 /* Actions.sks in Resources */,
 				0E4500E21F742D1A008493C2 /* LaunchScreen.storyboard in Resources */,
 				0E45011C1F742D42008493C2 /* Assets.xcassets in Resources */,
+				0EE8F7EC1F901B7E00F6B105 /* Sink.caf in Resources */,
 				0E4501091F742D1A008493C2 /* Assets.xcassets in Resources */,
 				0E4501281F743493008493C2 /* PirateTileSet.sks in Resources */,
+				0EE8F7EA1F901B7E00F6B105 /* Gun Cannon.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,11 +402,14 @@
 			files = (
 				0E3080DE1F87DB1C00A57FC5 /* GLIMSTIC.TTF in Resources */,
 				0EB31FC01F829E2E00F9D1A7 /* BoatScene.sks in Resources */,
+				0EE8F7F51F901F4F00F6B105 /* SeaStorm.caf in Resources */,
 				0E49DBF61F85A91700A09774 /* WelcomeScene.sks in Resources */,
 				0E4500F01F742D1A008493C2 /* Main.storyboard in Resources */,
 				0E4501041F742D1A008493C2 /* GameScene.sks in Resources */,
 				0E45010A1F742D1A008493C2 /* Assets.xcassets in Resources */,
 				0E45011D1F742D42008493C2 /* Assets.xcassets in Resources */,
+				0EE8F7ED1F901B8700F6B105 /* Gun Cannon.caf in Resources */,
+				0EE8F7F01F901D7800F6B105 /* Sink.caf in Resources */,
 				0E4501291F743493008493C2 /* PirateTileSet.sks in Resources */,
 				0E4501011F742D1A008493C2 /* Actions.sks in Resources */,
 			);
@@ -392,11 +421,14 @@
 			files = (
 				0E3080DF1F87DB1C00A57FC5 /* GLIMSTIC.TTF in Resources */,
 				0EB31FC11F829E2E00F9D1A7 /* BoatScene.sks in Resources */,
+				0EE8F7F61F901F4F00F6B105 /* SeaStorm.caf in Resources */,
 				0E49DBF71F85A91700A09774 /* WelcomeScene.sks in Resources */,
 				0E4500FE1F742D1A008493C2 /* Main.storyboard in Resources */,
 				0E4501051F742D1A008493C2 /* GameScene.sks in Resources */,
 				0E45010B1F742D1A008493C2 /* Assets.xcassets in Resources */,
 				0E45011E1F742D42008493C2 /* Assets.xcassets in Resources */,
+				0EE8F7EE1F901B8800F6B105 /* Gun Cannon.caf in Resources */,
+				0EE8F7EF1F901D7700F6B105 /* Sink.caf in Resources */,
 				0E45012A1F743493008493C2 /* PirateTileSet.sks in Resources */,
 				0E4501021F742D1A008493C2 /* Actions.sks in Resources */,
 			);

@@ -40,6 +40,11 @@ class GameScene: SKScene {
     var gameState: GameState = .initial {
         didSet {
             hud.updateGameState(from: oldValue, to: gameState)
+            if gameState == .play {
+                mapTiles.playSea()
+            } else {
+                mapTiles.stopSea()
+            }
         }
     }
     

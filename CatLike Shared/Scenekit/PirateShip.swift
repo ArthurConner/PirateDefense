@@ -53,6 +53,9 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         return routeSet
     }
     
+    
+    static let sinkSound = SKAction.playSoundFileNamed("Sink.caf",waitForCompletion: false)
+    
     let shipID = "\(Date.timeIntervalSinceReferenceDate)_\(GKRandomSource.sharedRandom().nextUniform())"
     
      #if os(OSX)
@@ -228,7 +231,9 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             scene.redirectAllShips()
         }
         
-
+        if isKill {
+            scene.run(PirateNode.sinkSound)
+        }
         
     }
     
