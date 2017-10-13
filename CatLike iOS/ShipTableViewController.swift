@@ -8,15 +8,7 @@
 
 import UIKit
 
-enum GameTypeModes {
-    case unknown
-    case tower
-    case ship
-}
 
-protocol GameTypeModeDelegate {
-    func didSet(game:GameTypeModes)
-}
 
 
 extension UISplitViewController {
@@ -56,7 +48,7 @@ class ShipTableViewController: UITableViewController {
         // self.clearsSelectionOnViewWillAppear = false
         
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
+        // self.navigationItem.rightBarButtonIte/Users/arthurc/code/CatLike/CatLike iOS/ShipTableViewController.swiftm = self.editButtonItem
     }
     
     override func didReceiveMemoryWarning() {

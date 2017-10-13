@@ -103,6 +103,10 @@
 		0EE8F8081F90387600F6B105 /* Galley.piano.caf in Resources */ = {isa = PBXBuildFile; fileRef = 0EE8F7F91F90382C00F6B105 /* Galley.piano.caf */; };
 		0EE8F8091F90387900F6B105 /* motorboat.violns.caf in Resources */ = {isa = PBXBuildFile; fileRef = 0EE8F7FA1F90382C00F6B105 /* motorboat.violns.caf */; };
 		0EE8F80A1F90387A00F6B105 /* motorboat.violns.caf in Resources */ = {isa = PBXBuildFile; fileRef = 0EE8F7FA1F90382C00F6B105 /* motorboat.violns.caf */; };
+		0EE8F80D1F91198800F6B105 /* ActionTableController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EE8F80B1F91198800F6B105 /* ActionTableController.swift */; };
+		0EE8F8101F91202700F6B105 /* ViewControllerGlue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EE8F80F1F91202700F6B105 /* ViewControllerGlue.swift */; };
+		0EE8F8111F91202700F6B105 /* ViewControllerGlue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EE8F80F1F91202700F6B105 /* ViewControllerGlue.swift */; };
+		0EE8F8121F91202700F6B105 /* ViewControllerGlue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EE8F80F1F91202700F6B105 /* ViewControllerGlue.swift */; };
 		0EFC5E441F7C0A65007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
 		0EFC5E451F7C0FC3007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
 		0EFC5E461F7C0FC4007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
@@ -161,6 +165,8 @@
 		0EE8F7F91F90382C00F6B105 /* Galley.piano.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Galley.piano.caf; sourceTree = "<group>"; };
 		0EE8F7FA1F90382C00F6B105 /* motorboat.violns.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = motorboat.violns.caf; sourceTree = "<group>"; };
 		0EE8F7FB1F90382C00F6B105 /* battleship.Basses.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = battleship.Basses.caf; sourceTree = "<group>"; };
+		0EE8F80B1F91198800F6B105 /* ActionTableController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionTableController.swift; sourceTree = "<group>"; };
+		0EE8F80F1F91202700F6B105 /* ViewControllerGlue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerGlue.swift; sourceTree = "<group>"; };
 		0EFC5E431F7C0A65007D5AB6 /* Clock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clock.swift; sourceTree = "<group>"; };
 		0EFC5E471F7C201F007D5AB6 /* CannonBall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannonBall.swift; sourceTree = "<group>"; };
 		0EFC5E4B1F7C3E9C007D5AB6 /* TowerAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerAI.swift; sourceTree = "<group>"; };
@@ -216,6 +222,7 @@
 				0EB31FB61F82963100F9D1A7 /* Network.swift */,
 				0EA97F7E1F82E6DF003EBB40 /* NetworkPeer.swift */,
 				0EA97F821F82EA5B003EBB40 /* ErrorHandler.swift */,
+				0EE8F80F1F91202700F6B105 /* ViewControllerGlue.swift */,
 				0EA97F7D1F82E6A9003EBB40 /* Scenekit */,
 				0E4500D11F742D1A008493C2 /* Assets.xcassets */,
 				0E53B5AE1F796C350020A31C /* Types.swift */,
@@ -264,6 +271,7 @@
 				0E4500F81F742D1A008493C2 /* AppDelegate.swift */,
 				0E4500FA1F742D1A008493C2 /* GameViewController.swift */,
 				0EB5B6DA1F82B3EC000F2D44 /* BoatViewController.swift */,
+				0EE8F80B1F91198800F6B105 /* ActionTableController.swift */,
 				0E4500FC1F742D1A008493C2 /* Main.storyboard */,
 				0E4500FF1F742D1A008493C2 /* Info.plist */,
 			);
@@ -496,6 +504,7 @@
 				0E53B5B71F7991100020A31C /* TowerNode.swift in Sources */,
 				0E53B5BB1F79BE050020A31C /* HUD.swift in Sources */,
 				0EA97F831F82EA5B003EBB40 /* ErrorHandler.swift in Sources */,
+				0EE8F8101F91202700F6B105 /* ViewControllerGlue.swift in Sources */,
 				0E49DBFD1F85A9DD00A09774 /* WelcomeScene.swift in Sources */,
 				0E53B5AF1F796C350020A31C /* Types.swift in Sources */,
 				0E4501201F742E50008493C2 /* MapHandler.swift in Sources */,
@@ -521,6 +530,7 @@
 				0E53B5B81F7991100020A31C /* TowerNode.swift in Sources */,
 				0E53B5BC1F79BE050020A31C /* HUD.swift in Sources */,
 				0EA97F841F82EA5B003EBB40 /* ErrorHandler.swift in Sources */,
+				0EE8F8111F91202700F6B105 /* ViewControllerGlue.swift in Sources */,
 				0E53B5B01F796C350020A31C /* Types.swift in Sources */,
 				0E4501211F742E50008493C2 /* MapHandler.swift in Sources */,
 			);
@@ -532,6 +542,7 @@
 			files = (
 				0EFC5E4E1F7C434C007D5AB6 /* TowerAI.swift in Sources */,
 				0E4501081F742D1A008493C2 /* GameScene.swift in Sources */,
+				0EE8F80D1F91198800F6B105 /* ActionTableController.swift in Sources */,
 				0EB31FB91F82963100F9D1A7 /* Network.swift in Sources */,
 				0EB31FBD1F829B5500F9D1A7 /* BoatScene.swift in Sources */,
 				0E4500FB1F742D1A008493C2 /* GameViewController.swift in Sources */,
@@ -540,6 +551,7 @@
 				0EFC5E4A1F7C2048007D5AB6 /* CannonBall.swift in Sources */,
 				0EFC5E461F7C0FC4007D5AB6 /* Clock.swift in Sources */,
 				0EA97F811F82E6DF003EBB40 /* NetworkPeer.swift in Sources */,
+				0EE8F8121F91202700F6B105 /* ViewControllerGlue.swift in Sources */,
 				0E49DBF31F85567600A09774 /* MapPoint.swift in Sources */,
 				0E4500F91F742D1A008493C2 /* AppDelegate.swift in Sources */,
 				0E53B5B91F7991100020A31C /* TowerNode.swift in Sources */,

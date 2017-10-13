@@ -23,7 +23,7 @@ class GameScene: SKScene {
     var launchClock = PirateClock(5)
     var playableRect = CGRect.zero
     var boatLevel  = 3
-    var nextIsSandShip = false
+
     
     let counterShipClock = PirateClock(1)
     let shipsKilledLabel = SKLabelNode(fontNamed: "Chalkduster")
@@ -106,7 +106,7 @@ class GameScene: SKScene {
         
         
         counterShipClock.adjust(interval:5)
-        nextIsSandShip = false
+      
         
         shipsLeftOfKind.removeAll()
     }
@@ -327,13 +327,10 @@ class GameScene: SKScene {
             ai.update(scene: self)
         }
         
-        if counterShipClock.needsUpdate() {
-            if (nextIsSandShip) && towersRemaining() > 0 {
-                launchSandShip()
-            } else {
+        if counterShipClock.needsUpdate() && towersRemaining() > 0 {
+          
                 launchVictoryShip()
-            }
-            nextIsSandShip = !nextIsSandShip
+           
             counterShipClock.update()
         }
         
@@ -827,7 +824,24 @@ extension GameScene : SKPhysicsContactDelegate {
 }
 
 
+extension GameScene: TowerPlayerActionDelegate {
+   
+    
 
+    func didTower(action:TowerPlayerActions){
+        switch action {
+        case .launchPaver:
+            if towersRemaining() > 0 {
+                launchSandShip()
+            }
+        case .KillAllTowers:
+            let removeme = towers
+            for x in removeme {
+                x.die(scene:self, isKill:true)
+            }
+        }
+    }
+}
 
 
 #if os(iOS) || os(tvOS)

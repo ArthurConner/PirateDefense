@@ -11,13 +11,13 @@ import SpriteKit
 import GameplayKit
 
 class GameViewController: NSViewController {
-
     
-    var myScene:GameScene?
+    
+    var myScene:SKScene?
     
     @IBAction func ReloadClicked(_ sender: Any) {
         
-        guard let scene = myScene
+        guard let scene = myScene as? GameScene
             
             else { return}
         
@@ -29,17 +29,60 @@ class GameViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let scene = GameScene.newGameScene()
-        myScene = scene
+        didSet(game: .unknown)
         // Present the scene
         let skView = self.view as! SKView
-        skView.presentScene(scene)
-        
         skView.ignoresSiblingOrder = true
-        
         skView.showsFPS = true
         skView.showsNodeCount = true
     }
-
+    
 }
 
+
+
+extension GameViewController:GameTypeModeDelegate {
+    func didSet(game: GameTypeModes) {
+        let nextGame:SKScene?
+        
+        
+        switch game{
+        case .tower:
+            nextGame = GameScene.newGameScene()
+        case .ship:
+            let b = BoatScene.newGameScene()
+            b.showButtons = false
+            nextGame = b
+        case .unknown:
+            nextGame = WelcomeScene.newGameScene()
+            
+        }
+        
+        
+        if let scene = nextGame {
+            
+            let skView = self.view as! SKView
+            
+            let trans = SKTransition.doorsOpenHorizontal(withDuration: 3)
+            skView.presentScene(scene, transition:trans)
+            
+            skView.ignoresSiblingOrder = true
+            skView.showsFPS = true
+            skView.showsNodeCount = true
+            
+            myScene = scene
+        }
+        
+    }
+}
+
+extension GameViewController: TowerPlayerActionDelegate {
+    
+    
+    
+    func didTower(action:TowerPlayerActions){
+        if let responder = myScene as? TowerPlayerActionDelegate {
+            responder.didTower(action: action)
+        }
+    }
+}
