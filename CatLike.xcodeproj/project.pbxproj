@@ -68,7 +68,7 @@
 		0EA97F831F82EA5B003EBB40 /* ErrorHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA97F821F82EA5B003EBB40 /* ErrorHandler.swift */; };
 		0EA97F841F82EA5B003EBB40 /* ErrorHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA97F821F82EA5B003EBB40 /* ErrorHandler.swift */; };
 		0EA97F851F82EA5B003EBB40 /* ErrorHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA97F821F82EA5B003EBB40 /* ErrorHandler.swift */; };
-		0EA97F871F82F4F2003EBB40 /* ShipTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA97F861F82F4F2003EBB40 /* ShipTableViewController.swift */; };
+		0EA97F871F82F4F2003EBB40 /* ActionTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA97F861F82F4F2003EBB40 /* ActionTableViewController.swift */; };
 		0EB31FB71F82963100F9D1A7 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB31FB61F82963100F9D1A7 /* Network.swift */; };
 		0EB31FB81F82963100F9D1A7 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB31FB61F82963100F9D1A7 /* Network.swift */; };
 		0EB31FB91F82963100F9D1A7 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB31FB61F82963100F9D1A7 /* Network.swift */; };
@@ -152,7 +152,7 @@
 		0E53B5BA1F79BE050020A31C /* HUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUD.swift; sourceTree = "<group>"; };
 		0EA97F7E1F82E6DF003EBB40 /* NetworkPeer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPeer.swift; sourceTree = "<group>"; };
 		0EA97F821F82EA5B003EBB40 /* ErrorHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorHandler.swift; sourceTree = "<group>"; };
-		0EA97F861F82F4F2003EBB40 /* ShipTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShipTableViewController.swift; sourceTree = "<group>"; };
+		0EA97F861F82F4F2003EBB40 /* ActionTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionTableViewController.swift; sourceTree = "<group>"; };
 		0EB31FB61F82963100F9D1A7 /* Network.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
 		0EB31FBA1F829B5500F9D1A7 /* BoatScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoatScene.swift; sourceTree = "<group>"; };
 		0EB31FBE1F829E2E00F9D1A7 /* BoatScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = BoatScene.sks; sourceTree = "<group>"; };
@@ -246,7 +246,7 @@
 			children = (
 				0E4500D91F742D1A008493C2 /* AppDelegate.swift */,
 				0E4500DB1F742D1A008493C2 /* GameViewController.swift */,
-				0EA97F861F82F4F2003EBB40 /* ShipTableViewController.swift */,
+				0EA97F861F82F4F2003EBB40 /* ActionTableViewController.swift */,
 				0E4500DD1F742D1A008493C2 /* Main.storyboard */,
 				0E4500E01F742D1A008493C2 /* LaunchScreen.storyboard */,
 				0E4500E31F742D1A008493C2 /* Info.plist */,
@@ -492,7 +492,7 @@
 				0EFC5E4C1F7C3E9C007D5AB6 /* TowerAI.swift in Sources */,
 				0E4501061F742D1A008493C2 /* GameScene.swift in Sources */,
 				0EA97F7F1F82E6DF003EBB40 /* NetworkPeer.swift in Sources */,
-				0EA97F871F82F4F2003EBB40 /* ShipTableViewController.swift in Sources */,
+				0EA97F871F82F4F2003EBB40 /* ActionTableViewController.swift in Sources */,
 				0EB31FB71F82963100F9D1A7 /* Network.swift in Sources */,
 				0EB31FBB1F829B5500F9D1A7 /* BoatScene.swift in Sources */,
 				0E4500DC1F742D1A008493C2 /* GameViewController.swift in Sources */,

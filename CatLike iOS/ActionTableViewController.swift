@@ -20,7 +20,7 @@ extension UISplitViewController {
     }
 }
 
-class ShipTableViewController: UITableViewController {
+class ActionTableViewController: UITableViewController {
     
     
     let boats:[ShipKind] = [.crusier,.galley,.motor,.destroyer,.battle]
