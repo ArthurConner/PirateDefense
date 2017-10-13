@@ -77,7 +77,8 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
        
         let ship:PirateNode
        
-         
+        let soundName:String?
+        
          
         switch aKind {
         case .galley:
@@ -86,6 +87,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             body = SKPhysicsBody(circleOfRadius: 20)
             body.restitution = 0.5
             ship.waterSpeed = modfier
+            soundName = "Galley.piano.caf"
         case .row:
             ship = PirateNode(imageNamed: "Row" )
             ship.wakeColor = .white
@@ -97,7 +99,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             ship.gun.clock.adjust(interval: 3)
             ship.gun.radius = 1
             
-            
+            soundName = nil
         case .crusier:
             
             ship = CruiserNode(imageNamed: "Crusier" )
@@ -108,7 +110,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             ship.hitsRemain = 1
             
             ship.gun.clock.adjust(interval: 70)
-            
+            soundName =  "cruiser.flute.caf"
         case .destroyer:
             
             ship = PirateNode(imageNamed: "Destroyer" )
@@ -120,7 +122,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             ship.gun.radius = 5
             ship.gun.clock.adjust(interval: 0.7)
             
-            
+            soundName = "destroyer.Violas.caf"
         case .motor:
             ship = PirateNode(imageNamed: "Motor" )
             ship.wakeColor = .green
@@ -130,6 +132,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             ship.hitsRemain = 1
             ship.gun.clock.adjust(interval: 8)
             print("motor is now \(modfier / 2)")
+            soundName = "motorboat.violns.caf"
         case .battle:
             ship = PirateNode(imageNamed: "Battleship" )
             ship.wakeColor = .black
@@ -138,11 +141,18 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             ship.waterSpeed = modfier * 8
             ship.hitsRemain = 6
             ship.gun.clock.adjust(interval: 0.5)
+            soundName = "battleship.Basses.caf"
         }
 
+        if let s = soundName{
+            let me = SKAudioNode(fileNamed:s)
+            me.name = "seasound"
+            me.autoplayLooped = true
+            me.isPositional = true
+            ship.addChild(me)
+           
+        }
         
-    
-       
        ship.route = r
        
         ship.kind = aKind

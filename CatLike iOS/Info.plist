@@ -47,5 +47,7 @@
 	<array>
 		<string>GLIMSTIC.TTF</string>
 	</array>
+	<key>audio</key>
+	<string></string>
 </dict>
 </plist>

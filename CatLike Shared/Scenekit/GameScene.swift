@@ -115,6 +115,8 @@ class GameScene: SKScene {
         setUpScene()
         gameState = .start
         hud.kills = 0
+         //SKTAudio.sharedInstance().
+        
     }
     
     func tileOf(node:SKNode)->MapPoint? {
@@ -183,6 +185,14 @@ class GameScene: SKScene {
                                                 y: -playableRect.size.height/2 + CGFloat(20) - 100 )
         self.addChild(towersRemainingLabel)
         updateLabels()
+        
+        guard let v = mapTiles.voyages.first, let pos = self.convert(mappoint: v.finish) else {return}
+        
+        let dest = SKShapeNode(circleOfRadius:20)
+        dest.fillColor = .orange
+        dest.position = pos
+        self.listener = dest
+        self.addChild(dest)
     }
     
     func updateLabels() {
@@ -444,7 +454,12 @@ extension GameScene {
             let followLine = SKAction.follow( path, asOffset: false, orientToPath: true, duration: time)
             ship.run(followLine)
             
+              if let tile  = self.childNode(withName: "//seasound") as? SKAudioNode  {
+                tile.run(SKAction.changeVolume(to:0, duration: 1))
+                
+                return }
         }
+        
         /*
         let dest = traveler.route.finish
         
@@ -566,6 +581,7 @@ extension GameScene {
         ships.append(ship)
         self.addChild(ship)
         adjust(traveler: ship)
+     
         let nextVal = (self.shipsLeftOfKind[ship.kind] ?? 0) + 1
         
         self.shipsLeftOfKind[ship.kind] = nextVal
@@ -576,7 +592,8 @@ extension GameScene {
             
             
         }
-        
+ 
+
         
     }
     
