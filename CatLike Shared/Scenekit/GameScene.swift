@@ -34,17 +34,20 @@ class GameScene: SKScene {
     let maxTowers = 7
     
     var routeDebug:[String:[MapPoint]] = [:]
+    var shipsLeftOfKind:[ShipKind:Int] = [:]
     
     var ai:TowerAI? = TowerAI()
     
     var gameState: GameState = .initial {
         didSet {
             hud.updateGameState(from: oldValue, to: gameState)
+            /*
             if gameState == .play {
                 mapTiles.playSea()
             } else {
                 mapTiles.stopSea()
             }
+ */
         }
     }
     
@@ -104,6 +107,8 @@ class GameScene: SKScene {
         
         counterShipClock.adjust(interval:5)
         nextIsSandShip = false
+        
+        shipsLeftOfKind.removeAll()
     }
     func restart(){
         clear()
@@ -538,12 +543,44 @@ extension GameScene {
     }
     
     
+    func soundFor(kind:ShipKind)->SKAction?{
+        
+        switch kind {
+        case .battle:
+        return PirateNode.battleShipSound
+        case .crusier:
+        return PirateNode.cruiserSound
+        case .destroyer:
+        return PirateNode.destroyerSound
+        case .motor:
+            return PirateNode.motorSound
+        case .galley:
+            return PirateNode.galleySound
+        case .row:
+            return nil
+        }
+        
+    }
+    
     func add(ship:PirateNode){
         ships.append(ship)
         self.addChild(ship)
         adjust(traveler: ship)
+        let nextVal = (self.shipsLeftOfKind[ship.kind] ?? 0) + 1
+        
+        self.shipsLeftOfKind[ship.kind] = nextVal
+        
+        if  let play = self.soundFor(kind: ship.kind) {
+            
+             ship.run(SKAction.repeatForever(SKAction.sequence([play, SKAction.wait(forDuration: play.duration * 2)])))
+            
+            
+        }
+        
         
     }
+    
+ 
     
     func remove(ship:PirateNode){
         ship.removeFromParent()
@@ -552,7 +589,10 @@ extension GameScene {
         hud.kills += 1
         updateLabels()
         
+        self.shipsLeftOfKind[ship.kind] = (self.shipsLeftOfKind[ship.kind] ?? 1) - 1
+        
     }
+    
     func launchAttack(timeOverTile:Double) {
         
         

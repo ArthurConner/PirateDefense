@@ -56,6 +56,12 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     
     static let sinkSound = SKAction.playSoundFileNamed("Sink.caf",waitForCompletion: false)
     
+    static let battleShipSound = SKAction.playSoundFileNamed("battleship.Basses.caf",waitForCompletion: true)
+    static let cruiserSound = SKAction.playSoundFileNamed("cruiser.flute.caf",waitForCompletion: true)
+    static let destroyerSound = SKAction.playSoundFileNamed("destroyer.Violas.caf",waitForCompletion: true)
+    static let galleySound = SKAction.playSoundFileNamed("Galley.piano.caf",waitForCompletion: true)
+    static let motorSound = SKAction.playSoundFileNamed("motorboat.violns.caf",waitForCompletion: true)
+    
     let shipID = "\(Date.timeIntervalSinceReferenceDate)_\(GKRandomSource.sharedRandom().nextUniform())"
     
      #if os(OSX)
