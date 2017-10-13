@@ -107,6 +107,7 @@
 		0EE8F8101F91202700F6B105 /* ViewControllerGlue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EE8F80F1F91202700F6B105 /* ViewControllerGlue.swift */; };
 		0EE8F8111F91202700F6B105 /* ViewControllerGlue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EE8F80F1F91202700F6B105 /* ViewControllerGlue.swift */; };
 		0EE8F8121F91202700F6B105 /* ViewControllerGlue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EE8F80F1F91202700F6B105 /* ViewControllerGlue.swift */; };
+		0EE8F8151F914E2200F6B105 /* iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0EE8F8131F914E2200F6B105 /* iPhone.storyboard */; };
 		0EFC5E441F7C0A65007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
 		0EFC5E451F7C0FC3007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
 		0EFC5E461F7C0FC4007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
@@ -167,6 +168,7 @@
 		0EE8F7FB1F90382C00F6B105 /* battleship.Basses.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = battleship.Basses.caf; sourceTree = "<group>"; };
 		0EE8F80B1F91198800F6B105 /* ActionTableController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionTableController.swift; sourceTree = "<group>"; };
 		0EE8F80F1F91202700F6B105 /* ViewControllerGlue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerGlue.swift; sourceTree = "<group>"; };
+		0EE8F8141F914E2200F6B105 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/iPhone.storyboard; sourceTree = "<group>"; };
 		0EFC5E431F7C0A65007D5AB6 /* Clock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clock.swift; sourceTree = "<group>"; };
 		0EFC5E471F7C201F007D5AB6 /* CannonBall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannonBall.swift; sourceTree = "<group>"; };
 		0EFC5E4B1F7C3E9C007D5AB6 /* TowerAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerAI.swift; sourceTree = "<group>"; };
@@ -248,6 +250,7 @@
 				0E4500DB1F742D1A008493C2 /* GameViewController.swift */,
 				0EA97F861F82F4F2003EBB40 /* ActionTableViewController.swift */,
 				0E4500DD1F742D1A008493C2 /* Main.storyboard */,
+				0EE8F8131F914E2200F6B105 /* iPhone.storyboard */,
 				0E4500E01F742D1A008493C2 /* LaunchScreen.storyboard */,
 				0E4500E31F742D1A008493C2 /* Info.plist */,
 			);
@@ -423,6 +426,7 @@
 				0E4500E21F742D1A008493C2 /* LaunchScreen.storyboard in Resources */,
 				0EE8F7FC1F90382D00F6B105 /* cruiser.flute.caf in Resources */,
 				0E45011C1F742D42008493C2 /* Assets.xcassets in Resources */,
+				0EE8F8151F914E2200F6B105 /* iPhone.storyboard in Resources */,
 				0EE8F7FD1F90382D00F6B105 /* destroyer.Violas.caf in Resources */,
 				0EE8F7FE1F90382D00F6B105 /* Galley.piano.caf in Resources */,
 				0EE8F7EC1F901B7E00F6B105 /* Sink.caf in Resources */,
@@ -596,6 +600,14 @@
 				0E4500FD1F742D1A008493C2 /* Base */,
 			);
 			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		0EE8F8131F914E2200F6B105 /* iPhone.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0EE8F8141F914E2200F6B105 /* Base */,
+			);
+			name = iPhone.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

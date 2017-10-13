@@ -16,6 +16,7 @@ class GameViewController: UIViewController {
     
     
       var myScene:SKScene?
+     var gameState: GameTypeModes = .unknown
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -50,18 +51,30 @@ class GameViewController: UIViewController {
     }
     
   
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showPhonePicker" {
+            if let controller = segue.destination  as? ActionTableViewController{
+                
+               controller.gameState = gameState
+               controller.pushGC = self
+            }
+        }
+    }
 }
 
 extension GameViewController:GameTypeModeDelegate {
     func didSet(game: GameTypeModes) {
         let nextGame:SKScene?
+        self.gameState = game
         
         if let nav = self.navigationController {
             print(nav)
         }
         switch game{
         case .tower:
-            nextGame = GameScene.newGameScene()
+            let v = 24//Int(self.view.frame.width/30)
+            nextGame = GameScene.newGameScene(numTiles: v)
         case .ship:
             let b = BoatScene.newGameScene()
             b.showButtons = false

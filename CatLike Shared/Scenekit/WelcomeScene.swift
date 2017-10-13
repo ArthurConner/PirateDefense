@@ -26,7 +26,7 @@ class WelcomeScene : SKScene {
     
     var deltaClock = PirateClock(0.5)
  
-    var emiter:SKEmitterNode?
+
     
     class func newGameScene() -> WelcomeScene {
         // Load 'GameScene.sks' as an SKScene.
@@ -80,10 +80,7 @@ class WelcomeScene : SKScene {
     
     func setUpScene() {
        
-        
-        guard let em  = self.childNode(withName: "//BoatEmitter") as? SKEmitterNode else { return }
-        emiter = em
-        
+       
         self.backgroundColor = self.back
     
         

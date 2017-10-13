@@ -48,7 +48,7 @@ extension GameViewController:GameTypeModeDelegate {
         
         switch game{
         case .tower:
-            nextGame = GameScene.newGameScene()
+            nextGame = GameScene.newGameScene(numTiles: 24)
         case .ship:
             let b = BoatScene.newGameScene()
             b.showButtons = false

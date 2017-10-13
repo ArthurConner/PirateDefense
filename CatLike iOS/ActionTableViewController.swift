@@ -41,9 +41,11 @@ class ActionTableViewController: UITableViewController {
         }
     }
     
+     weak var pushGC:GameViewController?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        gameState = .unknown
+        
         
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
@@ -54,6 +56,8 @@ class ActionTableViewController: UITableViewController {
     
     
     func gameController()->GameViewController?{
+        
+        if let gc = pushGC {return  gc }
         
         if let split = splitViewController {
             let controllers = split.viewControllers
@@ -179,7 +183,10 @@ class ActionTableViewController: UITableViewController {
                 self.gameState = .tower
             }
             
-            if let split = splitViewController {
+            if let gc = pushGC {
+                gc.didSet(game: self.gameState)
+     
+            } else  if let split = splitViewController {
                 
                 if let gc = gameController(){
                     gc.didSet(game: self.gameState)
@@ -188,6 +195,14 @@ class ActionTableViewController: UITableViewController {
                 split.toggleMasterView()
             }
             
+        }
+        
+        
+        if let _ = pushGC {
+        
+            if let n = self.navigationController {
+                n.popViewController(animated: true)
+            }
         }
     }
     
@@ -199,6 +214,8 @@ class ActionTableViewController: UITableViewController {
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
+        } else {
+            print(segue.identifier)
         }
     }
     

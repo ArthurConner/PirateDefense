@@ -221,7 +221,7 @@ class MapHandler{
     
     var tiles : SKTileMapNode?
     let tileSet = SKTileSet(named: "PlunderSet")
-    let mapAdj = 24
+    var mapAdj = 24
     fileprivate var islands:[Island] = []
     fileprivate var startIslands:[Island] = []
     fileprivate var endIsle:Island?
@@ -523,6 +523,10 @@ class MapHandler{
             return
         }
         tiles = nextM
+        
+        if let t = nextM {
+            mapAdj = t.numberOfRows
+        }
         refreshMap()
         
        
