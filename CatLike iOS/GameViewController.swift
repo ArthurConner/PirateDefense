@@ -15,6 +15,7 @@ class GameViewController: UIViewController {
     
     
     
+      var myScene:SKScene?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -82,7 +83,20 @@ extension GameViewController:GameTypeModeDelegate {
             skView.ignoresSiblingOrder = true
             skView.showsFPS = true
             skView.showsNodeCount = true
+            myScene = nextGame
         }
         
+    }
+}
+
+
+extension GameViewController: TowerPlayerActionDelegate {
+    
+    
+    
+    func didTower(action:TowerPlayerActions){
+        if let responder = myScene as? TowerPlayerActionDelegate {
+            responder.didTower(action: action)
+        }
     }
 }

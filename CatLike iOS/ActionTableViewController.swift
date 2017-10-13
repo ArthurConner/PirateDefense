@@ -25,6 +25,7 @@ class ActionTableViewController: UITableViewController {
     
     let boats:[ShipKind] = [.crusier,.galley,.motor,.destroyer,.battle]
     let kinds:[String] = ["Play Ship", "Play Tower"]
+    let towerAct:[TowerPlayerActions] = [.launchPaver, .KillAllTowers ]
     
     var gameState: GameTypeModes = .unknown {
         didSet {
@@ -51,6 +52,24 @@ class ActionTableViewController: UITableViewController {
         // self.navigationItem.rightBarButtonIte/Users/arthurc/code/CatLike/CatLike iOS/ShipTableViewController.swiftm = self.editButtonItem
     }
     
+    
+    func gameController()->GameViewController?{
+        
+        if let split = splitViewController {
+            let controllers = split.viewControllers
+            
+            
+            if let nav = controllers[controllers.count-1] as? UINavigationController,
+                let detailViewController = nav.topViewController as?  GameViewController {
+                return detailViewController
+            }
+           // split.toggleMasterView()
+        }
+        
+        return nil
+        
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -63,7 +82,7 @@ class ActionTableViewController: UITableViewController {
         
         switch gameState {
         case .tower:
-            return 0
+            return 1
         case .ship:
             return 1
         case .unknown:
@@ -79,7 +98,7 @@ class ActionTableViewController: UITableViewController {
         
         switch gameState {
         case .tower:
-            return 0
+            return towerAct.count
         case .ship:
             return boats.count
         case .unknown:
@@ -122,8 +141,9 @@ class ActionTableViewController: UITableViewController {
         
         switch gameState {
         case .tower:
+            let kind = towerAct[indexPath.row]
             cell.imageView?.image = nil
-            cell.textLabel?.text = nil
+            cell.textLabel?.text = kind.rawValue
         case .ship:
             let kind = boats[indexPath.row]
             configure(cell: cell, toBoat: kind)
@@ -141,7 +161,11 @@ class ActionTableViewController: UITableViewController {
         
         switch gameState {
         case .tower:
-            ErrorHandler.handle(.logic, "There aren't any cells for towers")
+            //ErrorHandler.handle(.logic, "There aren't any cells for towers")
+            let kind = towerAct[indexPath.row]
+            if let gc = self.gameController() {
+                gc.didTower(action:kind)
+            }
         case .ship:
             let kind = boats[indexPath.row]
             let prox = ShipProxy(kind: kind, shipID: "", position: CGPoint.zero, angle: 0)
@@ -156,13 +180,11 @@ class ActionTableViewController: UITableViewController {
             }
             
             if let split = splitViewController {
-                let controllers = split.viewControllers
-
                 
-                if let nav = controllers[controllers.count-1] as? UINavigationController,
-                    let detailViewController = nav.topViewController as?  GameTypeModeDelegate {
-                    detailViewController.didSet(game: self.gameState)
+                if let gc = gameController(){
+                    gc.didSet(game: self.gameState)
                 }
+              
                 split.toggleMasterView()
             }
             
