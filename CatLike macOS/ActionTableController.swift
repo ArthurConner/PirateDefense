@@ -27,7 +27,7 @@ class ActionTableController: NSViewController  {
     
     let boats:[ShipKind] = [.crusier,.galley,.motor,.destroyer,.battle]
     let kinds:[String] = ["Play Ship", "Play Tower"]
-    let towerAct:[TowerPlayerActions] = [.launchPaver, .KillAllTowers ]
+    let towerAct:[TowerPlayerActions] = [.launchPaver, .KillAllTowers, .fasterBoats, .strongerBoats ]
     
     var gameState: GameTypeModes = .unknown {
         didSet {

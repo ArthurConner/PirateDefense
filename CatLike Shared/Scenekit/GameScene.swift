@@ -37,7 +37,7 @@ class GameScene: SKScene {
     var shipsLeftOfKind:[ShipKind:Int] = [:]
     
     var ai:TowerAI? = TowerAI()
-    
+    var victorySpeed:Double = 1
     var gameState: GameState = .initial {
         didSet {
             hud.updateGameState(from: oldValue, to: gameState)
@@ -113,6 +113,7 @@ class GameScene: SKScene {
         launchClock.tickNext()
         
         boatLevel = 3
+        victorySpeed  = 1
         
         
         counterShipClock.adjust(interval:5)
@@ -458,7 +459,17 @@ extension GameScene {
             ship.removeAllActions()
             ship.run(SKAction.repeat(SKAction.sequence([SKAction.run(traveler.spawnWake),SKAction.wait(forDuration: traveler.waterSpeed/4)]), count: route.count * 2))
             
-            let followLine = SKAction.follow( path, asOffset: false, orientToPath: true, duration: time)
+            var orient = true
+            
+           if let c = self.camera {
+                
+                for x in ship.children{
+                    if x == c {
+                        orient = false
+                    }
+                }
+            }
+            let followLine = SKAction.follow( path, asOffset: false, orientToPath: orient, duration: time)
             ship.run(followLine)
             
               if let tile  = self.childNode(withName: "//seasound") as? SKAudioNode  {
@@ -634,7 +645,7 @@ extension GameScene {
         
         if let trip = mapTiles.randomRoute(),   let startingPostion = convert(mappoint: trip.finish) {
             
-            let victoryShip = DefenderTower(timeOverTile: 1, route: Voyage(start: trip.finish, finish: trip.start))
+            let victoryShip = DefenderTower(timeOverTile: victorySpeed, route: Voyage(start: trip.finish, finish: trip.start))
             
             victoryShip.position = startingPostion
             victoryShip.fillColor = .purple
@@ -650,6 +661,13 @@ extension GameScene {
             
             counterShipClock.adjust(interval: Double(victoryShip.route.shortestRoute(map: mapTiles, using: waterSet).count) * victoryShip.waterSpeed * 0.4 )
             counterShipClock.update()
+            
+            if self.camera == nil {
+                let cam = SKCameraNode()
+                //cam.ro
+                self.camera = cam
+                victoryShip.addChild(cam)
+            }
             
         }
         
@@ -849,7 +867,12 @@ extension GameScene: TowerPlayerActionDelegate {
             for x in removeme {
                 x.die(scene:self, isKill:true)
             }
+        case .fasterBoats:
+            victorySpeed = victorySpeed * 0.95
+        case .strongerBoats:
+            boatLevel += 1
         }
+    
     }
 }
 
