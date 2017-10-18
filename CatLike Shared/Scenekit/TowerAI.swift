@@ -75,7 +75,7 @@ class TowerAI {
         }
         
         
-        if let p = scene.convert(mappoint: bestTile) {
+        if let p = scene.mapTiles.convert(mappoint: bestTile) {
             scene.manageTower(point: p)
         }
         

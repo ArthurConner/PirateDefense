@@ -238,7 +238,7 @@ class TowerNode: SKShapeNode , Fireable {
     func fire(at:MapPoint,scene:GameScene){
         guard gun.clock.needsUpdate() else { return }
         
-        if  let dest =  scene.convert(mappoint: at){
+        if  let dest =  scene.mapTiles.convert(mappoint: at){
        
             let _ = TowerMissle(tower: self, dest: dest, flightDuration: gun.flightDuration)
             gun.clock.update()
@@ -246,7 +246,6 @@ class TowerNode: SKShapeNode , Fireable {
             return
         }
     }
-    
     
     
 }
@@ -260,7 +259,6 @@ class SandTower: TowerNode, Navigatable {
     func allowedTiles() -> Set<Landscape> {
         return routeSet
     }
-    
     
     
     convenience init(timeOverTile:Double, route nextR:Voyage) {
@@ -358,8 +356,6 @@ class DefenderTower: TowerNode, Navigatable {
     func allowedTiles() -> Set<Landscape> {
         return routeSet
     }
-    
-    
     
     convenience init(timeOverTile:Double, route nextR:Voyage) {
         

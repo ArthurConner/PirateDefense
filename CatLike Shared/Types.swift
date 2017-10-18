@@ -8,6 +8,7 @@
 
 import Foundation
 
+
 struct PhysicsCategory {
     static let None:      UInt32 = 0
     static let All:       UInt32 = 0xFFFFFFFF
@@ -28,13 +29,7 @@ protocol Fireable {
     func targetTiles(scene:GameScene)->Set<MapPoint>
     func hit(scene:GameScene)
     func fire(at:MapPoint,scene:GameScene)
-  
+    
 }
 
-protocol Navigatable {
-    
-    var waterSpeed:Double{get set}
-    var route:Voyage {get set}
-    func allowedTiles()->Set<Landscape>
-    func spawnWake()
-}
+

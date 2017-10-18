@@ -166,7 +166,8 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         body.contactTestBitMask = PhysicsCategory.Missle
         
         ship.physicsBody = body
-        ship.run(SKAction.scale(by: 0.5, duration: 0.1))
+        ship.setScale(0.3)
+        ship.run(SKAction.scale(to: 0.75, duration: 6))
         
         return ship
     }
@@ -238,12 +239,10 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         
         removeAllActions()
         physicsBody = nil
-        
-
+    
         scene.removeFrom(shipTile: shipTile)
         
         if scene.possibleToSand(at:shipTile){
-            
             scene.redirectAllShips()
         }
         
@@ -281,7 +280,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     
     func fire(at:MapPoint,scene:GameScene){
         guard self.gun.clock.needsUpdate() else { return }
-        if  let dest =  scene.convert(mappoint: at){
+        if  let dest =  scene.mapTiles.convert(mappoint: at){
             let _ = CannonBall(tower: self, dest: dest, speed: self.gun.flightDuration)
             self.gun.clock.update()
             return
@@ -303,7 +302,7 @@ class CruiserNode : PirateNode{
             let lifeBoatTiles = scene.availableWater(around:shipTile)
             for tile in lifeBoatTiles {
                 
-                if   let shipPosition = scene.convert(mappoint:tile) {
+                if   let shipPosition = scene.mapTiles.convert(mappoint:tile) {
                     
                     let ship:PirateNode
                     // print("we have \(raftLeft) rafts")

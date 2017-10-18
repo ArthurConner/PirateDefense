@@ -62,6 +62,9 @@
 		0E53B5BB1F79BE050020A31C /* HUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5BA1F79BE050020A31C /* HUD.swift */; };
 		0E53B5BC1F79BE050020A31C /* HUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5BA1F79BE050020A31C /* HUD.swift */; };
 		0E53B5BD1F79BE050020A31C /* HUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53B5BA1F79BE050020A31C /* HUD.swift */; };
+		0EA065711F97FD0500BD0B6E /* Navigatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA065701F97FD0500BD0B6E /* Navigatable.swift */; };
+		0EA065721F97FDA900BD0B6E /* Navigatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA065701F97FD0500BD0B6E /* Navigatable.swift */; };
+		0EA065731F97FDAA00BD0B6E /* Navigatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA065701F97FD0500BD0B6E /* Navigatable.swift */; };
 		0EA97F7F1F82E6DF003EBB40 /* NetworkPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA97F7E1F82E6DF003EBB40 /* NetworkPeer.swift */; };
 		0EA97F801F82E6DF003EBB40 /* NetworkPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA97F7E1F82E6DF003EBB40 /* NetworkPeer.swift */; };
 		0EA97F811F82E6DF003EBB40 /* NetworkPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA97F7E1F82E6DF003EBB40 /* NetworkPeer.swift */; };
@@ -151,6 +154,7 @@
 		0E53B5B21F796CC60020A31C /* PirateShip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PirateShip.swift; sourceTree = "<group>"; };
 		0E53B5B61F7991100020A31C /* TowerNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerNode.swift; sourceTree = "<group>"; };
 		0E53B5BA1F79BE050020A31C /* HUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUD.swift; sourceTree = "<group>"; };
+		0EA065701F97FD0500BD0B6E /* Navigatable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Navigatable.swift; sourceTree = "<group>"; };
 		0EA97F7E1F82E6DF003EBB40 /* NetworkPeer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPeer.swift; sourceTree = "<group>"; };
 		0EA97F821F82EA5B003EBB40 /* ErrorHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorHandler.swift; sourceTree = "<group>"; };
 		0EA97F861F82F4F2003EBB40 /* ActionTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionTableViewController.swift; sourceTree = "<group>"; };
@@ -228,6 +232,7 @@
 				0EA97F7D1F82E6A9003EBB40 /* Scenekit */,
 				0E4500D11F742D1A008493C2 /* Assets.xcassets */,
 				0E53B5AE1F796C350020A31C /* Types.swift */,
+				0EA065701F97FD0500BD0B6E /* Navigatable.swift */,
 				0EFC5E431F7C0A65007D5AB6 /* Clock.swift */,
 			);
 			path = "CatLike Shared";
@@ -503,6 +508,7 @@
 				0E53B5B31F796CC60020A31C /* PirateShip.swift in Sources */,
 				0EFC5E481F7C201F007D5AB6 /* CannonBall.swift in Sources */,
 				0EFC5E441F7C0A65007D5AB6 /* Clock.swift in Sources */,
+				0EA065711F97FD0500BD0B6E /* Navigatable.swift in Sources */,
 				0E49DBF11F85547900A09774 /* MapPoint.swift in Sources */,
 				0E4500DA1F742D1A008493C2 /* AppDelegate.swift in Sources */,
 				0E53B5B71F7991100020A31C /* TowerNode.swift in Sources */,
@@ -525,6 +531,7 @@
 				0EA97F801F82E6DF003EBB40 /* NetworkPeer.swift in Sources */,
 				0EB31FB81F82963100F9D1A7 /* Network.swift in Sources */,
 				0EB31FBC1F829B5500F9D1A7 /* BoatScene.swift in Sources */,
+				0EA065721F97FDA900BD0B6E /* Navigatable.swift in Sources */,
 				0E49DBFE1F85A9DD00A09774 /* WelcomeScene.swift in Sources */,
 				0E4500ED1F742D1A008493C2 /* GameViewController.swift in Sources */,
 				0E53B5B41F796CC60020A31C /* PirateShip.swift in Sources */,
@@ -558,6 +565,7 @@
 				0EE8F8121F91202700F6B105 /* ViewControllerGlue.swift in Sources */,
 				0E49DBF31F85567600A09774 /* MapPoint.swift in Sources */,
 				0E4500F91F742D1A008493C2 /* AppDelegate.swift in Sources */,
+				0EA065731F97FDAA00BD0B6E /* Navigatable.swift in Sources */,
 				0E53B5B91F7991100020A31C /* TowerNode.swift in Sources */,
 				0E53B5BD1F79BE050020A31C /* HUD.swift in Sources */,
 				0E53B5B11F796C350020A31C /* Types.swift in Sources */,

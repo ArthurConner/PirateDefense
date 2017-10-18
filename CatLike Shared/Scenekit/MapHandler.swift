@@ -586,3 +586,31 @@ class MapHandler{
     
     
 }
+
+extension MapHandler {
+    
+    func convert(mappoint:MapPoint)->CGPoint? {
+        guard let background = self.tiles, let sup = background.parent as? SKScene else {return nil }
+        let tileCenter  = background.centerOfTile(atColumn:mappoint.col,row:mappoint.row)
+        return sup.convert(tileCenter, from: background)
+    }
+    
+    func pathOf(mappoints route:[MapPoint], startOveride:CGPoint? = nil)->CGPath?{
+        
+        guard let f1 = route.first, var p1 = convert(mappoint:f1) else { return nil}
+        
+        let path = CGMutablePath()
+        p1 = startOveride ?? p1
+        path.move(to: p1)
+        
+        for (i, hex) in route.enumerated() {
+            if let p = convert(mappoint:hex){
+                if i > 0 {
+                    path.addLine(to:p)
+                }
+            }
+        }
+        
+        return path
+    }
+}
