@@ -36,6 +36,8 @@ class GameScene: SKScene {
     var routeDebug:[String:[MapPoint]] = [:]
     var shipsLeftOfKind:[ShipKind:Int] = [:]
     
+    weak var followingShip:TowerNode?
+    
     var ai:TowerAI? = TowerAI()
     var victorySpeed:Double = 1
     var gameState: GameState = .initial {
@@ -421,20 +423,25 @@ extension GameScene {
     }
     
     func manageTower(point: CGPoint){
-        guard let towerPoint = mapTiles.map(coordinate: point),
-            mapTiles.kind(point: towerPoint) == .sand else { return }
+        guard let towerPoint = mapTiles.map(coordinate: point)
+            else { return }
+        
         
         if let t = tower(at:towerPoint) {
-            
-            if t.level > 0 {
+            if let _ = t as? Navigatable {
+                self.followingShip = t
+                self.redirectAllShips()
+            } else if t.level > 0 {
                 t.levelTimer.reduce(factor:0.9)
                 t.level = -1
                 t.adjust(level: -1)
             }
-            
-        } else if towersRemaining() > 0 {
+
+        } else if towersRemaining() > 0, mapTiles.kind(point: towerPoint) == .sand  {
             add(towerAt: towerPoint)
-            
+        } else if  mapTiles.kind(point: towerPoint) == .water {
+            self.followingShip = nil
+            redirectAllShips()
         }
     }
     
@@ -785,6 +792,25 @@ extension GameScene {
             
             if let boat = x as? Navigatable {
                 adjust(traveler: boat)
+            }
+        }
+        if let x = followingShip, let nav = x as? Navigatable {
+            let cam:SKCameraNode
+            if let c = self.camera{
+                cam = c
+            } else {
+                cam = SKCameraNode()
+                self.camera = cam
+                self.addChild(cam)
+            }
+            cam.position = x.position
+            if let r = nav.sailAction(usingTiles:mapTiles, orient:false){
+                cam.run(r,withKey:"moveCam")
+            }
+        } else {
+            if let c = self.camera{
+                c.removeFromParent()
+                self.camera = nil
             }
         }
         
