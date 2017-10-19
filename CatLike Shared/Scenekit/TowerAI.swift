@@ -76,7 +76,7 @@ class TowerAI {
         
         
         if let p = scene.mapTiles.convert(mappoint: bestTile) {
-            scene.manageTower(point: p)
+            scene.manageTapWhilePlaying(point: p)
         }
         
         towerAdd.update()

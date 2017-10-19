@@ -24,6 +24,7 @@ class GameScene: SKScene {
     var playableRect = CGRect.zero
     var boatLevel  = 3
     
+    let tapClock = PirateClock(0.5)
     
     let counterShipClock = PirateClock(1)
     let shipsKilledLabel = SKLabelNode(fontNamed: "Chalkduster")
@@ -38,19 +39,20 @@ class GameScene: SKScene {
     
     weak var followingShip:TowerNode?
     
+    var zoomOutOnRedirect = false
     var ai:TowerAI? = TowerAI()
     var victorySpeed:Double = 1
     var gameState: GameState = .initial {
         didSet {
             hud.updateGameState(from: oldValue, to: gameState)
             
-       
             
-             if gameState != .play {
-              playSea()
-             } else {
-             stopSea()
-             }
+            
+            if gameState != .play {
+                playSea()
+            } else {
+                stopSea()
+            }
             
         }
     }
@@ -105,15 +107,15 @@ class GameScene: SKScene {
         
         // Set the scale mode to scale to fit the window
         
-       /*
-        if let tile  = scene.childNode(withName: "//MapTiles") as? SKTileMapNode  {
-            tile.numberOfColumns = numTiles
-            tile.numberOfRows = numTiles
-            
-            tile.setScale(CGFloat(24)/CGFloat(numTiles))
-            
-        }
- */
+        /*
+         if let tile  = scene.childNode(withName: "//MapTiles") as? SKTileMapNode  {
+         tile.numberOfColumns = numTiles
+         tile.numberOfRows = numTiles
+         
+         tile.setScale(CGFloat(24)/CGFloat(numTiles))
+         
+         }
+         */
         
         
         scene.scaleMode = .aspectFit
@@ -133,6 +135,8 @@ class GameScene: SKScene {
         
         guard let background = mapTiles.tiles else {return }
         
+        hud.removeFromParent()
+        self.addChild(hud)
         for child in children {
             
             if child != hud && child != background {
@@ -162,7 +166,7 @@ class GameScene: SKScene {
         return self.mapTiles.map(coordinate: node.position)
     }
     
-
+    
     
     
     func setupWorldPhysics() {
@@ -297,7 +301,7 @@ class GameScene: SKScene {
             isPaused = false
             
         case .play:
-            manageTower(point: point)
+            manageTapWhilePlaying(point: point)
         case .win, .lose:
             self.restart()
         case .reload:
@@ -386,11 +390,12 @@ extension GameScene {
             self.addChild(tower)
             towers.append(tower)
             tower.adjust(level:0)
+            self.followingShip = tower
+            redirectAllShips()
             
-         
         }
         
-      
+        
         
         updateLabels()
     }
@@ -422,7 +427,7 @@ extension GameScene {
         return  maxTowers - towers.count
     }
     
-    func manageTower(point: CGPoint){
+    func manageTapWhilePlaying(point: CGPoint){
         guard let towerPoint = mapTiles.map(coordinate: point)
             else { return }
         
@@ -430,19 +435,38 @@ extension GameScene {
         if let t = tower(at:towerPoint) {
             if let _ = t as? Navigatable {
                 self.followingShip = t
-                self.redirectAllShips()
+                zoomOutOnRedirect = false
+                
             } else if t.level > 0 {
                 t.levelTimer.reduce(factor:0.9)
                 t.level = -1
                 t.adjust(level: -1)
+                
+                self.followingShip = t
+                zoomOutOnRedirect = false
             }
-
+            
         } else if towersRemaining() > 0, mapTiles.kind(point: towerPoint) == .sand  {
             add(towerAt: towerPoint)
         } else if  mapTiles.kind(point: towerPoint) == .water {
+            
+            
             self.followingShip = nil
-            redirectAllShips()
+            
+            if tapClock.needsUpdate() {
+                let (cam,_) = makeCamera()
+                sweep(camera: cam, to: point)
+            } else {
+                
+                zoomOutOnRedirect = !zoomOutOnRedirect
+                
+            }
+            
         }
+        
+        tapClock.update()
+        redirectAllShips()
+        
     }
     
 }
@@ -451,7 +475,7 @@ extension GameScene {
 extension GameScene {
     
     
-
+    
     
     func adjust(traveler:Navigatable ){
         
@@ -465,13 +489,13 @@ extension GameScene {
             ship.removeAction(forKey: "wake")
             ship.run(traveler.wakeAction(), withKey:"wake")
             
-                /*
-            if let tile  = self.childNode(withName: "//seasound") as? SKAudioNode  {
-                tile.run(SKAction.changeVolume(to:0, duration: 1))
-                return
-                
-            }
- */
+            /*
+             if let tile  = self.childNode(withName: "//seasound") as? SKAudioNode  {
+             tile.run(SKAction.changeVolume(to:0, duration: 1))
+             return
+             
+             }
+             */
             
         }
         
@@ -605,7 +629,7 @@ extension GameScene {
             ship.run(SKAction.repeatForever(SKAction.sequence([play, SKAction.wait(forDuration: play.duration * 2)])),  withKey: "music")
         }
         ship.run(ship.wakeAction(), withKey:"wake")
-
+        
     }
     
     
@@ -639,18 +663,18 @@ extension GameScene {
     func launchVictoryShip(){
         
         if let trip = mapTiles.randomRoute(),   let startingPostion =  mapTiles.convert(mappoint: trip.finish) {
-           
+            
             let victoryShip = DefenderTower(timeOverTile: victorySpeed, route: Voyage(start: trip.finish, finish: trip.start))
             
             victoryShip.position = startingPostion
             
             #if os(iOS) || os(tvOS)
-            
-            victoryShip.fillColor = .purple
                 
-                #else
+                victoryShip.fillColor = .purple
+                
+            #else
                 victoryShip.fillColor = NSColor(calibratedRed: 152/255.0, green: 104/255.0, blue: 31/255.0, alpha: 1)
-                #endif
+            #endif
             victoryShip.hitsRemain = boatLevel
             boatLevel += 2
             
@@ -663,10 +687,10 @@ extension GameScene {
             counterShipClock.adjust(interval: Double(victoryShip.route.shortestRoute(map: mapTiles, using: waterSet).count) * victoryShip.waterSpeed * 0.4 )
             counterShipClock.update()
             
-           
+            
             victoryShip.run(victoryShip.wakeAction(), withKey:"wake")
             
-
+            
         }
         
     }
@@ -689,10 +713,10 @@ extension GameScene {
             counterShipClock.adjust(interval: Double(sandShip.route.shortestRoute(map: mapTiles, using: waterSet).count) * sandShip.waterSpeed * 0.4 )
             counterShipClock.update()
             
-           // sandShip.run(sandShip.wakeAction())
+            // sandShip.run(sandShip.wakeAction())
             
             sandShip.run(sandShip.wakeAction(), withKey:"wake")
-
+            
         }
         
     }
@@ -786,6 +810,85 @@ extension GameScene {
             cam.run(r,withKey:"moveCam")
         }
     }
+    
+    
+    
+    func makeCamera()->(SKCameraNode,Bool){
+        let cam:SKCameraNode
+        let hadCam:Bool
+        if let c = self.camera{
+            cam = c
+            hadCam = false
+        } else {
+            cam = SKCameraNode()
+            self.camera = cam
+            self.addChild(cam)
+            hadCam = true
+            
+            hud.removeFromParent()
+            cam.addChild(hud)
+        }
+        return (cam,hadCam)
+    }
+    
+    func sweep(camera:SKCameraNode, to:CGPoint, time:TimeInterval=1, post:SKAction?=nil){
+        
+        let act:SKAction
+        
+        let r = SKAction.move(to: to, duration: time)
+        if let p = post {
+            act = SKAction.sequence([r,p])
+        } else {
+            act = r
+        }
+        camera.run(SKAction.scale(to: 0.7, duration: 3))
+        camera.run(act)
+        
+    }
+    func changeCamera(){
+        
+        if let x = followingShip {
+            
+            let (cam,hadCam) = makeCamera()
+            
+            
+            if let nav = x as? Navigatable, let rAction = nav.sailAction(usingTiles:mapTiles, orient:false) {
+                
+                func distance(_ a: CGPoint, _ b: CGPoint) -> CGFloat {
+                    let xDist = a.x - b.x
+                    let yDist = a.y - b.y
+                    return CGFloat(sqrt((xDist * xDist) + (yDist * yDist)))
+                }
+                
+                if hadCam {
+                    
+                    if distance(cam.position, x.position) < 10 {
+                        cam.run(rAction)
+                    } else {
+                        sweep(camera: cam, to: x.position, time: 3, post: rAction)
+                    }
+                } else {
+                    sweep(camera: cam, to: x.position)
+                }
+                
+            } else {
+                sweep(camera: cam, to: x.position)
+            }
+        }  else {
+            
+            if  let c = self.camera, zoomOutOnRedirect {
+                c.run(SKAction.scale(to: 1, duration: 0.75))
+                
+                let p = self.mapTiles.tiles?.position ?? CGPoint(x: self.size.width / 2, y: self.size.height / 2)
+                c.run(SKAction.sequence([SKAction.move(to: p , duration: 0.75),SKAction.removeFromParent()]))
+                hud.removeFromParent()
+                self.addChild(hud)
+                
+            }
+        }
+        
+    }
+    
     func redirectAllShips(){
         
         for x in children {
@@ -794,25 +897,8 @@ extension GameScene {
                 adjust(traveler: boat)
             }
         }
-        if let x = followingShip, let nav = x as? Navigatable {
-            let cam:SKCameraNode
-            if let c = self.camera{
-                cam = c
-            } else {
-                cam = SKCameraNode()
-                self.camera = cam
-                self.addChild(cam)
-            }
-            cam.position = x.position
-            if let r = nav.sailAction(usingTiles:mapTiles, orient:false){
-                cam.run(r,withKey:"moveCam")
-            }
-        } else {
-            if let c = self.camera{
-                c.removeFromParent()
-                self.camera = nil
-            }
-        }
+        
+        changeCamera()
         
     }
     
@@ -833,7 +919,7 @@ extension GameScene {
             }
         }
         
-       // print("changed to sand \(point)")
+        // print("changed to sand \(point)")
         
         return true
         
