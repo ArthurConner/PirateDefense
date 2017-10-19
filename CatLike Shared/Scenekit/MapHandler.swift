@@ -534,28 +534,7 @@ class MapHandler{
     }
     
     
-    func playSea() {
-        
-        
-        let sinkSound = SKAction.playSoundFileNamed("SeaStorm.caf",waitForCompletion: true)
-        
-        
-        let seq = SKAction.repeatForever(SKAction.sequence([sinkSound, SKAction.wait(forDuration: 15)]))
-        
-        
-        if let t = tiles {
-            t.run(seq)
-        }
-        
-        
-     
-    }
-    
-    func stopSea(){
-        if let t = tiles {
-           t.removeAllActions()
-        }
-    }
+
     
     func map(coordinate:CGPoint)->MapPoint?{
         guard let tiles =   tiles  else {

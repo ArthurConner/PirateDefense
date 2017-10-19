@@ -41,14 +41,44 @@ class GameScene: SKScene {
     var gameState: GameState = .initial {
         didSet {
             hud.updateGameState(from: oldValue, to: gameState)
-            /*
-             if gameState == .play {
-             mapTiles.playSea()
+            
+       
+            
+             if gameState != .play {
+              playSea()
              } else {
-             mapTiles.stopSea()
+             stopSea()
              }
-             */
+            
         }
+    }
+    
+    func playSea() {
+        stopSea()
+        
+        
+        let sinkSound = SKAction.playSoundFileNamed("SeaStorm.caf",waitForCompletion: true)
+        
+        
+        let seq = SKAction.repeatForever(SKAction.sequence([sinkSound, SKAction.wait(forDuration: 15)]))
+        
+        
+        
+        self.mapTiles.tiles?.run(seq, withKey: "music")
+        
+        
+        
+        
+    }
+    
+    func stopSea(){
+        for x in self.children{
+            x.removeAction(forKey: "music")
+            x.removeAction(forKey: "wake")
+            x.removeAction(forKey: "move")
+        }
+        
+        self.mapTiles.tiles?.removeAllActions()
     }
     
     
@@ -606,7 +636,14 @@ extension GameScene {
             let victoryShip = DefenderTower(timeOverTile: victorySpeed, route: Voyage(start: trip.finish, finish: trip.start))
             
             victoryShip.position = startingPostion
+            
+            #if os(iOS) || os(tvOS)
+            
             victoryShip.fillColor = .purple
+                
+                #else
+                victoryShip.fillColor = NSColor(calibratedRed: 152/255.0, green: 104/255.0, blue: 31/255.0, alpha: 1)
+                #endif
             victoryShip.hitsRemain = boatLevel
             boatLevel += 2
             
@@ -770,7 +807,7 @@ extension GameScene {
             }
         }
         
-        print("changed to sand \(point)")
+       // print("changed to sand \(point)")
         
         return true
         

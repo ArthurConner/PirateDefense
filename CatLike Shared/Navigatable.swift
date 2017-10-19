@@ -27,7 +27,7 @@ extension Navigatable {
     
     func wakeAction()->SKAction {
         let wake = self.spawnWake
-        return  SKAction.repeatForever(SKAction.sequence([SKAction.run(wake),SKAction.wait(forDuration: self.waterSpeed/4)]))
+        return  SKAction.repeatForever(SKAction.sequence([SKAction.run(wake),SKAction.wait(forDuration: self.waterSpeed/3)]))
     }
     
     func sailAction(usingTiles tiles:MapHandler, orient:Bool=true)->SKAction? {

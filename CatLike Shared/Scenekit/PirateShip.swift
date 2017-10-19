@@ -221,7 +221,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         wake.run(SKAction.sequence([
             SKAction.scale(to: 10, duration: 4)]))
         
-        wake.run(SKAction.sequence([SKAction.fadeOut(withDuration: 7),
+        wake.run(SKAction.sequence([SKAction.fadeOut(withDuration: 4),
                                     SKAction.removeFromParent()]))
         
          wake.zPosition = 2

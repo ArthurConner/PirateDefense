@@ -357,9 +357,55 @@ class DefenderTower: TowerNode, Navigatable {
         return routeSet
     }
     
+    static func outsidePath()->CGPath{
+        let bezier2Path = CGMutablePath()
+        
+        let trans = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 55)
+       
+        func pathPoint(x:CGFloat,y:CGFloat)->CGPoint{
+            return CGPoint(x:x,y:y).applying(trans)
+        }
+        bezier2Path.move(to: pathPoint(x: 14, y: 0))
+        bezier2Path.addCurve(to: pathPoint(x: 15.8, y: 1), control1: pathPoint(x: 14, y: -0), control2: pathPoint(x: 15.58, y: 0.96))
+        bezier2Path.addCurve(to: pathPoint(x: 17.46, y: 2.22), control1: pathPoint(x: 15.8, y: 1), control2: pathPoint(x: 17.31, y: 2))
+        bezier2Path.addCurve(to: pathPoint(x: 25.69, y: 19.58), control1: pathPoint(x: 22.04, y: 7), control2: pathPoint(x: 24.79, y: 12.78))
+        bezier2Path.addCurve(to: pathPoint(x: 25.87, y: 21.24), control1: pathPoint(x: 25.76, y: 20.12), control2: pathPoint(x: 25.82, y: 20.68))
+        bezier2Path.addCurve(to: pathPoint(x: 26, y: 23.3), control1: pathPoint(x: 25.94, y: 21.9), control2: pathPoint(x: 25.98, y: 22.57))
+        bezier2Path.addLine(to: pathPoint(x: 26, y: 44.06))
+        bezier2Path.addCurve(to: pathPoint(x: 25.97, y: 44.67), control1: pathPoint(x: 26, y: 44.26), control2: pathPoint(x: 25.99, y: 44.46))
+        bezier2Path.addCurve(to: pathPoint(x: 23.06, y: 52.38), control1: pathPoint(x: 25.87, y: 47.67), control2: pathPoint(x: 24.9, y: 50.24))
+        bezier2Path.addCurve(to: pathPoint(x: 20.87, y: 54.38), control1: pathPoint(x: 22.38, y: 53.18), control2: pathPoint(x: 21.64, y: 53.85))
+        bezier2Path.addLine(to: pathPoint(x: 20.68, y: 54.51))
+        bezier2Path.addCurve(to: pathPoint(x: 17, y: 56), control1: pathPoint(x: 19.55, y: 55.24), control2: pathPoint(x: 18.32, y: 55.71))
+        bezier2Path.addCurve(to: pathPoint(x: 14.02, y: 55.99), control1: pathPoint(x: 16.96, y: 56), control2: pathPoint(x: 14.02, y: 55.99))
+        bezier2Path.addCurve(to: pathPoint(x: 13.5, y: 55.99), control1: pathPoint(x: 14, y: 55.99), control2: pathPoint(x: 13.8, y: 55.99))
+        bezier2Path.addCurve(to: pathPoint(x: 13, y: 55.99), control1: pathPoint(x: 13.2, y: 55.99), control2: pathPoint(x: 13, y: 55.99))
+        bezier2Path.addCurve(to: pathPoint(x: 10.04, y: 56), control1: pathPoint(x: 12.98, y: 55.99), control2: pathPoint(x: 10.04, y: 56))
+        bezier2Path.addCurve(to: pathPoint(x: 6.32, y: 54.51), control1: pathPoint(x: 8.68, y: 55.71), control2: pathPoint(x: 7.45, y: 55.24))
+        bezier2Path.addLine(to: pathPoint(x: 6.13, y: 54.38))
+        bezier2Path.addCurve(to: pathPoint(x: 3.94, y: 52.38), control1: pathPoint(x: 5.36, y: 53.85), control2: pathPoint(x: 4.62, y: 53.18))
+        bezier2Path.addCurve(to: pathPoint(x: 1.03, y: 44.67), control1: pathPoint(x: 2.1, y: 50.24), control2: pathPoint(x: 1.13, y: 47.67))
+        bezier2Path.addCurve(to: pathPoint(x: 1, y: 44.06), control1: pathPoint(x: 1.01, y: 44.46), control2: pathPoint(x: 1, y: 44.26))
+        bezier2Path.addLine(to: pathPoint(x: 1, y: 23.3))
+        bezier2Path.addCurve(to: pathPoint(x: 1.13, y: 21.24), control1: pathPoint(x: 1.02, y: 22.57), control2: pathPoint(x: 1.06, y: 21.9))
+        bezier2Path.addCurve(to: pathPoint(x: 1.31, y: 19.58), control1: pathPoint(x: 1.18, y: 20.68), control2: pathPoint(x: 1.24, y: 20.12))
+        bezier2Path.addCurve(to: pathPoint(x: 9.54, y: 2.22), control1: pathPoint(x: 2.21, y: 12.78), control2: pathPoint(x: 4.96, y: 7))
+        bezier2Path.addCurve(to: pathPoint(x: 11.2, y: 1), control1: pathPoint(x: 9.69, y: 2), control2: pathPoint(x: 11.2, y: 1))
+        bezier2Path.addCurve(to: pathPoint(x: 13, y: 0), control1: pathPoint(x: 11.42, y: 0.96), control2: pathPoint(x: 13, y: 0))
+        bezier2Path.addLine(to: pathPoint(x: 14, y: 0))
+        bezier2Path.addLine(to: pathPoint(x: 14, y: 0))
+        
+        return bezier2Path
+        
+        
+    }
+    
     convenience init(timeOverTile:Double, route nextR:Voyage) {
         
+       
+        
         self.init(ellipseOf: CGSize(width: 25, height: 58))
+        //self.init(path: DefenderTower.outsidePath())
         self.fillColor = .black
         self.strokeColor = .clear
         self.lineWidth = 3
@@ -387,7 +433,7 @@ class DefenderTower: TowerNode, Navigatable {
          guard let board = self.parent else {return}
          
          let wake = SKShapeNode.init(circleOfRadius: 2)
-         wake.fillColor = .red
+         wake.fillColor = .white
          wake.strokeColor = .clear
          wake.position = self.position
          
