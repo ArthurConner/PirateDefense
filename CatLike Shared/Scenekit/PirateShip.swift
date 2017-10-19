@@ -25,7 +25,7 @@ enum ShipKind: Int, Codable {
 
 
 struct ShipProxy : Codable{
-
+    
     let kind:ShipKind
     let shipID:String
     let position:CGPoint
@@ -35,11 +35,6 @@ struct ShipProxy : Codable{
 
 
 class PirateNode: SKSpriteNode,  Fireable, Navigatable {
-    
-    
-    
-
-   
     
     var gun = PirateGun(interval:4, flightDuration:0.8, radius:3)
     
@@ -64,7 +59,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     
     let shipID = "\(Date.timeIntervalSinceReferenceDate)_\(GKRandomSource.sharedRandom().nextUniform())"
     
-     #if os(OSX)
+    #if os(OSX)
     var wakeColor = NSColor.white
     #else
     var wakeColor = UIColor.white
@@ -73,13 +68,10 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     static func makeShip(kind aKind:ShipKind, modfier:Double, route r:Voyage)->PirateNode {
         
         let body:SKPhysicsBody
-        
-       
         let ship:PirateNode
-       
         let soundName:String?
+        let soundLevel:Float?
         
-         
         switch aKind {
         case .galley:
             ship = PirateNode(imageNamed: "Galley" )
@@ -88,6 +80,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             body.restitution = 0.5
             ship.waterSpeed = modfier
             soundName = "Galley.piano.caf"
+            soundLevel = 0.4
         case .row:
             ship = PirateNode(imageNamed: "Row" )
             ship.wakeColor = .white
@@ -100,6 +93,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             ship.gun.radius = 1
             
             soundName = nil
+            soundLevel = nil
         case .crusier:
             
             ship = CruiserNode(imageNamed: "Crusier" )
@@ -111,6 +105,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             
             ship.gun.clock.adjust(interval: 70)
             soundName =  "cruiser.flute.caf"
+            soundLevel = 0.9
         case .destroyer:
             
             ship = PirateNode(imageNamed: "Destroyer" )
@@ -121,7 +116,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             ship.hitsRemain = 4
             ship.gun.radius = 5
             ship.gun.clock.adjust(interval: 0.7)
-            
+            soundLevel = 0.5
             soundName = "destroyer.Violas.caf"
         case .motor:
             ship = PirateNode(imageNamed: "Motor" )
@@ -132,6 +127,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             ship.hitsRemain = 1
             ship.gun.clock.adjust(interval: 8)
             print("motor is now \(modfier / 2)")
+            soundLevel = 0.5
             soundName = "motorboat.violns.caf"
         case .battle:
             ship = PirateNode(imageNamed: "Battleship" )
@@ -141,20 +137,25 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             ship.waterSpeed = modfier * 8
             ship.hitsRemain = 6
             ship.gun.clock.adjust(interval: 0.5)
+            soundLevel = 1
             soundName = "battleship.Basses.caf"
         }
-
+        
         if let s = soundName{
             let me = SKAudioNode(fileNamed:s)
             me.name = "seasound"
             me.autoplayLooped = true
             me.isPositional = true
             ship.addChild(me)
-           
+            
+            if let l = soundLevel {
+                 me.run(SKAction.changeVolume(to: l, duration: 3))
+            }
+            
         }
         
-       ship.route = r
-       
+        ship.route = r
+        
         ship.kind = aKind
         ship.zPosition = 3
         
@@ -175,34 +176,16 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     func proxy()->ShipProxy {
         return ShipProxy(kind:self.kind , shipID: self.shipID, position: self.position, angle:self.zRotation)
     }
-
+    
     func didFinish(map handler:MapHandler)->Bool{
         guard let me = handler.map(coordinate: self.position) else { return true}
-        
         return me == route.finish
-        
-        
     }
-
+    
     func spawnWake() {
         
         guard let board = self.parent else {return}
-        /*
-        let wake = addTrail(name: "SmokeTrail")
-        run(SKAction.sequence([
-            SKAction.wait(forDuration: 3.0),
-            SKAction.run() {
-                self.removeTrail(trail:wake)
-            }
-            ]))
-    
-        
- 
-        
-        board.addChild(wake)
-        */
-    
-       
+
         let wake = SKShapeNode.init(circleOfRadius: 2)
         #if os(OSX)
             wake.fillColor = (self.wakeColor.blended(withFraction: 0.6, of: .white)?.blended(withFraction: 0.4, of: .clear)) ?? .white
@@ -223,11 +206,9 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         
         wake.run(SKAction.sequence([SKAction.fadeOut(withDuration: 4),
                                     SKAction.removeFromParent()]))
-        
-         wake.zPosition = 2
-        
+        wake.zPosition = 2
         board.insertChild(wake, at: board.children.count - 1)
-
+        
         
     }
     
@@ -239,7 +220,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         
         removeAllActions()
         physicsBody = nil
-    
+        
         scene.removeFrom(shipTile: shipTile)
         
         if scene.possibleToSand(at:shipTile){
@@ -247,7 +228,9 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         }
         
         if isKill {
-            scene.run(PirateNode.sinkSound)
+            if scene.playSound {
+                scene.run(PirateNode.sinkSound)
+            }
         }
         
     }
@@ -266,23 +249,28 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     
     func hit(scene:GameScene){
         self.hitsRemain -= 1
-        
         guard  let shipTile = scene.tileOf(node: self) else { return }
-        
         
         if self.hitsRemain == 0 {
             scene.mapTiles.changeTile(at: shipTile, to: .path)
- 
             self.die(scene:scene, isKill:true)
-
         }
     }
+    
     
     func fire(at:MapPoint,scene:GameScene){
         guard self.gun.clock.needsUpdate() else { return }
         if  let dest =  scene.mapTiles.convert(mappoint: at){
             let _ = CannonBall(tower: self, dest: dest, speed: self.gun.flightDuration)
             self.gun.clock.update()
+            if scene.playSound {
+
+                let me = SKAudioNode(fileNamed:"Gun Cannon.caf")
+                me.isPositional = true
+
+                self.addChild(me)
+                me.run(SKAction.changeVolume(to: 0.3, duration: 0.01))
+            }
             return
         }
     }
@@ -294,24 +282,22 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
 class CruiserNode : PirateNode{
     var raftLeft = 0
     
-  
+    
     override  func die(scene:GameScene, isKill:Bool){
-
+        
         if isKill, let shipTile = scene.tileOf(node: self) {
             
             let lifeBoatTiles = scene.availableWater(around:shipTile)
             for tile in lifeBoatTiles {
                 
-                if   let shipPosition = scene.mapTiles.convert(mappoint:tile) {
+                if let shipPosition = scene.mapTiles.convert(mappoint:tile) {
                     
                     let ship:PirateNode
-                    // print("we have \(raftLeft) rafts")
-                    
                     if  raftLeft > 0,
                         let c = PirateNode.makeShip(kind: .crusier, modfier: 2, route: self.route) as? CruiserNode{
                         
                         c.raftLeft = raftLeft - 1
-
+                        
                         ship = c
                         
                     } else {
@@ -322,9 +308,9 @@ class CruiserNode : PirateNode{
                     ship.position = shipPosition
                     scene.add(ship:ship)
                     ship.gun.clock.update()
-                 
+                    
                 }
-
+                
             }
             
             
@@ -332,12 +318,15 @@ class CruiserNode : PirateNode{
         
         super.die(scene: scene, isKill: isKill)
     }
-
+    
     
 }
 
+
+/// Generates a random ship with a probabilty
+///
+/// - Returns: A specfic ship kind
 func randomShipKind()->ShipKind{
-    
     
     let x = GKRandomSource.sharedRandom().nextUniform()
     if x < 0.6{
@@ -362,7 +351,7 @@ func randomShipKind()->ShipKind{
 func randomShip( modfier:Double, route:Voyage) -> PirateNode{
     
     let kind = randomShipKind()
-
+    
     return PirateNode.makeShip(kind:kind, modfier:modfier, route: route)
     
 }

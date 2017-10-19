@@ -38,7 +38,7 @@ class CannonBall:SKShapeNode {
         self.run(SKAction.sequence([act,
                                     SKAction.removeFromParent()]))
         
-        self.run(CannonBall.gunSound)
+
         
     }
     

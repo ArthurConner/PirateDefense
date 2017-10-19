@@ -39,6 +39,8 @@ class GameScene: SKScene {
     
     weak var followingShip:TowerNode?
     
+    let playSound = true
+    
     var zoomOutOnRedirect = false
     var ai:TowerAI? = TowerAI()
     var victorySpeed:Double = 1
@@ -46,33 +48,42 @@ class GameScene: SKScene {
         didSet {
             hud.updateGameState(from: oldValue, to: gameState)
             
+            playSea()
             
-            
+            /*
             if gameState != .play {
                 playSea()
             } else {
                 stopSea()
             }
+ */
             
         }
     }
     
+    
     func playSea() {
         stopSea()
+        guard let f = mapTiles.voyages.first?.finish, let p = mapTiles.convert(mappoint: f) else {
+            ErrorHandler.handle(.wrongGameState, "we don't have a starting point")
+            return
+            
+        }
+
+        if playSound {
+        let me = SKAudioNode(fileNamed:"SeaStorm.caf")
+        me.name = "backgroundStorm"
+        me.autoplayLooped = true
+        me.isPositional = true
+        me.position = p
+            
+        me.run(SKAction.changeVolume(to: 0.1, duration: 0.3))
+            
         
+        self.addChild(me)
         
-        let sinkSound = SKAction.playSoundFileNamed("SeaStorm.caf",waitForCompletion: true)
-        
-        
-        let seq = SKAction.repeatForever(SKAction.sequence([sinkSound, SKAction.wait(forDuration: 15)]))
-        
-        
-        
-        self.mapTiles.tiles?.run(seq, withKey: "music")
-        
-        
-        
-        
+  
+        }
     }
     
     func stopSea(){
@@ -82,6 +93,9 @@ class GameScene: SKScene {
             x.removeAction(forKey: "move")
         }
         
+        if let m = self.childNode(withName: "backgroundStorm") {
+            m.removeFromParent()
+        }
         self.mapTiles.tiles?.removeAllActions()
     }
     
@@ -91,7 +105,6 @@ class GameScene: SKScene {
     }
     
     func navigatableBoats(at point:MapPoint)->[Navigatable]{
-        
         let p1 = self.children.filter({self.tileOf(node: $0) == point})
         return p1.flatMap{$0 as? Navigatable}
         
@@ -99,27 +112,12 @@ class GameScene: SKScene {
     
     
     class func newGameScene(numTiles:Int) -> GameScene {
-        // Load 'GameScene.sks' as an SKScene.
         guard let scene = SKScene(fileNamed: "GameScene") as? GameScene else {
             print("Failed to load GameScene.sks")
             abort()
         }
-        
-        // Set the scale mode to scale to fit the window
-        
-        /*
-         if let tile  = scene.childNode(withName: "//MapTiles") as? SKTileMapNode  {
-         tile.numberOfColumns = numTiles
-         tile.numberOfRows = numTiles
-         
-         tile.setScale(CGFloat(24)/CGFloat(numTiles))
-         
-         }
-         */
-        
-        
+
         scene.scaleMode = .aspectFit
-        
         return scene
     }
     
@@ -209,7 +207,7 @@ class GameScene: SKScene {
         guard let v = mapTiles.voyages.first, let pos =  mapTiles.convert(mappoint: v.finish) else {return}
         
         let dest = SKShapeNode(circleOfRadius:20)
-        dest.fillColor = .orange
+        dest.fillColor = .clear
         dest.position = pos
         self.listener = dest
         self.addChild(dest)
@@ -377,56 +375,6 @@ class GameScene: SKScene {
         }
     }
     
-}
-
-extension GameScene {
-    
-    func add(towerAt towerPoint:MapPoint){
-        
-        if let place = mapTiles.convert(mappoint: towerPoint){
-            let tower = TowerNode(range:90)
-            
-            tower.position = place
-            self.addChild(tower)
-            towers.append(tower)
-            tower.adjust(level:0)
-            self.followingShip = tower
-            redirectAllShips()
-            
-        }
-        
-        
-        
-        updateLabels()
-    }
-    
-    
-    func remove(tower:TowerNode) {
-        
-        defer{
-            updateLabels()
-        }
-        
-        for (i, x) in towers.enumerated(){
-            if x.towerID == tower.towerID {
-                towers.remove(at: i)
-                tower.removeFromParent()
-                return
-            }
-        }
-        
-    }
-    
-    func tower(at:MapPoint) -> TowerNode? {
-        
-        let list = towers.filter({tileOf(node: $0) == at})
-        return list.first
-    }
-    
-    func towersRemaining()->Int{
-        return  maxTowers - towers.count
-    }
-    
     func manageTapWhilePlaying(point: CGPoint){
         guard let towerPoint = mapTiles.map(coordinate: point)
             else { return }
@@ -449,17 +397,14 @@ extension GameScene {
         } else if towersRemaining() > 0, mapTiles.kind(point: towerPoint) == .sand  {
             add(towerAt: towerPoint)
         } else if  mapTiles.kind(point: towerPoint) == .water {
-            
-            
+    
             self.followingShip = nil
             
             if tapClock.needsUpdate() {
                 let (cam,_) = makeCamera()
                 sweep(camera: cam, to: point)
             } else {
-                
                 zoomOutOnRedirect = !zoomOutOnRedirect
-                
             }
             
         }
@@ -468,6 +413,57 @@ extension GameScene {
         redirectAllShips()
         
     }
+    
+}
+
+extension GameScene {
+    
+    
+    /// adds a tower to our scene
+    ///
+    /// - Parameter towerPoint: The map point we want to use
+    func add(towerAt towerPoint:MapPoint){
+        
+        if let place = mapTiles.convert(mappoint: towerPoint){
+            let tower = TowerNode(range:90)
+            
+            tower.position = place
+            self.addChild(tower)
+            towers.append(tower)
+            tower.adjust(level:0)
+            self.followingShip = tower
+            redirectAllShips()
+        }
+
+        updateLabels()
+    }
+    
+    
+    func remove(tower:TowerNode) {
+        defer{
+            updateLabels()
+        }
+        
+        for (i, x) in towers.enumerated(){
+            if x.towerID == tower.towerID {
+                towers.remove(at: i)
+                tower.removeFromParent()
+                return
+            }
+        }
+    }
+    
+    func tower(at:MapPoint) -> TowerNode? {
+        
+        let list = towers.filter({tileOf(node: $0) == at})
+        return list.first
+    }
+    
+    func towersRemaining()->Int{
+        return  maxTowers - towers.count
+    }
+    
+
     
 }
 
@@ -596,8 +592,10 @@ extension GameScene {
          */
     }
     
-    
+    /*
     func soundFor(kind:ShipKind)->SKAction?{
+        
+        guard playSound else { return nil }
         
         switch kind {
         case .battle:
@@ -615,6 +613,7 @@ extension GameScene {
         }
         
     }
+ */
     
     func add(ship:PirateNode){
         ships.append(ship)
@@ -625,9 +624,16 @@ extension GameScene {
         
         self.shipsLeftOfKind[ship.kind] = nextVal
         
-        if  let play = self.soundFor(kind: ship.kind) {
+        if !playSound,
+            let n = ship.childNode(withName: "seasound") {
+                n.removeFromParent()
+            
+        }
+        /*
+        if  playSound, let play = self.soundFor(kind: ship.kind) {
             ship.run(SKAction.repeatForever(SKAction.sequence([play, SKAction.wait(forDuration: play.duration * 2)])),  withKey: "music")
         }
+ */
         ship.run(ship.wakeAction(), withKey:"wake")
         
     }
@@ -689,7 +695,8 @@ extension GameScene {
             
             
             victoryShip.run(victoryShip.wakeAction(), withKey:"wake")
-            
+            victoryShip.setScale(0.3)
+            victoryShip.run(SKAction.scale(to: 1, duration: 6))
             
         }
         
@@ -716,7 +723,8 @@ extension GameScene {
             // sandShip.run(sandShip.wakeAction())
             
             sandShip.run(sandShip.wakeAction(), withKey:"wake")
-            
+            sandShip.setScale(0.3)
+            sandShip.run(SKAction.scale(to: 1, duration: 6))
         }
         
     }
@@ -843,6 +851,10 @@ extension GameScene {
         }
         camera.run(SKAction.scale(to: 0.7, duration: 3))
         camera.run(act)
+        
+        if let s = self.listener {
+            s.run(act)
+        }
         
     }
     func changeCamera(){
