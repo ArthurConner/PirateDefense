@@ -27,15 +27,15 @@ class GameScene: SKScene {
     let tapClock = PirateClock(0.5)
     
     let counterShipClock = PirateClock(1)
-    let shipsKilledLabel = SKLabelNode(fontNamed: "Chalkduster")
-    let towersRemainingLabel = SKLabelNode(fontNamed: "Chalkduster")
+    fileprivate let shipsKilledLabel = SKLabelNode(fontNamed: "Chalkduster")
+    fileprivate let towersRemainingLabel = SKLabelNode(fontNamed: "Chalkduster")
     
     fileprivate var towers:[TowerNode] = []
     fileprivate var ships:[PirateNode] = []
     let maxTowers = 7
     
-    var routeDebug:[String:[MapPoint]] = [:]
-    var shipsLeftOfKind:[ShipKind:Int] = [:]
+    fileprivate var routeDebug:[String:[MapPoint]] = [:]
+
     
     weak var followingShip:TowerNode?
     
@@ -50,13 +50,9 @@ class GameScene: SKScene {
             
             playSea()
             
-            /*
-            if gameState != .play {
-                playSea()
-            } else {
-                stopSea()
-            }
- */
+           
+       
+
             
         }
     }
@@ -118,6 +114,17 @@ class GameScene: SKScene {
         }
 
         scene.scaleMode = .aspectFit
+        scene.backgroundColor = .orange
+     
+            #if os(iOS) || os(tvOS)
+                
+                scene.backgroundColor = UIColor(red: 0, green: 0.33, blue: 0.44, alpha: 1)
+                
+            #else
+                scene.backgroundColor = NSColor(calibratedRed: 0, green: 0.33, blue: 0.44, alpha: 1)
+            #endif
+            
+        
         return scene
     }
     
@@ -150,7 +157,7 @@ class GameScene: SKScene {
         boatLevel = 3
         victorySpeed  = 1
         counterShipClock.adjust(interval:5)
-        shipsLeftOfKind.removeAll()
+       
     }
     
     func restart(){
@@ -484,15 +491,8 @@ extension GameScene {
             ship.run(followLine,withKey:"move")
             ship.removeAction(forKey: "wake")
             ship.run(traveler.wakeAction(), withKey:"wake")
-            
-            /*
-             if let tile  = self.childNode(withName: "//seasound") as? SKAudioNode  {
-             tile.run(SKAction.changeVolume(to:0, duration: 1))
-             return
-             
-             }
-             */
-            
+  
+
         }
         
         /*
@@ -592,48 +592,19 @@ extension GameScene {
          */
     }
     
-    /*
-    func soundFor(kind:ShipKind)->SKAction?{
-        
-        guard playSound else { return nil }
-        
-        switch kind {
-        case .battle:
-            return PirateNode.battleShipSound
-        case .crusier:
-            return PirateNode.cruiserSound
-        case .destroyer:
-            return PirateNode.destroyerSound
-        case .motor:
-            return PirateNode.motorSound
-        case .galley:
-            return PirateNode.galleySound
-        case .row:
-            return nil
-        }
-        
-    }
- */
+    
     
     func add(ship:PirateNode){
         ships.append(ship)
         self.addChild(ship)
         adjust(traveler: ship)
         
-        let nextVal = (self.shipsLeftOfKind[ship.kind] ?? 0) + 1
-        
-        self.shipsLeftOfKind[ship.kind] = nextVal
-        
         if !playSound,
             let n = ship.childNode(withName: "seasound") {
                 n.removeFromParent()
             
         }
-        /*
-        if  playSound, let play = self.soundFor(kind: ship.kind) {
-            ship.run(SKAction.repeatForever(SKAction.sequence([play, SKAction.wait(forDuration: play.duration * 2)])),  withKey: "music")
-        }
- */
+
         ship.run(ship.wakeAction(), withKey:"wake")
         
     }
@@ -648,8 +619,7 @@ extension GameScene {
         ships = ships.filter({$0 != ship})
         hud.kills += 1
         updateLabels()
-        
-        self.shipsLeftOfKind[ship.kind] = (self.shipsLeftOfKind[ship.kind] ?? 1) - 1
+
         
     }
     
@@ -833,8 +803,12 @@ extension GameScene {
             self.addChild(cam)
             hadCam = true
             
-            hud.removeFromParent()
-            cam.addChild(hud)
+            for node:SKNode in [hud, shipsKilledLabel, towersRemainingLabel]{
+                node.removeFromParent()
+                cam.addChild(node)
+            }
+           
+     
         }
         return (cam,hadCam)
     }
@@ -893,8 +867,11 @@ extension GameScene {
                 
                 let p = self.mapTiles.tiles?.position ?? CGPoint(x: self.size.width / 2, y: self.size.height / 2)
                 c.run(SKAction.sequence([SKAction.move(to: p , duration: 0.75),SKAction.removeFromParent()]))
-                hud.removeFromParent()
-                self.addChild(hud)
+                
+                for node:SKNode in [hud, shipsKilledLabel, towersRemainingLabel]{
+                    node.removeFromParent()
+                    self.addChild(node)
+                }
                 
             }
         }

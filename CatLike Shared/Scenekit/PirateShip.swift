@@ -348,6 +348,7 @@ func randomShipKind()->ShipKind{
     // return .destroyer
     
 }
+
 func randomShip( modfier:Double, route:Voyage) -> PirateNode{
     
     let kind = randomShipKind()
