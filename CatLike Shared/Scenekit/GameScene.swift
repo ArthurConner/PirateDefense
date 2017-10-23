@@ -221,7 +221,7 @@ class GameScene: SKScene {
     }
     
     func updateLabels() {
-        towersRemainingLabel.text = "Towers Remaining: \(towersRemaining())"
+        towersRemainingLabel.text = "Towers Remaining: \(towersRemaining()) Str:\(boatLevel + hud.kills/5)"
         if towersRemaining() > 0 {
             towersRemainingLabel.fontColor = .white
         } else {
@@ -485,6 +485,9 @@ extension GameScene {
             ship.removeAction(forKey: "wake")
             ship.run(traveler.wakeAction(), withKey:"wake")
 
+        } else {
+            ship.removeAction(forKey:"move")
+            ship.removeAction(forKey: "wake")
         }
         
         /*
@@ -639,7 +642,7 @@ extension GameScene {
             #else
                 victoryShip.fillColor = NSColor(calibratedRed: 152/255.0, green: 104/255.0, blue: 31/255.0, alpha: 1)
             #endif
-            victoryShip.hitsRemain = boatLevel
+            victoryShip.hitsRemain = boatLevel + hud.kills/5
             boatLevel += 2
             
             self.towers.append(victoryShip)
