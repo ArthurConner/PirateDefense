@@ -288,7 +288,6 @@ class SandTower: TowerNode, Navigatable {
         body.restitution = 0.5
         
         self.physicsBody = body
-        
     }
     
     func spawnWake() {
@@ -416,6 +415,163 @@ class DefenderTower: TowerNode, Navigatable {
         
         return true
     }
+    
+}
+
+
+
+class TeraTower: TowerNode, Navigatable {
+    
+    var waterSpeed: Double = 1
+    
+    var route = Voyage.offGrid()
+    var prior:MapPoint?
+    var tilesRemaining = 10
+    
+    func allowedTiles() -> Set<Landscape> {
+        return [.sand,.inland]
+    }
+    
+    convenience init(timeOverTile:Double, route nextR:Voyage) {
+        
+        self.init(rectOf: CGSize(width:20,height:20), cornerRadius:4)
+        self.fillColor = .green
+        self.strokeColor = .black
+        self.lineWidth = 2
+        
+        self.waterSpeed = timeOverTile
+        self.route = nextR
+        self.hitsRemain = 3
+        self.zPosition = 3
+        self.gun.clock.adjust(interval: timeOverTile)
+        
+        let body = SKPhysicsBody(circleOfRadius: 30)
+        
+        body.allowsRotation = false
+        body.categoryBitMask = PhysicsCategory.Tower
+        body.isDynamic = false
+        body.contactTestBitMask = PhysicsCategory.Ship
+        body.restitution = 0.5
+        
+        self.physicsBody = body
+    }
+    
+    func spawnWake() {
+        
+    }
+    
+    
+    
+    func getDestPoint(scene:GameScene)->MapPoint?{
+        guard let pos = scene.tileOf(node: self) else { return nil}
+ 
+            var reachable:Set<MapPoint> = [pos]
+            var already:Set<MapPoint> = []
+            
+            let allow = self.allowedTiles()
+            
+            while !reachable.isEmpty {
+                 var nextSet:Set<MapPoint> = []
+                for r in reachable {
+                    
+                    for x in r.adj(max: scene.mapTiles.mapAdj){
+                        if !already.contains(x),
+                            allow.contains(scene.mapTiles.kind(point: x)){
+                            already.insert(x)
+                            nextSet.insert(x)
+                        }
+                    }
+ 
+                }
+                
+                reachable = nextSet
+                
+            }
+        
+        let beach = Array(already.filter({scene.mapTiles.kind(point: $0) == .sand }))
+        
+        guard !beach.isEmpty else { return nil}
+        
+        var bestIndex = 0
+        var furthest = 0
+        
+        for (i,v ) in beach.enumerated(){
+            if v.distance(manhattan: pos) > furthest{
+                furthest = v.distance(manhattan: pos)
+                bestIndex = i
+            }
+        }
+        
+        return beach[bestIndex]
+        
+        
+    }
+    
+    override func checkAge(scene:GameScene)->Bool{
+        
+        guard let pos = scene.tileOf(node: self) else { return true}
+        
+        
+        
+        
+        
+
+        
+        if gun.clock.needsUpdate() {
+            
+            if pos == route.finish {
+                if let m = getDestPoint(scene:scene),
+                    pos != m {
+                    self.route = Voyage(start: pos, finish: m)
+                    scene.adjust(traveler: self)
+                }
+                
+                
+            }
+            
+            
+            
+            if pos.path(to: self.route.finish, map: scene.mapTiles, using: self.allowedTiles()).count < 2 {
+                if let m = getDestPoint(scene:scene) {
+                    self.route = Voyage(start: pos, finish: m)
+                } else {
+                    self.route = Voyage(start: pos, finish: pos)
+                }
+            }
+            
+            if prior == nil, scene.mapTiles.kind(point: pos) == .sand{
+                self.prior = pos
+            }
+           
+            
+        
+        
+        guard let p = self.prior,
+            p != pos
+            else { return true}
+        
+        if scene.mapTiles.kind(point: p) == .sand {
+            scene.mapTiles.changeTile(at: p, to: .inland)
+            tilesRemaining -= 1
+            
+            if tilesRemaining < 1 {
+                self.die(scene: scene, isKill: true)
+            }
+        }
+        
+        
+        self.prior = nil
+            gun.clock.update()
+            
+        }
+        
+        return true
+    }
+    
+    override func fire(at:MapPoint,scene:GameScene){
+        return
+    }
+    
     
 }
 

@@ -22,6 +22,7 @@ protocol GameTypeModeDelegate {
 
 enum TowerPlayerActions:String {
     case launchPaver = "Launch SandShip"
+    case launchTerra = "Launch Terra"
     case KillAllTowers = "Kill All Towers"
     case fasterBoats = "Faster Boats"
     case strongerBoats = "Stronger Boats"

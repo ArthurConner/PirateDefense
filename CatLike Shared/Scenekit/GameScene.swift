@@ -659,7 +659,7 @@ extension GameScene {
         }
         
     }
-    
+  
     func launchSandShip(){
         
         if let trip = mapTiles.randomRoute(),   let trollPosition = mapTiles.convert(mappoint: trip.finish) {
@@ -680,6 +680,31 @@ extension GameScene {
             
             // sandShip.run(sandShip.wakeAction())
             
+            sandShip.run(sandShip.wakeAction(), withKey:"wake")
+            sandShip.setScale(0.3)
+            sandShip.run(SKAction.scale(to: 1, duration: 6))
+        }
+        
+    }
+    
+   
+    
+    func launchTeraShip(){
+        
+        if let trip = mapTiles.randomRoute(),   let trollPosition = mapTiles.convert(mappoint: trip.finish) {
+            
+            let sandShip = TeraTower(timeOverTile: 0.5, route: Voyage(start: trip.finish, finish: trip.finish))
+            
+            sandShip.position = trollPosition
+            sandShip.fillColor = .green
+            
+            self.towers.append(sandShip)
+            self.addChild(sandShip)
+            updateLabels()
+            
+            adjust(traveler: sandShip)
+            
+    
             sandShip.run(sandShip.wakeAction(), withKey:"wake")
             sandShip.setScale(0.3)
             sandShip.run(SKAction.scale(to: 1, duration: 6))
@@ -932,6 +957,10 @@ extension GameScene: TowerPlayerActionDelegate {
         case .launchPaver:
             if towersRemaining() > 0 {
                 launchSandShip()
+            }
+        case .launchTerra:
+            if towersRemaining() > 0 {
+                launchTeraShip()
             }
         case .KillAllTowers:
             let removeme = towers
