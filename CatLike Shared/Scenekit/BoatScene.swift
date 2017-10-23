@@ -43,7 +43,6 @@ class BoatButton:SKSpriteNode {
              ship = BoatButton(imageNamed: "Battleship" )
         }
 
-        
         ship.kind = aKind
         ship.zPosition = 3
 

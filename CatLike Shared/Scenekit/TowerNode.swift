@@ -41,9 +41,9 @@ struct TowerProxy: Codable {
     let level:Int
     let towerID:String
 }
+
 class TowerNode: SKShapeNode , Fireable {
     
-
     var gun = PirateGun(interval:1, flightDuration:0.2, radius:3)
     var levelTimer = PirateClock(6)
  
@@ -77,8 +77,6 @@ class TowerNode: SKShapeNode , Fireable {
         return TowerProxy(postition: self.position, level: self.level, towerID: self.towerID)
     }
     
-   
-    
     func checkAge(scene:GameScene)->Bool{
         if levelTimer.needsUpdate(){
             
@@ -99,8 +97,7 @@ class TowerNode: SKShapeNode , Fireable {
     func adjust(level nextL:Int){
         
         let prior = level
-        
-       
+    
         switch nextL {
         case 0:
             gun.clock.adjust(interval: 1)
@@ -118,11 +115,8 @@ class TowerNode: SKShapeNode , Fireable {
             gun.clock.adjust(interval: 1)
         }
         
-        
-        
         var shrinkTime = levelTimer.length()
-        
-       // print("going from level \(prior) to \(level) in \(shrinkTime)")
+
         if prior < 0 {
             let interval = min(0.2,shrinkTime)
             shrinkTime = shrinkTime - interval
@@ -163,8 +157,7 @@ class TowerNode: SKShapeNode , Fireable {
             
             scene.remove(tower: self)
         } else {
-             scene.remove(tower: self)
-            
+            scene.remove(tower: self)
             
         }
         
@@ -186,15 +179,26 @@ class TowerNode: SKShapeNode , Fireable {
         
         hitsRemain -= 1
         
+        var otherTowers:[TowerNode] = []
+        
+        defer {
+            
+            for tower in otherTowers {
+                if tower.hitsRemain > 0 {
+                    tower.hitsRemain = 1
+                    tower.hit(scene: scene)
+                }
+            }
+        }
+        
         if hitsRemain == 0 {
-            guard   let towerTile  = scene.tileOf(node: self) else   { return }
+            guard let towerTile  = scene.tileOf(node: self) else   { return }
             
             let towerScapes:Set<Landscape> = [.sand,.water,.path]
             
             let checkset = scene.mapTiles.tiles(near:towerTile,radius:self.gun.radius,kinds:towerScapes)
             
             var killSet:Set<MapPoint> = [towerTile]
-            
             
             for checkTile in checkset {
                 killSet.insert(checkTile)
@@ -206,8 +210,12 @@ class TowerNode: SKShapeNode , Fireable {
             }
             
             for tile in killSet {
-                if let t = scene.tower(at:tile) {
-                    t.die(scene: scene, isKill: true)
+                if let t = scene.tower(at:tile){
+                   if t == self {
+                        t.die(scene: scene, isKill: true)
+                   } else {
+                        otherTowers.append(t)
+                    }
                 }
                 scene.mapTiles.changeTile(at: tile, to: .water)
             }
@@ -219,18 +227,16 @@ class TowerNode: SKShapeNode , Fireable {
               let _ =  scene.possibleToSand(at: x)
             }
             
-            
             scene.redirectAllShips()
             
         } else {
-            //self.run(SKAction.scale(by: 0.9, duration: 0.3))
+            
             let ratio = CGFloat(hitsRemain)/CGFloat(maxHealth)
             #if os(OSX)
                 self.fillColor = NSColor.white.blended(withFraction: ratio, of: .red) ?? .purple
             #else
                 self.fillColor = UIColor.purple
             #endif
-            
         }
         
     }
@@ -238,8 +244,7 @@ class TowerNode: SKShapeNode , Fireable {
     func fire(at:MapPoint,scene:GameScene){
         guard gun.clock.needsUpdate() else { return }
         
-        if  let dest =  scene.mapTiles.convert(mappoint: at){
-       
+        if let dest =  scene.mapTiles.convert(mappoint: at){
             let _ = TowerMissle(tower: self, dest: dest, flightDuration: gun.flightDuration)
             gun.clock.update()
             
@@ -251,6 +256,7 @@ class TowerNode: SKShapeNode , Fireable {
 }
 
 class SandTower: TowerNode, Navigatable {
+    
     var waterSpeed: Double = 1
     
     var route = Voyage.offGrid()
@@ -259,7 +265,6 @@ class SandTower: TowerNode, Navigatable {
     func allowedTiles() -> Set<Landscape> {
         return routeSet
     }
-    
     
     convenience init(timeOverTile:Double, route nextR:Voyage) {
         
@@ -272,6 +277,7 @@ class SandTower: TowerNode, Navigatable {
         self.route = nextR
         self.hitsRemain = 1
         self.zPosition = 3
+        self.gun.clock.adjust(interval: timeOverTile)
     
         let body = SKPhysicsBody(circleOfRadius: 30)
         
@@ -315,8 +321,6 @@ class SandTower: TowerNode, Navigatable {
         
         guard oldpath.count > 1 else { return true}
         
-       
-        
         let nextTile = oldpath[1]
         
         guard scene.navigatableBoats(at: nextTile).isEmpty else { return true}
@@ -329,9 +333,7 @@ class SandTower: TowerNode, Navigatable {
         if (scene.possibleToSand(at:nextTile)){
             gun.clock.update()
             self.prior = nil
-            
             scene.redirectAllShips()
-            
             return true
 
         }
@@ -349,63 +351,16 @@ class SandTower: TowerNode, Navigatable {
 
 class DefenderTower: TowerNode, Navigatable {
     var waterSpeed: Double = 1
-    
     var route = Voyage.offGrid()
 
-    
     func allowedTiles() -> Set<Landscape> {
         return routeSet
     }
-    
-    static func outsidePath()->CGPath{
-        let bezier2Path = CGMutablePath()
-        
-        let trans = CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: 55)
-       
-        func pathPoint(x:CGFloat,y:CGFloat)->CGPoint{
-            return CGPoint(x:x,y:y).applying(trans)
-        }
-        bezier2Path.move(to: pathPoint(x: 14, y: 0))
-        bezier2Path.addCurve(to: pathPoint(x: 15.8, y: 1), control1: pathPoint(x: 14, y: -0), control2: pathPoint(x: 15.58, y: 0.96))
-        bezier2Path.addCurve(to: pathPoint(x: 17.46, y: 2.22), control1: pathPoint(x: 15.8, y: 1), control2: pathPoint(x: 17.31, y: 2))
-        bezier2Path.addCurve(to: pathPoint(x: 25.69, y: 19.58), control1: pathPoint(x: 22.04, y: 7), control2: pathPoint(x: 24.79, y: 12.78))
-        bezier2Path.addCurve(to: pathPoint(x: 25.87, y: 21.24), control1: pathPoint(x: 25.76, y: 20.12), control2: pathPoint(x: 25.82, y: 20.68))
-        bezier2Path.addCurve(to: pathPoint(x: 26, y: 23.3), control1: pathPoint(x: 25.94, y: 21.9), control2: pathPoint(x: 25.98, y: 22.57))
-        bezier2Path.addLine(to: pathPoint(x: 26, y: 44.06))
-        bezier2Path.addCurve(to: pathPoint(x: 25.97, y: 44.67), control1: pathPoint(x: 26, y: 44.26), control2: pathPoint(x: 25.99, y: 44.46))
-        bezier2Path.addCurve(to: pathPoint(x: 23.06, y: 52.38), control1: pathPoint(x: 25.87, y: 47.67), control2: pathPoint(x: 24.9, y: 50.24))
-        bezier2Path.addCurve(to: pathPoint(x: 20.87, y: 54.38), control1: pathPoint(x: 22.38, y: 53.18), control2: pathPoint(x: 21.64, y: 53.85))
-        bezier2Path.addLine(to: pathPoint(x: 20.68, y: 54.51))
-        bezier2Path.addCurve(to: pathPoint(x: 17, y: 56), control1: pathPoint(x: 19.55, y: 55.24), control2: pathPoint(x: 18.32, y: 55.71))
-        bezier2Path.addCurve(to: pathPoint(x: 14.02, y: 55.99), control1: pathPoint(x: 16.96, y: 56), control2: pathPoint(x: 14.02, y: 55.99))
-        bezier2Path.addCurve(to: pathPoint(x: 13.5, y: 55.99), control1: pathPoint(x: 14, y: 55.99), control2: pathPoint(x: 13.8, y: 55.99))
-        bezier2Path.addCurve(to: pathPoint(x: 13, y: 55.99), control1: pathPoint(x: 13.2, y: 55.99), control2: pathPoint(x: 13, y: 55.99))
-        bezier2Path.addCurve(to: pathPoint(x: 10.04, y: 56), control1: pathPoint(x: 12.98, y: 55.99), control2: pathPoint(x: 10.04, y: 56))
-        bezier2Path.addCurve(to: pathPoint(x: 6.32, y: 54.51), control1: pathPoint(x: 8.68, y: 55.71), control2: pathPoint(x: 7.45, y: 55.24))
-        bezier2Path.addLine(to: pathPoint(x: 6.13, y: 54.38))
-        bezier2Path.addCurve(to: pathPoint(x: 3.94, y: 52.38), control1: pathPoint(x: 5.36, y: 53.85), control2: pathPoint(x: 4.62, y: 53.18))
-        bezier2Path.addCurve(to: pathPoint(x: 1.03, y: 44.67), control1: pathPoint(x: 2.1, y: 50.24), control2: pathPoint(x: 1.13, y: 47.67))
-        bezier2Path.addCurve(to: pathPoint(x: 1, y: 44.06), control1: pathPoint(x: 1.01, y: 44.46), control2: pathPoint(x: 1, y: 44.26))
-        bezier2Path.addLine(to: pathPoint(x: 1, y: 23.3))
-        bezier2Path.addCurve(to: pathPoint(x: 1.13, y: 21.24), control1: pathPoint(x: 1.02, y: 22.57), control2: pathPoint(x: 1.06, y: 21.9))
-        bezier2Path.addCurve(to: pathPoint(x: 1.31, y: 19.58), control1: pathPoint(x: 1.18, y: 20.68), control2: pathPoint(x: 1.24, y: 20.12))
-        bezier2Path.addCurve(to: pathPoint(x: 9.54, y: 2.22), control1: pathPoint(x: 2.21, y: 12.78), control2: pathPoint(x: 4.96, y: 7))
-        bezier2Path.addCurve(to: pathPoint(x: 11.2, y: 1), control1: pathPoint(x: 9.69, y: 2), control2: pathPoint(x: 11.2, y: 1))
-        bezier2Path.addCurve(to: pathPoint(x: 13, y: 0), control1: pathPoint(x: 11.42, y: 0.96), control2: pathPoint(x: 13, y: 0))
-        bezier2Path.addLine(to: pathPoint(x: 14, y: 0))
-        bezier2Path.addLine(to: pathPoint(x: 14, y: 0))
-        
-        return bezier2Path
-        
-        
-    }
+   
     
     convenience init(timeOverTile:Double, route nextR:Voyage) {
-        
-       
-        
+  
         self.init(ellipseOf: CGSize(width: 25, height: 58))
-        //self.init(path: DefenderTower.outsidePath())
         self.fillColor = .black
         self.strokeColor = .clear
         self.lineWidth = 3
@@ -461,10 +416,6 @@ class DefenderTower: TowerNode, Navigatable {
         
         return true
     }
-    
-
-
-    
     
 }
 

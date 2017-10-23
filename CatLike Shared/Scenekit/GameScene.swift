@@ -349,14 +349,12 @@ class GameScene: SKScene {
         }
         
         if counterShipClock.needsUpdate() && towersRemaining() > 0 {
-            
             launchVictoryShip()
-            
             counterShipClock.update()
         }
         
-        //let shipPoints = ships.map(self.tileOf(node: $0) ?? MapPoint.offGrid}
-        let shipPoints:[MapPoint] = ships.map({self.tileOf(node: $0) ?? MapPoint.offGrid})
+
+        let shipPoints:[MapPoint] = ships.flatMap({self.tileOf(node: $0)})
         var navalTarget:[MapPoint] = []
         
         for tower in towers {
@@ -476,22 +474,16 @@ extension GameScene {
 
 
 extension GameScene {
-    
-    
-    
-    
+
     func adjust(traveler:Navigatable ){
         
         
         guard let ship = traveler as? SKNode else {return}
-        
-        
-        
+
         if let followLine = traveler.sailAction(usingTiles:mapTiles, orient: true) {
             ship.run(followLine,withKey:"move")
             ship.removeAction(forKey: "wake")
             ship.run(traveler.wakeAction(), withKey:"wake")
-  
 
         }
         
@@ -602,11 +594,9 @@ extension GameScene {
         if !playSound,
             let n = ship.childNode(withName: "seasound") {
                 n.removeFromParent()
-            
         }
 
         ship.run(ship.wakeAction(), withKey:"wake")
-        
     }
     
     
@@ -620,11 +610,9 @@ extension GameScene {
         hud.kills += 1
         updateLabels()
 
-        
     }
     
     func launchAttack(timeOverTile:Double) {
-        
         
         if let trip = mapTiles.randomRoute(),  let shipPosition =  mapTiles.convert(mappoint:trip.start) {
             
@@ -676,7 +664,7 @@ extension GameScene {
         
         if let trip = mapTiles.randomRoute(),   let trollPosition = mapTiles.convert(mappoint: trip.finish) {
             
-            let sandShip = SandTower(timeOverTile: 1, route: Voyage(start: trip.finish, finish: trip.start))
+            let sandShip = SandTower(timeOverTile: 0.25, route: Voyage(start: trip.finish, finish: trip.start))
             
             sandShip.position = trollPosition
             sandShip.fillColor = .blue
@@ -687,8 +675,8 @@ extension GameScene {
             
             adjust(traveler: sandShip)
             
-            counterShipClock.adjust(interval: Double(sandShip.route.shortestRoute(map: mapTiles, using: waterSet).count) * sandShip.waterSpeed * 0.4 )
-            counterShipClock.update()
+           // counterShipClock.adjust(interval: Double(sandShip.route.shortestRoute(map: mapTiles, using: waterSet).count) * sandShip.waterSpeed * 0.4 )
+            //counterShipClock.update()
             
             // sandShip.run(sandShip.wakeAction())
             
@@ -724,19 +712,16 @@ extension GameScene {
             }
         }
         
-        for (_ , boat) in self.ships.enumerated() {
+        for boat in self.ships {
+            
             if let boatTile = self.tileOf(node: boat), boatTile == shipTile {
-                
                 
                 if boat != self {
                     killShips.append(boat)
                 }
                 
-                if possibleToSand(at: shipTile) {
-                    print("changed on kill")
-                }
-                
-                
+                let _ = possibleToSand(at: shipTile)
+            
             } else {
                 keepShip.append(boat)
             }
@@ -831,12 +816,12 @@ extension GameScene {
         }
         
     }
+    
     func changeCamera(){
         
         if let x = followingShip {
             
             let (cam,hadCam) = makeCamera()
-            
             
             if let nav = x as? Navigatable, let rAction = nav.sailAction(usingTiles:mapTiles, orient:false) {
                 
@@ -894,11 +879,8 @@ extension GameScene {
     
     func possibleToSand(at point:MapPoint)->Bool{
         
-        
         let ships = self.navigatableBoats(at: point)
-        
         guard ships.flatMap({$0 as? TowerNode}).isEmpty else { return false }
-        
         mapTiles.changeTile(at: point, to: .sand)
         
         for trip in mapTiles.voyages {
@@ -907,11 +889,8 @@ extension GameScene {
                 return false
             }
         }
-        
-        // print("changed to sand \(point)")
-        
+
         return true
-        
     }
     
 }
@@ -933,8 +912,6 @@ extension GameScene : SKPhysicsContactDelegate {
             return
         }
         
-        
-        
         for x in [contact.bodyA.node, contact.bodyB.node]{
             if let target = x as? Fireable {
                 target.hit(scene: self)
@@ -943,44 +920,12 @@ extension GameScene : SKPhysicsContactDelegate {
             }
             
         }
-        /*
-         for (i,x) in [contact.bodyA.node, contact.bodyB.node].enumerated() {
-         
-         
-         
-         
-         
-         if let p1 = contact.bodyB.node as? Fireable {
-         p1.hit(scene: self)
-         }
-         
-         if let p2 = contact.bodyA.node as? Fireable {
-         p2.hit(scene: self)
-         }
-         if let ship  = x as? PirateNode {
-         ship.hit(scene: self)
-         
-         if let other =
-         y?.run(SKAction.removeFromParent())
-         return
-         }
-         
-         let y =  i == 0 ? contact.bodyB.node : contact.bodyA.node
-         if let t = x as? TowerNode {
-         t.hit(scene: self)
-         y?.run(SKAction.removeFromParent())
-         return
-         }
-         
-         }
-         */
+
     }
 }
 
 
 extension GameScene: TowerPlayerActionDelegate {
-    
-    
     
     func didTower(action:TowerPlayerActions){
         switch action {

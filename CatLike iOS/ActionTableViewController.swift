@@ -214,8 +214,6 @@ class ActionTableViewController: UITableViewController {
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
-        } else {
-            print(segue.identifier)
         }
     }
     

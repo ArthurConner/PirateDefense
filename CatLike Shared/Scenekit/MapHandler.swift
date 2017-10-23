@@ -71,12 +71,6 @@ fileprivate func landscapeOf(name:String)->Landscape{
     }
 }
 
-
-
-
-
-
-
 fileprivate class Island {
     
     weak var map:MapHandler?
@@ -286,7 +280,6 @@ class MapHandler{
             
             guard kind(point:point) == x else { return }
             
-            
             if isBoundary(point: point){
                 ret.append(point)
             }
@@ -302,15 +295,13 @@ class MapHandler{
         
     }
     
-    func createHarbors(){
+    fileprivate func createHarbors(){
         startIslands.removeAll()
         
         class WaterFront {
             var haborPoint:MapPoint
             var isle:Island
             var coast:Set<MapPoint>
-            
-            
             
             init?(_ land:Island,_ map:MapHandler){
                 self.isle = land
@@ -416,9 +407,7 @@ class MapHandler{
         while self.islands.count < iLimit {
             
             self.islands.removeAll()
-            
-            
-            
+        
             for r in 0..<map.numberOfRows{
                 for c in 0..<map.numberOfColumns{
                     let p = MapPoint(row:r,col:c)
@@ -439,10 +428,8 @@ class MapHandler{
             }
             
             
-            
             for addIdle in startIslands{
                 addIdle.merge()
-                
                 if let peak = addIdle.peak() {
                     
                     var didCreateIsand = false
@@ -473,16 +460,11 @@ class MapHandler{
         }
         
         self.voyages.removeAll()
-        print("making trips")
         for startIsle in startIslands {
             if  let s = startIsle.harbor {
                 let v = Voyage(start: s, finish: d)
                 self.voyages.append(v)
-                //let v2 = Voyage(start:d, finish:s)
-                //self.voyages.append(v2)
-                
-                print("now going from \(v)")
-                
+
             }
             
         }
@@ -493,7 +475,6 @@ class MapHandler{
         }
         
         for x in self.voyages {
-            
             if x.shortestRoute(map: self, using: waterSet).count > 4 {
                 self.changeTile(at: x.start, to: .tower)
             } else {
@@ -506,11 +487,8 @@ class MapHandler{
     }
     
     
-    
     func randomRoute()->Voyage?{
-        
         guard !voyages.isEmpty else { return nil}
-        
         return voyages[GKRandomSource.sharedRandom().nextInt(upperBound: voyages.count)]
         
     }
@@ -528,9 +506,7 @@ class MapHandler{
             mapAdj = t.numberOfRows
         }
         refreshMap()
-        
-       
-        
+
     }
     
     
@@ -541,6 +517,7 @@ class MapHandler{
             
             return nil
         }
+        
         let y = tiles.tileColumnIndex( fromPosition: coordinate)
         let x = tiles.tileRowIndex( fromPosition: coordinate)
         return MapPoint(row: x, col: y)
