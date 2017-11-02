@@ -14,7 +14,7 @@ class TowerAI {
     let clock = PirateClock(0.5)
     let towerAdd = PirateClock(3)
     
-    
+    var radius:Int? = nil
     
     func update(scene:GameScene){
         
@@ -54,7 +54,8 @@ class TowerAI {
                 if tower.hitsRemain > 4, tower.level > 2 {
                     tower.adjust(level: -1)
                 }
-                for x in scene.mapTiles.tiles(near: loc, radius: 4 - tower.level, kinds: sands){
+                let r = radius ?? 4 - tower.level
+                for x in scene.mapTiles.tiles(near: loc, radius: r, kinds: sands){
                     possibleAddSpot.remove(x)
                 }
                 

@@ -26,6 +26,7 @@ enum TowerPlayerActions:String {
     case KillAllTowers = "Kill All Towers"
     case fasterBoats = "Faster Boats"
     case strongerBoats = "Stronger Boats"
+    case showNextShip = "Show Next Ship"
     
 }
 

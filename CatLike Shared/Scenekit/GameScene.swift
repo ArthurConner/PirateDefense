@@ -436,8 +436,7 @@ extension GameScene {
             self.addChild(tower)
             towers.append(tower)
             tower.adjust(level:0)
-            self.followingShip = tower
-            redirectAllShips()
+  
         }
 
         updateLabels()
@@ -449,6 +448,14 @@ extension GameScene {
             updateLabels()
         }
         
+        if tower == self.followingShip {
+            self.followingShip = nil
+            
+            if let c = self.camera {
+                c.removeAllActions()
+            }
+        }
+        
         for (i, x) in towers.enumerated(){
             if x.towerID == tower.towerID {
                 towers.remove(at: i)
@@ -456,6 +463,8 @@ extension GameScene {
                 return
             }
         }
+        
+        
     }
     
     func tower(at:MapPoint) -> TowerNode? {
@@ -830,6 +839,10 @@ extension GameScene {
         
         let act:SKAction
         
+        
+        
+        camera.removeAllActions()
+        
         let r = SKAction.move(to: to, duration: time)
         if let p = post {
             act = SKAction.sequence([r,p])
@@ -867,7 +880,7 @@ extension GameScene {
                         sweep(camera: cam, to: x.position, time: 3, post: rAction)
                     }
                 } else {
-                    sweep(camera: cam, to: x.position)
+                    sweep(camera: cam, to: x.position, time: 1, post: rAction)
                 }
                 
             } else {
@@ -940,6 +953,53 @@ extension GameScene : SKPhysicsContactDelegate {
             return
         }
         
+        if let p1 = contact.bodyA.node as? TowerNode,
+            let p2 = contact.bodyB.node as? PirateNode {
+            print("\(p1) tower colided with ship \(p2)")
+            p1.removeAction(forKey: "move")
+            p2.removeAction(forKey: "move")
+            p1.hit(scene: self)
+            p2.hit(scene: self)
+            
+            // Delay 2 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                
+                [weak p1, weak p2] in
+                if let n = p2 {
+                    self.adjust(traveler: n)
+                }
+                if let n = p1 as? Navigatable {
+                    self.adjust(traveler: n)
+                }
+            }
+            return
+        }
+        
+        if let p1 = contact.bodyA.node as? PirateNode,
+            let p2 = contact.bodyB.node as? TowerNode {
+            print("\(p1) ship colided with tower \(p2)")
+            p1.removeAction(forKey: "move")
+            p2.removeAction(forKey: "move")
+            p1.hit(scene: self)
+            p2.hit(scene: self)
+            
+            // Delay 2 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+                
+                [weak p1, weak p2] in
+                if let n = p1 {
+                    self.adjust(traveler: n)
+                }
+                if let n = p2 as? Navigatable {
+                    self.adjust(traveler: n)
+                }
+            }
+            
+       
+            return
+        }
+        
+        
         for x in [contact.bodyA.node, contact.bodyB.node]{
             if let target = x as? Fireable {
                 target.hit(scene: self)
@@ -954,6 +1014,34 @@ extension GameScene : SKPhysicsContactDelegate {
 
 
 extension GameScene: TowerPlayerActionDelegate {
+    
+    func showNextTower(){
+        let t:[DefenderTower] = self.towers.filter({ if  let _  = $0 as? DefenderTower{return true}
+            return false
+        }) as! [DefenderTower]
+        
+        guard let f = t.first else { return }
+        
+        if f == self.followingShip {
+            
+            if t.count > 1 {
+                self.followingShip = t[1]
+                self.zoomOutOnRedirect = false
+             
+                changeCamera()
+            }
+            
+        } else {
+            self.followingShip = f
+            changeCamera()
+            
+           
+        }
+        
+        
+        
+        
+    }
     
     func didTower(action:TowerPlayerActions){
         switch action {
@@ -970,6 +1058,9 @@ extension GameScene: TowerPlayerActionDelegate {
             for x in removeme {
                 x.die(scene:self, isKill:true)
             }
+        case .showNextShip:
+            
+            showNextTower()
         case .fasterBoats:
             victorySpeed = victorySpeed * 0.95
         case .strongerBoats:
@@ -1026,6 +1117,30 @@ extension GameScene: TowerPlayerActionDelegate {
         
         override func mouseUp(with event: NSEvent) {
             
+        }
+        
+        override func keyDown(with event: NSEvent) {
+            let m = event.keyCode
+            
+            
+            switch event.keyCode{
+            case 0:
+                didTower(action:.launchPaver)
+            case 1:
+                didTower(action:.launchTerra)
+            case 2:
+                didTower(action:.showNextShip)
+                /*
+                let a = TowerAI()
+                a.towerAdd.adjust(interval: 0.3)
+                a.radius = 2
+                self.ai = a
+ */
+            case 3:
+                self.ai = nil
+            default:
+                print("code \(m)")
+            }
         }
         
     }
