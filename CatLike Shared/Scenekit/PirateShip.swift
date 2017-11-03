@@ -30,7 +30,7 @@ struct ShipProxy : Codable{
 
 class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     
-    fileprivate var gun = PirateGun(interval:4, flightDuration:0.8, radius:3)
+    var gun = PirateGun(interval:4, flightDuration:0.8, radius:3)
     
     var hitsRemain = 3
     var kind:ShipKind = .galley
@@ -257,14 +257,15 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     func fire(at:MapPoint,scene:GameScene){
         guard self.gun.clock.needsUpdate() else { return }
         if  let dest =  scene.mapTiles.convert(mappoint: at){
-            let _ = CannonBall(tower: self, dest: dest, speed: self.gun.flightDuration)
+            let ball = CannonBall(tower: self, dest: dest, speed: self.gun.flightDuration)
             self.gun.clock.update()
             if scene.playSound {
 
                 let me = SKAudioNode(fileNamed:"Gun Cannon.caf")
+                me.name = "seasound"
                 me.isPositional = true
 
-                self.addChild(me)
+                ball.addChild(me)
                 me.run(SKAction.changeVolume(to: 0.3, duration: 0.01))
             }
             return

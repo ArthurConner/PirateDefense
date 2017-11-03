@@ -11,9 +11,7 @@ import GameKit
 
 class CannonBall:SKShapeNode {
     
-    static let gunSound = SKAction.playSoundFileNamed("Gun Cannon.caf",
-                                                 waitForCompletion: false)
-    
+  
     convenience init(tower:PirateNode,dest:CGPoint,speed:Double) {
         
         self.init(circleOfRadius:8)

@@ -35,7 +35,7 @@ class GameScene: SKScene {
     let maxTowers = 7
     
     fileprivate var routeDebug:[String:[MapPoint]] = [:]
-
+    
     
     weak var followingShip:TowerNode?
     
@@ -50,9 +50,9 @@ class GameScene: SKScene {
             
             playSea()
             
-           
-       
-
+            
+            
+            
             
         }
     }
@@ -65,26 +65,39 @@ class GameScene: SKScene {
             return
             
         }
-
+        
+        for x in children {
+            if let kill = x.childNode(withName: "seasound") as? SKAudioNode{
+                kill.run(SKAction.sequence([SKAction.stop(),SKAction.removeFromParent()]))
+            }
+            
+            if let b = x as? Fireable {
+                b.gun.clock.enabled = false
+            }
+            
+            if let b = x as? CannonBall {
+                b.removeFromParent()
+            }
+        }
+        
         if playSound {
-        let me = SKAudioNode(fileNamed:"SeaStorm.caf")
-        me.name = "backgroundStorm"
-        me.autoplayLooped = true
-        me.isPositional = true
-        me.position = p
+            let me = SKAudioNode(fileNamed:"SeaStorm.caf")
+            me.name = "backgroundStorm"
+            me.autoplayLooped = true
+            me.isPositional = true
+            me.position = p
             
-        me.run(SKAction.changeVolume(to: 0.1, duration: 0.3))
+            me.run(SKAction.changeVolume(to: 0.1, duration: 0.3))
             
-        
-        self.addChild(me)
-        
-  
+            
+            self.addChild(me)
+            
+            
         }
     }
     
     func stopSea(){
         for x in self.children{
-            x.removeAction(forKey: "music")
             x.removeAction(forKey: "wake")
             x.removeAction(forKey: "move")
         }
@@ -112,18 +125,18 @@ class GameScene: SKScene {
             print("Failed to load GameScene.sks")
             abort()
         }
-
+        
         scene.scaleMode = .aspectFit
         scene.backgroundColor = .orange
-     
-            #if os(iOS) || os(tvOS)
-                
-                scene.backgroundColor = UIColor(red: 0, green: 0.33, blue: 0.44, alpha: 1)
-                
-            #else
-                scene.backgroundColor = NSColor(calibratedRed: 0, green: 0.33, blue: 0.44, alpha: 1)
-            #endif
+        
+        #if os(iOS) || os(tvOS)
             
+            scene.backgroundColor = UIColor(red: 0, green: 0.33, blue: 0.44, alpha: 1)
+            
+        #else
+            scene.backgroundColor = NSColor(calibratedRed: 0, green: 0.33, blue: 0.44, alpha: 1)
+        #endif
+        
         
         return scene
     }
@@ -157,7 +170,7 @@ class GameScene: SKScene {
         boatLevel = 3
         victorySpeed  = 1
         counterShipClock.adjust(interval:5)
-       
+        
     }
     
     func restart(){
@@ -353,7 +366,7 @@ class GameScene: SKScene {
             counterShipClock.update()
         }
         
-
+        
         let shipPoints:[MapPoint] = ships.flatMap({self.tileOf(node: $0)})
         var navalTarget:[MapPoint] = []
         
@@ -402,7 +415,7 @@ class GameScene: SKScene {
         } else if towersRemaining() > 0, mapTiles.kind(point: towerPoint) == .sand  {
             add(towerAt: towerPoint)
         } else if  mapTiles.kind(point: towerPoint) == .water {
-    
+            
             self.followingShip = nil
             
             if tapClock.needsUpdate() {
@@ -436,9 +449,9 @@ extension GameScene {
             self.addChild(tower)
             towers.append(tower)
             tower.adjust(level:0)
-  
+            
         }
-
+        
         updateLabels()
     }
     
@@ -477,23 +490,23 @@ extension GameScene {
         return  maxTowers - towers.count
     }
     
-
+    
     
 }
 
 
 extension GameScene {
-
+    
     func adjust(traveler:Navigatable ){
         
         
         guard let ship = traveler as? SKNode else {return}
-
+        
         if let followLine = traveler.sailAction(usingTiles:mapTiles, orient: true) {
             ship.run(followLine,withKey:"move")
             ship.removeAction(forKey: "wake")
             ship.run(traveler.wakeAction(), withKey:"wake")
-
+            
         } else {
             ship.removeAction(forKey:"move")
             ship.removeAction(forKey: "wake")
@@ -605,9 +618,9 @@ extension GameScene {
         
         if !playSound,
             let n = ship.childNode(withName: "seasound") {
-                n.removeFromParent()
+            n.removeFromParent()
         }
-
+        
         ship.run(ship.wakeAction(), withKey:"wake")
     }
     
@@ -621,7 +634,7 @@ extension GameScene {
         ships = ships.filter({$0 != ship})
         hud.kills += 1
         updateLabels()
-
+        
     }
     
     func launchAttack(timeOverTile:Double) {
@@ -660,7 +673,7 @@ extension GameScene {
             
             adjust(traveler: victoryShip)
             
-            counterShipClock.adjust(interval: Double(victoryShip.route.shortestRoute(map: mapTiles, using: waterSet).count) * victoryShip.waterSpeed * 0.4 )
+            counterShipClock.adjust(interval: launchClock.length() * 8)
             counterShipClock.update()
             
             
@@ -671,7 +684,8 @@ extension GameScene {
         }
         
     }
-  
+    
+    
     func launchSandShip(){
         
         if let trip = mapTiles.randomRoute(),   let trollPosition = mapTiles.convert(mappoint: trip.finish) {
@@ -686,12 +700,7 @@ extension GameScene {
             updateLabels()
             
             adjust(traveler: sandShip)
-            
-           // counterShipClock.adjust(interval: Double(sandShip.route.shortestRoute(map: mapTiles, using: waterSet).count) * sandShip.waterSpeed * 0.4 )
-            //counterShipClock.update()
-            
-            // sandShip.run(sandShip.wakeAction())
-            
+
             sandShip.run(sandShip.wakeAction(), withKey:"wake")
             sandShip.setScale(0.3)
             sandShip.run(SKAction.scale(to: 1, duration: 6))
@@ -699,7 +708,7 @@ extension GameScene {
         
     }
     
-   
+    
     
     func launchTeraShip(){
         
@@ -716,7 +725,7 @@ extension GameScene {
             
             adjust(traveler: sandShip)
             
-    
+            
             sandShip.run(sandShip.wakeAction(), withKey:"wake")
             sandShip.setScale(0.3)
             sandShip.run(SKAction.scale(to: 1, duration: 6))
@@ -758,7 +767,7 @@ extension GameScene {
                 }
                 
                 let _ = possibleToSand(at: shipTile)
-            
+                
             } else {
                 keepShip.append(boat)
             }
@@ -829,8 +838,8 @@ extension GameScene {
                 node.removeFromParent()
                 cam.addChild(node)
             }
-           
-     
+            
+            
         }
         return (cam,hadCam)
     }
@@ -853,6 +862,7 @@ extension GameScene {
         camera.run(act)
         
         if let s = self.listener {
+            s.removeAllActions()
             s.run(act)
         }
         
@@ -930,7 +940,7 @@ extension GameScene {
                 return false
             }
         }
-
+        
         return true
     }
     
@@ -962,7 +972,7 @@ extension GameScene : SKPhysicsContactDelegate {
             p2.hit(scene: self)
             
             // Delay 2 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 
                 [weak p1, weak p2] in
                 if let n = p2 {
@@ -995,7 +1005,7 @@ extension GameScene : SKPhysicsContactDelegate {
                 }
             }
             
-       
+            
             return
         }
         
@@ -1008,7 +1018,7 @@ extension GameScene : SKPhysicsContactDelegate {
             }
             
         }
-
+        
     }
 }
 
@@ -1027,7 +1037,7 @@ extension GameScene: TowerPlayerActionDelegate {
             if t.count > 1 {
                 self.followingShip = t[1]
                 self.zoomOutOnRedirect = false
-             
+                
                 changeCamera()
             }
             
@@ -1035,7 +1045,7 @@ extension GameScene: TowerPlayerActionDelegate {
             self.followingShip = f
             changeCamera()
             
-           
+            
         }
         
         
@@ -1047,7 +1057,15 @@ extension GameScene: TowerPlayerActionDelegate {
         switch action {
         case .launchPaver:
             if towersRemaining() > 0 {
-                launchSandShip()
+                if let t = followingShip as? DefenderTower,
+                    let sandShip = t.sandToHome(scene: self){
+                        self.towers.append(sandShip)
+                        self.addChild(sandShip)
+                        updateLabels()
+                        adjust(traveler: sandShip)
+                } else {
+                    launchSandShip()
+                }
             }
         case .launchTerra:
             if towersRemaining() > 0 {
@@ -1131,11 +1149,11 @@ extension GameScene: TowerPlayerActionDelegate {
             case 2:
                 didTower(action:.showNextShip)
                 /*
-                let a = TowerAI()
-                a.towerAdd.adjust(interval: 0.3)
-                a.radius = 2
-                self.ai = a
- */
+                 let a = TowerAI()
+                 a.towerAdd.adjust(interval: 0.3)
+                 a.radius = 2
+                 self.ai = a
+                 */
             case 3:
                 self.ai = nil
             default:

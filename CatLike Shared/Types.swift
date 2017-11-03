@@ -30,6 +30,8 @@ protocol Fireable {
     func hit(scene:GameScene)
     func fire(at:MapPoint,scene:GameScene)
     
+    
+    var gun:PirateGun {get}
 }
 
 

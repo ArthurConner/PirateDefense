@@ -416,6 +416,36 @@ class DefenderTower: TowerNode, Navigatable {
         return true
     }
     
+    
+    func sandToHome(scene:GameScene)->SandTower?{
+        
+        if let trip = scene.mapTiles.randomRoute(),
+        let start = scene.tileOf(node: self) {
+            
+            let route = Voyage(start: start, finish: trip.finish)
+            let start:CGPoint
+            
+            let m = route.shortestRoute(map: scene.mapTiles, using: waterSet)
+            
+            if m.count > 1 {
+                start = scene.mapTiles.convert(mappoint: m[1]) ?? self.position
+            } else {
+                start = self.position
+            }
+            
+            let sandShip = SandTower(timeOverTile: 0.25, route: route)
+            sandShip.position = start
+            sandShip.fillColor = .yellow
+
+            sandShip.run(sandShip.wakeAction(), withKey:"wake")
+            sandShip.setScale(0.3)
+            sandShip.run(SKAction.scale(to: 1, duration: 6))
+            return sandShip
+        }
+       
+        return nil
+    }
+    
 }
 
 
