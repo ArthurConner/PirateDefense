@@ -351,11 +351,20 @@ class SandTower: TowerNode, Navigatable {
 class DefenderTower: TowerNode, Navigatable {
     var waterSpeed: Double = 1
     var route = Voyage.offGrid()
+    
+    var sandShipsRemaining = 5
+    var allowsWin = true
 
     func allowedTiles() -> Set<Landscape> {
         return routeSet
     }
    
+   
+    #if os(OSX)
+    var baseColor = NSColor.purple
+    #else
+    var baseColor = UIColor.purple
+    #endif
     
     convenience init(timeOverTile:Double, route nextR:Voyage) {
   
@@ -409,18 +418,33 @@ class DefenderTower: TowerNode, Navigatable {
         
         if pos == route.finish {
             scene.remove(tower: self)
-            scene.gameState = .win
+            if allowsWin {
+                scene.gameState = .win
+            }
             return false
         }
         
         return true
     }
     
+    override func hit(scene: GameScene) {
+        super.hit(scene: scene)
+        
+        let ratio = CGFloat(hitsRemain)/CGFloat(maxHealth)
+        #if os(OSX)
+            self.fillColor = NSColor.white.blended(withFraction: ratio, of: self.baseColor) ?? self.baseColor
+        #else
+            self.fillColor = self.baseColor
+        #endif
+    }
+    
     
     func sandToHome(scene:GameScene)->SandTower?{
         
         if let trip = scene.mapTiles.randomRoute(),
-        let start = scene.tileOf(node: self) {
+            scene.towersRemaining() > 0,
+        let start = scene.tileOf(node: self),
+            sandShipsRemaining > 0 {
             
             let route = Voyage(start: start, finish: trip.finish)
             let start:CGPoint
@@ -440,9 +464,49 @@ class DefenderTower: TowerNode, Navigatable {
             sandShip.run(sandShip.wakeAction(), withKey:"wake")
             sandShip.setScale(0.3)
             sandShip.run(SKAction.scale(to: 1, duration: 6))
+            sandShipsRemaining -= 1
             return sandShip
         }
        
+        return nil
+    }
+    
+    func splitShip(scene:GameScene)->DefenderTower?{
+        
+        if  scene.towersRemaining() > 0,
+            sandShipsRemaining > 0, self.hitsRemain > 3 ,  let startTile = scene.tileOf(node: self){
+            
+           
+            
+            
+            let rou = Voyage(start: startTile, finish: self.route.finish)
+            let m = rou.shortestRoute(map: scene.mapTiles, using: waterSet)
+            
+            let ret = DefenderTower(timeOverTile: self.waterSpeed / 10, route: rou)
+            ret.hitsRemain = self.hitsRemain * 2/3
+            ret.gun.clock.adjust(interval: self.gun.clock.length() * 2)
+            ret.fillColor = .green
+            ret.baseColor = ret.fillColor
+            
+            let start:CGPoint
+            
+            if m.count > 1 {
+                start = scene.mapTiles.convert(mappoint: m[1]) ?? self.position
+            } else {
+                start = self.position
+            }
+            
+            ret.position = start
+            
+            self.hitsRemain -= ret.hitsRemain
+            self.gun.clock.reduce(factor: 0.7)
+            self.run(SKAction.scale(by: 0.7, duration: 0.5))
+            ret.run(SKAction.scale(by: 1.2, duration: 0.5))
+            ret.allowsWin = false
+            sandShipsRemaining -= 1
+            return ret
+        }
+        
         return nil
     }
     

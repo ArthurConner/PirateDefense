@@ -41,6 +41,7 @@ class GameScene: SKScene {
     
     let playSound = true
     
+    var points:Int = 0
     var zoomOutOnRedirect = false
     var ai:TowerAI? = TowerAI()
     var victorySpeed:Double = 1
@@ -57,6 +58,10 @@ class GameScene: SKScene {
         }
     }
     
+    
+    func victoryShipStartingLevel()->Int{
+        return boatLevel + points/5
+    }
     
     func playSea() {
         stopSea()
@@ -150,7 +155,7 @@ class GameScene: SKScene {
             tower.removeFromParent()
         }
         
-        
+        points = 0
         guard let background = mapTiles.tiles else {return }
         
         hud.removeFromParent()
@@ -167,6 +172,7 @@ class GameScene: SKScene {
         updateLabels()
         launchClock.adjust(interval:5)
         launchClock.tickNext()
+        launchClock.floor = 1
         boatLevel = 3
         victorySpeed  = 1
         counterShipClock.adjust(interval:5)
@@ -196,8 +202,10 @@ class GameScene: SKScene {
         guard let tile  = self.childNode(withName: "//MapTiles") as? SKTileMapNode else { return }
         mapTiles.load(map:tile)
         
+        launchClock.floor = 1
         mapTiles.refreshMap()
         gameState = .start
+        points = 0
         
         let maxAspectRatio:CGFloat = 16.0/9.0
         let playableHeight = size.width / maxAspectRatio
@@ -234,7 +242,7 @@ class GameScene: SKScene {
     }
     
     func updateLabels() {
-        towersRemainingLabel.text = "Towers Remaining: \(towersRemaining()) Str:\(boatLevel + hud.kills/5)"
+        towersRemainingLabel.text = "Towers Remaining: \(towersRemaining()) Str:\(victoryShipStartingLevel())"
         if towersRemaining() > 0 {
             towersRemainingLabel.fontColor = .white
         } else {
@@ -242,7 +250,7 @@ class GameScene: SKScene {
             towersRemainingLabel.fontColor = .red
         }
         
-        shipsKilledLabel.text = "Ships: \(hud.kills)"
+        shipsKilledLabel.text = "Ships: \(hud.kills) Points:\(points)"
         if hud.kills < 1 {
             shipsKilledLabel.text = ""
         }
@@ -635,6 +643,23 @@ extension GameScene {
         hud.kills += 1
         updateLabels()
         
+        switch ship.kind {
+        case .battle:
+            points += 6
+        case .crusier:
+            points += 1
+        case .destroyer:
+            points += 5
+        case .galley:
+            points += 2
+        case .motor:
+            points += 3
+        case .row:
+            points += 0
+            
+       
+        }
+        
     }
     
     func launchAttack(timeOverTile:Double) {
@@ -664,7 +689,7 @@ extension GameScene {
             #else
                 victoryShip.fillColor = NSColor(calibratedRed: 152/255.0, green: 104/255.0, blue: 31/255.0, alpha: 1)
             #endif
-            victoryShip.hitsRemain = boatLevel + hud.kills/5
+            victoryShip.hitsRemain = victoryShipStartingLevel()
             boatLevel += 2
             
             self.towers.append(victoryShip)
@@ -1069,7 +1094,15 @@ extension GameScene: TowerPlayerActionDelegate {
             }
         case .launchTerra:
             if towersRemaining() > 0 {
-                launchTeraShip()
+                if let t = followingShip as? DefenderTower,
+                    let sandShip = t.splitShip(scene: self){
+                    self.towers.append(sandShip)
+                    self.addChild(sandShip)
+                    updateLabels()
+                    adjust(traveler: sandShip)
+                } else {
+                    launchTeraShip()
+                }
             }
         case .KillAllTowers:
             let removeme = towers

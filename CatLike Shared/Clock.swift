@@ -15,6 +15,7 @@ class PirateClock{
     private var time:Date = Date(timeIntervalSinceNow: 0)
     private var interval:TimeInterval = 5
     var enabled = true
+    var floor:TimeInterval = 0
     
     func tickNext(){
         time = Date(timeIntervalSinceNow:0)
@@ -46,7 +47,11 @@ class PirateClock{
     }
     
     func reduce(factor:TimeInterval){
-        self.interval = self.interval * factor
+        let nextI = self.interval * factor
+        if nextI > floor {
+            self.interval = nextI
+           // print("reducing to \(nextI)")
+        }
         update()
     }
     
