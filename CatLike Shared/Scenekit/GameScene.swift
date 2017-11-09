@@ -60,7 +60,11 @@ class GameScene: SKScene {
     
     
     func victoryShipStartingLevel()->Int{
-        return boatLevel + points/5
+        return boatLevel + points/10
+    }
+    
+    func towerStartingLevel()->Int{
+        return 4 + points/10
     }
     
     func playSea() {
@@ -452,7 +456,7 @@ extension GameScene {
         
         if let place = mapTiles.convert(mappoint: towerPoint){
             let tower = TowerNode(range:90)
-            
+            tower.hitsRemain = towerStartingLevel()
             tower.position = place
             self.addChild(tower)
             towers.append(tower)
@@ -505,6 +509,11 @@ extension GameScene {
 
 extension GameScene {
     
+    func isDeepIntoGame()->Bool{
+        
+        return  launchClock.length() < launchClock.floor + 2.1
+    }
+    
     func adjust(traveler:Navigatable ){
         
         
@@ -513,7 +522,11 @@ extension GameScene {
         if let followLine = traveler.sailAction(usingTiles:mapTiles, orient: true) {
             ship.run(followLine,withKey:"move")
             ship.removeAction(forKey: "wake")
-            ship.run(traveler.wakeAction(), withKey:"wake")
+            if !isDeepIntoGame() {
+                ship.run(traveler.wakeAction(), withKey:"wake")
+            } else if let x = ship.childNode(withName: "seasound") {
+                x.removeFromParent()
+            }
             
         } else {
             ship.removeAction(forKey:"move")
@@ -676,7 +689,16 @@ extension GameScene {
     
     func launchVictoryShip(){
         
+        let tow = towers.filter({ if let x = $0 as? DefenderTower, x.allowsWin { return true}
+            return false })
+        
+        guard tow.count < 4 else {
+            counterShipClock.update()
+            return
+        }
+        
         if let trip = mapTiles.randomRoute(),   let startingPostion =  mapTiles.convert(mappoint: trip.finish) {
+            
             
             let victoryShip = DefenderTower(timeOverTile: victorySpeed, route: Voyage(start: trip.finish, finish: trip.start))
             

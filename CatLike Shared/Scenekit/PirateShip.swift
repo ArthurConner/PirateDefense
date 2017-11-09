@@ -224,7 +224,8 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         }
         
         if isKill {
-            if scene.playSound {
+            if scene.playSound, !scene.isDeepIntoGame(){
+              
                 scene.run(PirateNode.sinkSound)
             }
         }
@@ -259,8 +260,9 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         if  let dest =  scene.mapTiles.convert(mappoint: at){
             let ball = CannonBall(tower: self, dest: dest, speed: self.gun.flightDuration)
             self.gun.clock.update()
-            if scene.playSound {
+            if scene.playSound,  !scene.isDeepIntoGame()  {
 
+                
                 let me = SKAudioNode(fileNamed:"Gun Cannon.caf")
                 me.name = "seasound"
                 me.isPositional = true
