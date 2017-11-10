@@ -40,7 +40,29 @@ extension Navigatable {
         
         
         let route = source.path(to: dest, map: tiles, using: self.allowedTiles())
+        
+        var lastPoint:MapPoint? = nil
+        for x in route.reversed(){
+            
+            if let l = lastPoint {
+                
+                let neighbors = x.adj(max: tiles.mapAdj).filter({$0 == l})
+                if neighbors.isEmpty {
+                    print("we have a route that does not work forward \(x) \(l)")
+                }
+                
+                let neigh = l.adj(max: tiles.mapAdj).filter({$0 == x})
+                if neigh.isEmpty {
+                    let list =  l.adj(max: tiles.mapAdj)
+                    print("we have a route that does not work reverse \(x) \(l) \(list) ")
+                }
+            }
+            
+            lastPoint = x
+        }
         if let path = tiles.pathOf(mappoints:route, startOveride:ship.position) {
+            
+            
             
             let time =  self.waterSpeed * Double(route.count)
             return SKAction.follow( path, asOffset: false, orientToPath: orient, duration: time)

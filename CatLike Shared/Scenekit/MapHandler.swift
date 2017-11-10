@@ -520,6 +520,8 @@ class MapHandler{
         
         let y = tiles.tileColumnIndex( fromPosition: coordinate)
         let x = tiles.tileRowIndex( fromPosition: coordinate)
+        
+       // guard x >= 0, y >= 0 else  { return nil }
         return MapPoint(row: x, col: y)
         
     }

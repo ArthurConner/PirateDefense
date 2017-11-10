@@ -311,7 +311,7 @@ class GameScene: SKScene {
         setupWorldPhysics()
         self.setUpScene()
         self.addChild(hud)
-        self.ai = nil
+       // self.ai = nil
         
         NotificationCenter.default.addObserver(self, selector: #selector(sendMap), name: GameNotif.NeedMap.notification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(launchFromRemote), name: GameNotif.launchShip.notification, object: nil)
@@ -1000,19 +1000,19 @@ extension GameScene : SKPhysicsContactDelegate {
         
         if let p1 = contact.bodyA.node as? PirateNode,
             let p2 = contact.bodyB.node as? PirateNode {
-            print("\(p1) ship colided with ship \(p2)")
+            //print("\(p1) ship colided with ship \(p2)")
             return
         }
         
         if let p1 = contact.bodyA.node as? TowerNode,
             let p2 = contact.bodyB.node as? TowerNode {
-            print("\(p1) tower colided with tower \(p2)")
+           // print("\(p1) tower colided with tower \(p2)")
             return
         }
         
         if let p1 = contact.bodyA.node as? TowerNode,
             let p2 = contact.bodyB.node as? PirateNode {
-            print("\(p1) tower colided with ship \(p2)")
+            //print("\(p1) tower colided with ship \(p2)")
             p1.removeAction(forKey: "move")
             p2.removeAction(forKey: "move")
             p1.hit(scene: self)
@@ -1034,7 +1034,7 @@ extension GameScene : SKPhysicsContactDelegate {
         
         if let p1 = contact.bodyA.node as? PirateNode,
             let p2 = contact.bodyB.node as? TowerNode {
-            print("\(p1) ship colided with tower \(p2)")
+            //print("\(p1) ship colided with tower \(p2)")
             p1.removeAction(forKey: "move")
             p2.removeAction(forKey: "move")
             p1.hit(scene: self)

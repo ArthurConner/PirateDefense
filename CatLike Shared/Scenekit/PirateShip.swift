@@ -248,7 +248,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         self.hitsRemain -= 1
         guard  let shipTile = scene.tileOf(node: self) else { return }
         
-        if self.hitsRemain == 0 {
+        if self.hitsRemain < 1 {
             scene.mapTiles.changeTile(at: shipTile, to: .path)
             self.die(scene:scene, isKill:true)
         }

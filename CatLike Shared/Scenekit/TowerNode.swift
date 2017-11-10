@@ -191,7 +191,7 @@ class TowerNode: SKShapeNode , Fireable {
             }
         }
         
-        if hitsRemain == 0 {
+        if hitsRemain < 1 {
             guard let towerTile  = scene.tileOf(node: self) else   { return }
             
             let towerScapes:Set<Landscape> = [.sand,.water,.path]
