@@ -86,7 +86,8 @@ extension ActionTableController : NSTableViewDelegate {
             text =  "Destroyer"
         case .motor:
             text =  "Motor"
-            
+        case .bomber:
+            text = "Bomber"
         case .battle:
             text = "Battleship"
         }

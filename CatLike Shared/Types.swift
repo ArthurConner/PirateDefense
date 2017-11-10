@@ -32,6 +32,7 @@ protocol Fireable {
     
     
     var gun:PirateGun {get}
+    var hitsRemain:Int {get set}
 }
 
 

@@ -17,6 +17,7 @@ enum ShipKind: Int, Codable {
     case battle
     case destroyer
     case crusier
+    case bomber
 }
 
 struct ShipProxy : Codable{
@@ -86,7 +87,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             ship.hitsRemain = 1
             ship.gun.clock.adjust(interval: 3)
             ship.gun.radius = 1
-
+            
             soundName = nil
             soundLevel = nil
             
@@ -97,6 +98,19 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             body = SKPhysicsBody(circleOfRadius: 20)
             body.restitution = 0.5
             ship.waterSpeed = modfier * 1.5
+            ship.hitsRemain = 1
+            
+            ship.gun.clock.adjust(interval: 70)
+            soundName =  "cruiser.flute.caf"
+            soundLevel = 0.9
+            
+        case .bomber:
+            
+            ship = BomberNode(imageNamed: "Bomber" )
+            ship.wakeColor = .red
+            body = SKPhysicsBody(circleOfRadius: 20)
+            body.restitution = 0.5
+            ship.waterSpeed = modfier * 7
             ship.hitsRemain = 1
             
             ship.gun.clock.adjust(interval: 70)
@@ -148,7 +162,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             ship.addChild(me)
             
             if let l = soundLevel {
-                 me.run(SKAction.changeVolume(to: l, duration: 3))
+                me.run(SKAction.changeVolume(to: l, duration: 3))
             }
             
         }
@@ -183,7 +197,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     func spawnWake() {
         
         guard let board = self.parent else {return}
-
+        
         let wake = SKShapeNode.init(circleOfRadius: 2)
         #if os(OSX)
             wake.fillColor = (self.wakeColor.blended(withFraction: 0.6, of: .white)?.blended(withFraction: 0.4, of: .clear)) ?? .white
@@ -225,7 +239,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         
         if isKill {
             if scene.playSound, !scene.isDeepIntoGame(){
-              
+                
                 scene.run(PirateNode.sinkSound)
             }
         }
@@ -261,12 +275,12 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             let ball = CannonBall(tower: self, dest: dest, speed: self.gun.flightDuration)
             self.gun.clock.update()
             if scene.playSound,  !scene.isDeepIntoGame()  {
-
+                
                 
                 let me = SKAudioNode(fileNamed:"Gun Cannon.caf")
                 me.name = "seasound"
                 me.isPositional = true
-
+                
                 ball.addChild(me)
                 me.run(SKAction.changeVolume(to: 0.3, duration: 0.01))
             }
@@ -276,6 +290,78 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     
     
     
+}
+
+class BomberNode : PirateNode {
+    
+    
+    override func die(scene:GameScene, isKill:Bool){
+        
+        var towersDestroyed:[Fireable] = []
+        
+        defer {
+            for x in towersDestroyed {
+                if let tow = x as? TowerNode {
+                    tow.die(scene: scene, isKill: true)
+                }
+            }
+        }
+        
+        if isKill, let shipTile = scene.tileOf(node: self) {
+            
+            let list = shipTile.adj(max: scene.mapTiles.mapAdj)
+            
+            var tilesboom:Set<MapPoint> = []
+            
+            for x in list {
+                tilesboom.insert(x)
+                let adj = x.adj(max: scene.mapTiles.mapAdj)
+                for y in adj {
+                    tilesboom.insert(y)
+                }
+            }
+            
+            func remove(texture:Landscape,toNext:Landscape) {
+                
+                let sandPoints = tilesboom.filter({ scene.mapTiles.kind(point: $0) == texture})
+                
+                for x in sandPoints {
+                    
+                    func isGood(node:SKNode)->Bool{
+                        if let _ = node as? Fireable,
+                            let pos = scene.tileOf(node: node),
+                            x == pos {
+                            return true
+                        }
+                        
+                        return false
+                        
+                    }
+                    let killMe = scene.children.filter(isGood) as! [Fireable]
+                    for x in killMe {
+                        if x.hitsRemain < 10 {
+                            towersDestroyed.append(x)
+                        } else {
+                            let stop = x.hitsRemain/2
+                            while x.hitsRemain > stop {
+                                x.hit(scene: scene)
+                            }
+                        }
+                    }
+                    towersDestroyed.append(contentsOf: killMe )
+                    scene.mapTiles.changeTile(at: x, to: toNext)
+                }
+                
+            }
+            
+            remove(texture: .water, toNext: .water)
+            remove(texture: .sand, toNext: .water)
+            remove(texture: .inland, toNext: .sand)
+            
+        }
+        
+        super.die(scene: scene, isKill: isKill)
+    }
 }
 
 class CruiserNode : PirateNode{
@@ -325,32 +411,101 @@ class CruiserNode : PirateNode{
 /// Generates a random ship with a probabilty
 ///
 /// - Returns: A specfic ship kind
-func randomShipKind()->ShipKind{
+
+
+func percentage(of:ShipKind, at:TimeInterval)->Double{
     
-    let x = GKRandomSource.sharedRandom().nextUniform()
-    if x < 0.6{
-        return .galley
-    }
-    if x < 0.7 {
-        return .crusier
+    let base:Double
+    let slope:Double
+    
+    let final:Double
+    
+    switch of {
+    case .battle:
+        base = -300
+        slope = 1.5
+        final = 100
+    case .galley:
+        base = 1
+        slope = 1
+        final = 500
+    case .row:
+        base = -10
+        slope = 0
+        final = -10
+    case .motor:
+        base = 10
+        slope = 0.75
+        final = 20
+    case .destroyer:
+        base = -220
+        slope = 1.5
+        final = 100
+    case .crusier:
+        base = 0
+        slope = 0.8
+        final = 20
+    case .bomber:
+        base = -70
+        slope = 1
+        final = 30
     }
     
-    if x < 0.85 {
-        return .motor
-    }
-    if x < 0.95 {
-        return .destroyer
+    return  min(max((base + slope * at)/5 , 0 ),final)
+}
+
+var shipBaseCounter = 0
+
+func randomShipKind( at:TimeInterval)->ShipKind{
+    
+    if (at < 1) {
+        shipBaseCounter = 0
+    } else
+    {
+        shipBaseCounter += 1
+        
     }
     
-    return .battle
+    let kinds:[ShipKind] = [.battle,.galley,.motor, .destroyer,.crusier, .bomber].filter({percentage(of:$0, at:at) > 0 })
+    let ranks:[Double] = kinds.map({percentage(of:$0, at:at)})
+    let total = ranks.reduce(0, +)
     
-    // return .destroyer
+    let x = Double(GKRandomSource.sharedRandom().nextUniform()) * total
+    
+    var sum:Double = 0
+    
+    
+    if shipBaseCounter > 5 {
+        var sum2:Double = 0
+        print("checking \(x) which is \(x * total)")
+        for (i, r) in ranks.enumerated() {
+            
+            
+            let k = kinds[i]
+            
+            print("at \(at) \(k) has prob \(r/total) of \(r) \(sum2) - \(sum2+r)")
+            sum2 += 2
+        }
+        shipBaseCounter = 0
+    }
+    
+    for (i, r) in ranks.enumerated() {
+        
+        sum += r
+        if x < sum {
+            return kinds[i]
+        }
+    }
+    
+    
+    return .galley
+    
     
 }
 
-func randomShip( modfier:Double, route:Voyage) -> PirateNode{
+func randomShip( modfier:Double, route:Voyage, at:TimeInterval) -> PirateNode{
     
-    let kind = randomShipKind()
+    let kind = randomShipKind(at:at)
     return PirateNode.makeShip(kind:kind, modfier:modfier, route: route)
     
 }

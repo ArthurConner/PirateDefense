@@ -35,7 +35,7 @@ class GameScene: SKScene {
     let maxTowers = 7
     
     fileprivate var routeDebug:[String:[MapPoint]] = [:]
-    
+    var startTime = Date()
     
     weak var followingShip:TowerNode?
     
@@ -176,7 +176,7 @@ class GameScene: SKScene {
         updateLabels()
         launchClock.adjust(interval:5)
         launchClock.tickNext()
-        launchClock.floor = 1
+        launchClock.floor = 1.6
         boatLevel = 3
         victorySpeed  = 1
         counterShipClock.adjust(interval:5)
@@ -206,10 +206,11 @@ class GameScene: SKScene {
         guard let tile  = self.childNode(withName: "//MapTiles") as? SKTileMapNode else { return }
         mapTiles.load(map:tile)
         
-        launchClock.floor = 1
+        launchClock.floor = 1.6
         mapTiles.refreshMap()
         gameState = .start
         points = 0
+        startTime = Date()
         
         let maxAspectRatio:CGFloat = 16.0/9.0
         let playableHeight = size.width / maxAspectRatio
@@ -311,7 +312,7 @@ class GameScene: SKScene {
         setupWorldPhysics()
         self.setUpScene()
         self.addChild(hud)
-       // self.ai = nil
+        self.ai = nil
         
         NotificationCenter.default.addObserver(self, selector: #selector(sendMap), name: GameNotif.NeedMap.notification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(launchFromRemote), name: GameNotif.launchShip.notification, object: nil)
@@ -669,6 +670,8 @@ extension GameScene {
             points += 3
         case .row:
             points += 0
+        case .bomber:
+            points += 5
             
        
         }
@@ -679,7 +682,7 @@ extension GameScene {
         
         if let trip = mapTiles.randomRoute(),  let shipPosition =  mapTiles.convert(mappoint:trip.start) {
             
-            let ship =  randomShip( modfier:timeOverTile, route: trip)
+            let ship =  randomShip( modfier:timeOverTile, route: trip, at: -startTime.timeIntervalSinceNow)
             ship.position = shipPosition
             add(ship: ship)
             
@@ -998,14 +1001,14 @@ extension GameScene : SKPhysicsContactDelegate {
     func didBegin(_ contact: SKPhysicsContact) {
         
         
-        if let p1 = contact.bodyA.node as? PirateNode,
-            let p2 = contact.bodyB.node as? PirateNode {
+        if let _ = contact.bodyA.node as? PirateNode,
+            let _  = contact.bodyB.node as? PirateNode {
             //print("\(p1) ship colided with ship \(p2)")
             return
         }
         
-        if let p1 = contact.bodyA.node as? TowerNode,
-            let p2 = contact.bodyB.node as? TowerNode {
+        if let _  = contact.bodyA.node as? TowerNode,
+            let _ = contact.bodyB.node as? TowerNode {
            // print("\(p1) tower colided with tower \(p2)")
             return
         }

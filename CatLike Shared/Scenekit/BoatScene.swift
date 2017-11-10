@@ -35,6 +35,8 @@ class BoatButton:SKSpriteNode {
             ship = BoatButton(imageNamed: "Row" )
         case .crusier:
             ship = BoatButton(imageNamed: "Crusier" )
+        case .bomber:
+             ship = BoatButton(imageNamed: "Crusier" )
         case .destroyer:
             ship = BoatButton(imageNamed: "Destroyer" )
         case .motor:
