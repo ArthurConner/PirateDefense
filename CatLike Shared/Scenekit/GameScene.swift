@@ -122,6 +122,10 @@ class GameScene: SKScene {
         return  Set<MapPoint>(towers.flatMap({tileOf(node:$0)}))
     }
     
+    func shipTiles()->Set<MapPoint>{
+        return  Set<MapPoint>(ships.flatMap({tileOf(node:$0)}))
+    }
+    
     func navigatableBoats(at point:MapPoint)->[Navigatable]{
         let p1 = self.children.filter({self.tileOf(node: $0) == point})
         return p1.flatMap{$0 as? Navigatable}
@@ -176,7 +180,7 @@ class GameScene: SKScene {
         updateLabels()
         launchClock.adjust(interval:5)
         launchClock.tickNext()
-        launchClock.floor = 1.6
+        launchClock.floor = 1.2
         boatLevel = 3
         victorySpeed  = 1
         counterShipClock.adjust(interval:5)
@@ -206,7 +210,7 @@ class GameScene: SKScene {
         guard let tile  = self.childNode(withName: "//MapTiles") as? SKTileMapNode else { return }
         mapTiles.load(map:tile)
         
-        launchClock.floor = 1.6
+        launchClock.floor = 1.2
         mapTiles.refreshMap()
         gameState = .start
         points = 0
@@ -515,12 +519,12 @@ extension GameScene {
         return  launchClock.length() < launchClock.floor + 2.1
     }
     
-    func adjust(traveler:Navigatable ){
+    func adjust(traveler:Navigatable, existing:Set<MapPoint> ){
         
         
         guard let ship = traveler as? SKNode else {return}
         
-        if let followLine = traveler.sailAction(usingTiles:mapTiles, orient: true) {
+        if let followLine = traveler.sailAction(usingTiles:mapTiles, orient: true, existing: existing) {
             ship.run(followLine,withKey:"move")
             ship.removeAction(forKey: "wake")
             if !isDeepIntoGame() {
@@ -636,7 +640,7 @@ extension GameScene {
     func add(ship:PirateNode){
         ships.append(ship)
         self.addChild(ship)
-        adjust(traveler: ship)
+        adjust(traveler: ship, existing: shipTiles())
         
         if !playSound,
             let n = ship.childNode(withName: "seasound") {
@@ -690,6 +694,8 @@ extension GameScene {
         
     }
     
+    
+    
     func launchVictoryShip(){
         
         let tow = towers.filter({ if let x = $0 as? DefenderTower, x.allowsWin { return true}
@@ -721,7 +727,7 @@ extension GameScene {
             self.addChild(victoryShip)
             updateLabels()
             
-            adjust(traveler: victoryShip)
+            adjust(traveler: victoryShip,existing: towerTiles())
             
             counterShipClock.adjust(interval: launchClock.length() * 8)
             counterShipClock.update()
@@ -749,7 +755,7 @@ extension GameScene {
             self.addChild(sandShip)
             updateLabels()
             
-            adjust(traveler: sandShip)
+            adjust(traveler: sandShip, existing: towerTiles())
 
             sandShip.run(sandShip.wakeAction(), withKey:"wake")
             sandShip.setScale(0.3)
@@ -773,7 +779,7 @@ extension GameScene {
             self.addChild(sandShip)
             updateLabels()
             
-            adjust(traveler: sandShip)
+            adjust(traveler: sandShip,existing: [])
             
             
             sandShip.run(sandShip.wakeAction(), withKey:"wake")
@@ -865,7 +871,7 @@ extension GameScene {
         }
         
         cam.position = curShip.position
-        if let r = curShip.sailAction(usingTiles:mapTiles, orient:false){
+        if let r = curShip.sailAction(usingTiles:mapTiles, orient:false, existing: []){
             cam.run(r,withKey:"moveCam")
         }
     }
@@ -924,7 +930,7 @@ extension GameScene {
             
             let (cam,hadCam) = makeCamera()
             
-            if let nav = x as? Navigatable, let rAction = nav.sailAction(usingTiles:mapTiles, orient:false) {
+            if let nav = x as? Navigatable, let rAction = nav.sailAction(usingTiles:mapTiles, orient:false, existing: []) {
                 
                 func distance(_ a: CGPoint, _ b: CGPoint) -> CGFloat {
                     let xDist = a.x - b.x
@@ -966,10 +972,18 @@ extension GameScene {
     
     func redirectAllShips(){
         
+        
+        let tow = towerTiles()
+        let shi = shipTiles()
         for x in children {
             
             if let boat = x as? Navigatable {
-                adjust(traveler: boat)
+                
+                if let _ = boat as? TowerNode {
+                    adjust(traveler: boat, existing: tow)
+                } else {
+                    adjust(traveler: boat, existing: shi)
+                }
             }
         }
         
@@ -1025,11 +1039,13 @@ extension GameScene : SKPhysicsContactDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 
                 [weak p1, weak p2] in
+                
+                let mytiles = self.towerTiles().union(self.shipTiles())
                 if let n = p2 {
-                    self.adjust(traveler: n)
+                    self.adjust(traveler: n, existing: mytiles)
                 }
                 if let n = p1 as? Navigatable {
-                    self.adjust(traveler: n)
+                    self.adjust(traveler: n, existing: mytiles)
                 }
             }
             return
@@ -1047,11 +1063,14 @@ extension GameScene : SKPhysicsContactDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
                 
                 [weak p1, weak p2] in
+                 let mytiles = self.towerTiles().union(self.shipTiles())
+                
+                
                 if let n = p1 {
-                    self.adjust(traveler: n)
+                    self.adjust(traveler: n, existing: mytiles)
                 }
                 if let n = p2 as? Navigatable {
-                    self.adjust(traveler: n)
+                    self.adjust(traveler: n, existing: mytiles)
                 }
             }
             
@@ -1112,7 +1131,7 @@ extension GameScene: TowerPlayerActionDelegate {
                         self.towers.append(sandShip)
                         self.addChild(sandShip)
                         updateLabels()
-                        adjust(traveler: sandShip)
+                        adjust(traveler: sandShip, existing: towerTiles())
                 } else {
                     launchSandShip()
                 }
@@ -1124,7 +1143,7 @@ extension GameScene: TowerPlayerActionDelegate {
                     self.towers.append(sandShip)
                     self.addChild(sandShip)
                     updateLabels()
-                    adjust(traveler: sandShip)
+                    adjust(traveler: sandShip, existing: [])
                 } else {
                     launchTeraShip()
                 }

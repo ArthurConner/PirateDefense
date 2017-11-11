@@ -424,10 +424,10 @@ func percentage(of:ShipKind, at:TimeInterval)->Double{
     case .battle:
         base = -300
         slope = 1.5
-        final = 100
+        final = 80
     case .galley:
         base = 1
-        slope = 1
+        slope = 2
         final = 500
     case .row:
         base = -10
@@ -439,16 +439,16 @@ func percentage(of:ShipKind, at:TimeInterval)->Double{
         final = 20
     case .destroyer:
         base = -220
-        slope = 1.5
-        final = 100
+        slope = 1.2
+        final = 150
     case .crusier:
         base = 0
         slope = 0.8
         final = 20
     case .bomber:
         base = -70
-        slope = 1
-        final = 30
+        slope = 0.8
+        final = 40
     }
     
     return  min(max((base + slope * at)/5 , 0 ),final)
@@ -470,29 +470,36 @@ func randomShipKind( at:TimeInterval)->ShipKind{
     let ranks:[Double] = kinds.map({percentage(of:$0, at:at)})
     let total = ranks.reduce(0, +)
     
-    let x = Double(GKRandomSource.sharedRandom().nextUniform()) * total
+    let xp = Double(GKRandomSource.sharedRandom().nextUniform())
+        
+        let x = xp * total
     
     var sum:Double = 0
     
-    
+  //  print("number \(x) to \(xp)")
+    /*
     if shipBaseCounter > 5 {
-        var sum2:Double = 0
-        print("checking \(x) which is \(x * total)")
+        var sum2:Int = 0
+        print("\n checking \(x) which is \(x / total) at \(at)")
         for (i, r) in ranks.enumerated() {
             
             
             let k = kinds[i]
             
-            print("at \(at) \(k) has prob \(r/total) of \(r) \(sum2) - \(sum2+r)")
-            sum2 += 2
+            let inter = Int( r / total * 100.0)
+            print(" \(k)  \(sum2) - \(sum2 + inter)")
+            sum2 += inter
+            
         }
         shipBaseCounter = 0
     }
+ */
     
     for (i, r) in ranks.enumerated() {
         
         sum += r
         if x < sum {
+          //  print(kinds[i])
             return kinds[i]
         }
     }

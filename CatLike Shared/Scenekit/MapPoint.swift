@@ -84,6 +84,82 @@ struct MapPoint:Codable{
         
     }
     
+    
+    fileprivate func _minpath(to dest:MapPoint,map:MapHandler, using:Set<Landscape>, existing:Set<MapPoint>, count:Int)->[MapPoint]{
+        
+        var visited:[MapPoint:MapPoint] = [self:self]
+        var nextLevel = [self]
+        var counter = 0
+        
+        while !nextLevel.isEmpty{
+            var addMe:Set<MapPoint> = []
+            for x in nextLevel {
+                for ad in x.adj(max: map.mapAdj){
+                    if visited[ad] == nil {
+                        visited[ad] = x
+                        if ad == dest {
+                            var ret = [dest]
+                            var current = x
+                            while current != self {
+                                ret.append(current)
+                                current = visited[current] ?? x
+                            }
+                            ret.append(self)
+                            return ret.reversed()
+                        }
+                        // if
+                        if using.contains(map.kind(point: ad)){
+                            
+                            if existing.contains(ad) {
+                                counter += 1
+                                if counter < count {
+                                    addMe.insert(ad)
+                                }
+                            } else {
+                                addMe.insert(ad)
+                            }
+                        }
+                        
+                    } else {
+                        // print("No")
+                    }
+                }
+            }
+            
+            nextLevel = Array(addMe)
+        }
+        return []
+        
+    }
+    
+    /*
+ if using.contains(map.kind(point: ad)){
+ if existing.contains(ad) {
+ counter += 1
+ 
+ if counter < count {
+ addMe.insert(ad)
+ }
+ } else {
+ addMe.insert(ad)
+ }
+ }
+ */
+    func minpath(to dest:MapPoint,map:MapHandler, using:Set<Landscape>, existing:Set<MapPoint>)->[MapPoint]{
+        
+        
+        for i in 0..<(existing.count + 1){
+            
+            let p = _minpath(to: dest, map: map, using: using, existing: existing, count: i)
+            if !p.isEmpty {
+                return p
+            }
+        }
+        
+        return []
+        
+    }
+    
 }
 
 extension MapPoint:Equatable{

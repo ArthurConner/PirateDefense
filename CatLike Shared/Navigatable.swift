@@ -30,7 +30,7 @@ extension Navigatable {
         return  SKAction.repeatForever(SKAction.sequence([SKAction.run(wake),SKAction.wait(forDuration: self.waterSpeed/3)]))
     }
     
-    func sailAction(usingTiles tiles:MapHandler, orient:Bool=true)->SKAction? {
+    func sailAction(usingTiles tiles:MapHandler, orient:Bool=true, existing:Set<MapPoint>)->SKAction? {
         
         let dest = self.route.finish
         
@@ -39,7 +39,7 @@ extension Navigatable {
             let source =  tiles.map(coordinate: ship.position) else { return nil}
         
         
-        let route = source.path(to: dest, map: tiles, using: self.allowedTiles())
+        let route = source.minpath(to: dest, map: tiles, using: self.allowedTiles(), existing: existing)
         
         var lastPoint:MapPoint? = nil
         for x in route.reversed(){
