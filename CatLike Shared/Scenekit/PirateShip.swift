@@ -60,7 +60,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     var wakeColor = UIColor.white
     #endif
     
-    static func makeShip(kind aKind:ShipKind, modfier:Double, route r:Voyage)->PirateNode {
+    static func makeShip(kind aKind:ShipKind, modfier:Double, route r:Voyage, level shipLevel:Int)->PirateNode {
         
         let body:SKPhysicsBody
         let ship:PirateNode
@@ -106,12 +106,14 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             
         case .bomber:
             
-            ship = BomberNode(imageNamed: "Bomber" )
+            let b = BomberNode(imageNamed: "Bomber" )
+            ship = b
             ship.wakeColor = .red
             body = SKPhysicsBody(circleOfRadius: 20)
             body.restitution = 0.5
-            ship.waterSpeed = modfier * 7
+            ship.waterSpeed = modfier
             ship.hitsRemain = 1
+            b.blastRadius += shipLevel
             
             ship.gun.clock.adjust(interval: 70)
             soundName =  "cruiser.flute.caf"
@@ -124,7 +126,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             body = SKPhysicsBody(circleOfRadius: 20)
             body.restitution = 0.5
             ship.waterSpeed = modfier * 3
-            ship.hitsRemain = 4
+            ship.hitsRemain = 4 + shipLevel
             ship.gun.radius = 5
             ship.gun.clock.adjust(interval: 0.7)
             soundLevel = 0.5
@@ -148,7 +150,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             body = SKPhysicsBody(circleOfRadius: 35)
             body.restitution = 0.9
             ship.waterSpeed = modfier * 8
-            ship.hitsRemain = 6
+            ship.hitsRemain = 6 + shipLevel
             ship.gun.clock.adjust(interval: 0.5)
             soundLevel = 1
             soundName = "battleship.Basses.caf"
@@ -294,10 +296,14 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
 
 class BomberNode : PirateNode {
     
+     var blastRadius = GKRandomSource.sharedRandom().nextInt(upperBound: 2)+1
+    
     
     override func die(scene:GameScene, isKill:Bool){
         
         var towersDestroyed:[Fireable] = []
+        
+       
         
         defer {
             for x in towersDestroyed {
@@ -309,16 +315,25 @@ class BomberNode : PirateNode {
         
         if isKill, let shipTile = scene.tileOf(node: self) {
             
-            let list = shipTile.adj(max: scene.mapTiles.mapAdj)
+            var list = shipTile.adj(max: scene.mapTiles.mapAdj)
             
             var tilesboom:Set<MapPoint> = []
             
-            for x in list {
-                tilesboom.insert(x)
-                let adj = x.adj(max: scene.mapTiles.mapAdj)
-                for y in adj {
-                    tilesboom.insert(y)
+            for _ in 0..<blastRadius {
+                var nextL:[MapPoint] = []
+                for x in list {
+                    if !tilesboom.contains(x){
+                        tilesboom.insert(x)
+                        let adj = x.adj(max: scene.mapTiles.mapAdj)
+                        for y in adj {
+                            tilesboom.insert(y)
+                            nextL.append(y)
+                        }
+                        
+                    }
                 }
+                list = nextL
+                
             }
             
             func remove(texture:Landscape,toNext:Landscape) {
@@ -354,6 +369,8 @@ class BomberNode : PirateNode {
                 
             }
             
+            print("basting radius \(blastRadius) with tiles \(tilesboom.count)")
+            
             remove(texture: .water, toNext: .water)
             remove(texture: .sand, toNext: .water)
             remove(texture: .inland, toNext: .sand)
@@ -379,14 +396,14 @@ class CruiserNode : PirateNode{
                     
                     let ship:PirateNode
                     if  raftLeft > 0,
-                        let c = PirateNode.makeShip(kind: .crusier, modfier: 2, route: self.route) as? CruiserNode{
+                        let c = PirateNode.makeShip(kind: .crusier, modfier: 2, route: self.route,level: 0) as? CruiserNode{
                         
                         c.raftLeft = raftLeft - 1
                         
                         ship = c
                         
                     } else {
-                        ship = PirateNode.makeShip(kind: .row, modfier: 1, route: self.route)
+                        ship = PirateNode.makeShip(kind: .row, modfier: 1, route: self.route,level: 0)
                     }
                     
                     
@@ -448,7 +465,7 @@ func percentage(of:ShipKind, at:TimeInterval)->Double{
     case .bomber:
         base = -70
         slope = 0.8
-        final = 40
+        final = 60
     }
     
     return  min(max((base + slope * at)/5 , 0 ),final)
@@ -471,35 +488,35 @@ func randomShipKind( at:TimeInterval)->ShipKind{
     let total = ranks.reduce(0, +)
     
     let xp = Double(GKRandomSource.sharedRandom().nextUniform())
-        
-        let x = xp * total
+    
+    let x = xp * total
     
     var sum:Double = 0
     
-  //  print("number \(x) to \(xp)")
+    //  print("number \(x) to \(xp)")
     /*
-    if shipBaseCounter > 5 {
-        var sum2:Int = 0
-        print("\n checking \(x) which is \(x / total) at \(at)")
-        for (i, r) in ranks.enumerated() {
-            
-            
-            let k = kinds[i]
-            
-            let inter = Int( r / total * 100.0)
-            print(" \(k)  \(sum2) - \(sum2 + inter)")
-            sum2 += inter
-            
-        }
-        shipBaseCounter = 0
-    }
- */
+     if shipBaseCounter > 5 {
+     var sum2:Int = 0
+     print("\n checking \(x) which is \(x / total) at \(at)")
+     for (i, r) in ranks.enumerated() {
+     
+     
+     let k = kinds[i]
+     
+     let inter = Int( r / total * 100.0)
+     print(" \(k)  \(sum2) - \(sum2 + inter)")
+     sum2 += inter
+     
+     }
+     shipBaseCounter = 0
+     }
+     */
     
     for (i, r) in ranks.enumerated() {
         
         sum += r
         if x < sum {
-          //  print(kinds[i])
+            //  print(kinds[i])
             return kinds[i]
         }
     }
@@ -510,10 +527,10 @@ func randomShipKind( at:TimeInterval)->ShipKind{
     
 }
 
-func randomShip( modfier:Double, route:Voyage, at:TimeInterval) -> PirateNode{
+func randomShip( modfier:Double, route:Voyage, at:TimeInterval,level:Int) -> PirateNode{
     
     let kind = randomShipKind(at:at)
-    return PirateNode.makeShip(kind:kind, modfier:modfier, route: route)
+    return PirateNode.makeShip(kind:kind, modfier:modfier, route: route, level:level)
     
 }
 

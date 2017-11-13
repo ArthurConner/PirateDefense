@@ -148,7 +148,7 @@ struct MapPoint:Codable{
     func minpath(to dest:MapPoint,map:MapHandler, using:Set<Landscape>, existing:Set<MapPoint>)->[MapPoint]{
         
         
-        for i in 0..<(existing.count + 1){
+        for i in 0..<6{
             
             let p = _minpath(to: dest, map: map, using: using, existing: existing, count: i)
             if !p.isEmpty {
@@ -156,7 +156,7 @@ struct MapPoint:Codable{
             }
         }
         
-        return []
+        return path(to: dest, map: map, using: using)
         
     }
     

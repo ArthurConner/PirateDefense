@@ -22,7 +22,8 @@ class GameScene: SKScene {
     
     var launchClock = PirateClock(5)
     var playableRect = CGRect.zero
-    var boatLevel  = 3
+    var victoryShipLevel  = 3
+    var boatLevel = 0
     
     let tapClock = PirateClock(0.5)
     
@@ -60,7 +61,7 @@ class GameScene: SKScene {
     
     
     func victoryShipStartingLevel()->Int{
-        return boatLevel + points/10
+        return victoryShipLevel + points/10
     }
     
     func towerStartingLevel()->Int{
@@ -181,7 +182,8 @@ class GameScene: SKScene {
         launchClock.adjust(interval:5)
         launchClock.tickNext()
         launchClock.floor = 1.2
-        boatLevel = 3
+        victoryShipLevel = 3
+        boatLevel = 0
         victorySpeed  = 1
         counterShipClock.adjust(interval:5)
         
@@ -302,7 +304,7 @@ class GameScene: SKScene {
         }
         
         if let  trip = mapTiles.randomRoute() ,  let shipPosition =  mapTiles.convert(mappoint:trip.start) {
-            let ship =  PirateNode.makeShip(kind: shipInfo.ship.kind, modfier:launchClock.length()/8, route:trip)
+            let ship =  PirateNode.makeShip(kind: shipInfo.ship.kind, modfier:launchClock.length()/8, route:trip, level: boatLevel)
             launchClock.adjust(interval: 10)
             ship.position = shipPosition
             add(ship: ship)
@@ -365,8 +367,18 @@ class GameScene: SKScene {
         
         //Do we need to launch a new wave
         if launchClock.needsUpdate(){
+            
+            let s = shipTiles().count
+            let r = self.mapTiles.voyages[0]
+            if r.shortestRoute(map: self.mapTiles, using: waterSet).count > s * 2 {
             launchClock.reduce(factor: 0.99)
             launchAttack(timeOverTile:max(2.5,launchClock.length())/8)
+                
+            } else {
+                boatLevel += 1
+                launchClock.reduce(factor: 1.5)
+                print("next level for boats \(boatLevel)")
+            }
         }
         
         if !ships.filter({ $0.didFinish(map:mapTiles)}).isEmpty {
@@ -686,7 +698,7 @@ extension GameScene {
         
         if let trip = mapTiles.randomRoute(),  let shipPosition =  mapTiles.convert(mappoint:trip.start) {
             
-            let ship =  randomShip( modfier:timeOverTile, route: trip, at: -startTime.timeIntervalSinceNow)
+            let ship =  randomShip( modfier:timeOverTile, route: trip, at: -startTime.timeIntervalSinceNow, level:boatLevel)
             ship.position = shipPosition
             add(ship: ship)
             
@@ -721,7 +733,7 @@ extension GameScene {
                 victoryShip.fillColor = NSColor(calibratedRed: 152/255.0, green: 104/255.0, blue: 31/255.0, alpha: 1)
             #endif
             victoryShip.hitsRemain = victoryShipStartingLevel()
-            boatLevel += 2
+            victoryShipLevel += 2
             
             self.towers.append(victoryShip)
             self.addChild(victoryShip)
@@ -1159,7 +1171,7 @@ extension GameScene: TowerPlayerActionDelegate {
         case .fasterBoats:
             victorySpeed = victorySpeed * 0.95
         case .strongerBoats:
-            boatLevel += 1
+            victoryShipLevel += 1
         }
         
     }
