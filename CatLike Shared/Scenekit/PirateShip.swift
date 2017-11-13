@@ -38,6 +38,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     
     var waterSpeed:Double = 3
     var route = Voyage.offGrid()
+    var isDying = false
     
     func allowedTiles() -> Set<Landscape> {
         return routeSet
@@ -111,7 +112,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             ship.wakeColor = .red
             body = SKPhysicsBody(circleOfRadius: 20)
             body.restitution = 0.5
-            ship.waterSpeed = modfier
+            ship.waterSpeed = modfier * max(1, Double(shipLevel))
             ship.hitsRemain = 1
             b.blastRadius += shipLevel
             
@@ -227,7 +228,11 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     }
     
     
+    
     func die(scene:GameScene, isKill:Bool){
+        
+        guard !isDying else { return }
+        isDying = true
         
         guard  let shipTile = scene.tileOf(node: self) else { return }
         removeAllActions()
@@ -326,7 +331,7 @@ class BomberNode : PirateNode {
                         tilesboom.insert(x)
                         let adj = x.adj(max: scene.mapTiles.mapAdj)
                         for y in adj {
-                            tilesboom.insert(y)
+                           // tilesboom.insert(y)
                             nextL.append(y)
                         }
                         

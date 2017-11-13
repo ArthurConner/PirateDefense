@@ -559,13 +559,29 @@ extension MapHandler {
         
         let path = CGMutablePath()
         p1 = startOveride ?? p1
+       // if  p1 != startOveride {
         path.move(to: p1)
+       // }
+        
+        var lastP = p1
+        
         
         for (i, hex) in route.enumerated() {
+            
+            
             if let p = convert(mappoint:hex){
                 if i > 0 {
-                    path.addLine(to:p)
+                    
+                    for dist:CGFloat in [0.25,0.5,1]{
+                        let rev = 1 - dist
+                        let nextp = CGPoint(x:(rev * lastP.x)+(dist * p.x), y:(rev * lastP.y)+(dist * p.y))
+                    
+                    
+                    path.addLine(to:nextp)
+                    }
+                    lastP = p
                 }
+                
             }
         }
         

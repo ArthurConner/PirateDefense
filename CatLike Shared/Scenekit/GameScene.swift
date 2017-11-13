@@ -541,7 +541,7 @@ extension GameScene {
             ship.removeAction(forKey: "wake")
             if !isDeepIntoGame() {
                 ship.run(traveler.wakeAction(), withKey:"wake")
-            } else if let x = ship.childNode(withName: "seasound") {
+            } else if let x = ship.childNode(withName: "seasound"), GKRandomSource.sharedRandom().nextUniform() < 0.1 {
                 x.removeFromParent()
             }
             
@@ -822,7 +822,11 @@ extension GameScene {
         var killShips:[PirateNode] = []
         defer{
             for x in killShips {
+                if !x.isDying {
+                    x.die(scene: self, isKill: true)
+                }
                 remove(ship: x)
+                
             }
         }
         
