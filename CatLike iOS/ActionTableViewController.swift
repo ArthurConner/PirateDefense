@@ -129,6 +129,8 @@ class ActionTableViewController: UITableViewController {
             
         case .battle:
             text = "Battleship"
+        case .bomber:
+            text = "bomber"
         }
         
         

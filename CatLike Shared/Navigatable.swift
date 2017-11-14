@@ -69,10 +69,16 @@ extension Navigatable {
             if let p = ship.parent {
                 let line = ShipPath(path: path)
                 line.lineWidth = 3
-                line.strokeColor = NSColor(calibratedRed: 1, green: 0, blue: 0, alpha: 0.2)
-                
+                #if os(iOS) || os(tvOS)
+                    line.strokeColor = UIColor(displayP3Red: 1, green: 0, blue: 0, alpha: 0.2)
+                #else
+                    line.strokeColor = NSColor(calibratedRed: 1, green: 0, blue: 0, alpha: 0.2)
+                #endif
                 if let _ = self as? TowerNode {
-                    line.strokeColor =  NSColor(calibratedRed: 0, green: 1, blue: 0, alpha: 0.5)
+                    #if os(iOS) || os(tvOS)
+                        line.strokeColor = UIColor(displayP3Red: 0, green: 1, blue: 0, alpha: 0.5)                    #else
+                        line.strokeColor =  NSColor(calibratedRed: 0, green: 1, blue: 0, alpha: 0.5)
+                    #endif
                 }
                 
                 p.addChild(line)
