@@ -301,7 +301,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
 
 class BomberNode : PirateNode {
     
-     var blastRadius = GKRandomSource.sharedRandom().nextInt(upperBound: 2)+1
+     var blastRadius = GKRandomSource.sharedRandom().nextInt(upperBound: 4)+1
     
     
     override func die(scene:GameScene, isKill:Bool){

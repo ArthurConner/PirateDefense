@@ -16,23 +16,23 @@ enum Landscape : Int, Codable {
     
     
     case unknown
-    case dest
+    case pirateBase
     case inland
     case path
     case water
     case top
-    case tower
+    case homeBase
     case sand
 }
 
 let waterSet:Set<Landscape> = [.water,.path]
-let routeSet:Set<Landscape> = [.water,.path,.dest,.tower]
+let routeSet:Set<Landscape> = [.water,.path,.pirateBase,.homeBase]
 
 fileprivate func nameOf(landscape:Landscape)->String{
     switch landscape {
     case .unknown:
         return "unknown"
-    case .dest:
+    case .pirateBase:
         return "dest"
     case .inland:
         return "inland"
@@ -42,7 +42,7 @@ fileprivate func nameOf(landscape:Landscape)->String{
         return "water"
     case .top:
         return "top"
-    case .tower:
+    case .homeBase:
         return "tower"
     case .sand:
         return "sand"
@@ -53,7 +53,7 @@ fileprivate func landscapeOf(name:String)->Landscape{
     switch name.lowercased() {
         
     case "dest":
-        return .dest
+        return .pirateBase
     case "inland":
         return .inland
     case "path":
@@ -63,7 +63,7 @@ fileprivate func landscapeOf(name:String)->Landscape{
     case "top":
         return .top
     case "tower":
-        return .tower
+        return .homeBase
     case "sand":
         return .sand
     default:
@@ -77,7 +77,7 @@ fileprivate class Island {
     var terain:[Landscape:Set<MapPoint>] = [:]
     var harbor:MapPoint?
     
-    static let islandKinds:[Landscape] = [.sand, .inland, .top, .dest, .tower ]
+    static let islandKinds:[Landscape] = [.sand, .inland, .top, .pirateBase, .homeBase ]
     
     init(map nMap:MapHandler) {
         self.map = nMap
@@ -148,7 +148,7 @@ fileprivate class Island {
         
         
         var visted:Set<MapPoint> = []
-        let checkSet:Set<Landscape> =  [.sand, .inland, .top, .dest, .tower ]
+        let checkSet:Set<Landscape> =  [.sand, .inland, .top, .pirateBase, .homeBase ]
         
         func checkPoint(point:MapPoint){
             
@@ -346,11 +346,11 @@ class MapHandler{
                 
                 sands.remove(haborPoint)
                 self.isle.terain[.sand] = sands
-                var harbors = self.isle.terain[.dest] ?? []
+                var harbors = self.isle.terain[.pirateBase] ?? []
                 harbors.insert(haborPoint)
-                self.isle.terain[.dest] = harbors
+                self.isle.terain[.pirateBase] = harbors
                 self.isle.harbor = haborPoint
-                map.changeTile(at: haborPoint, to: .dest)
+                map.changeTile(at: haborPoint, to: .pirateBase)
                 
                 
             }
@@ -476,7 +476,7 @@ class MapHandler{
         
         for x in self.voyages {
             if x.shortestRoute(map: self, using: waterSet).count > 4 {
-                self.changeTile(at: x.start, to: .tower)
+                self.changeTile(at: x.start, to: .homeBase)
             } else {
                 refreshMap()
                 return
@@ -562,6 +562,10 @@ extension MapHandler {
        // if  p1 != startOveride {
         path.move(to: p1)
        // }
+        
+        if p1 != startOveride {
+            print("oops")
+        }
         
         var lastP = p1
         

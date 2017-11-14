@@ -23,6 +23,9 @@ protocol Navigatable {
 }
 
 
+class ShipPath: SKShapeNode {
+    
+}
 extension Navigatable {
     
     func wakeAction()->SKAction {
@@ -60,11 +63,20 @@ extension Navigatable {
             
             lastPoint = x
         }
+        
         if let path = tiles.pathOf(mappoints:route, startOveride:ship.position) {
-            
-            
-            
             let time =  self.waterSpeed * Double(route.count)
+            if let p = ship.parent {
+                let line = ShipPath(path: path)
+                line.lineWidth = 3
+                line.strokeColor = NSColor(calibratedRed: 1, green: 0, blue: 0, alpha: 0.2)
+                
+                if let _ = self as? TowerNode {
+                    line.strokeColor =  NSColor(calibratedRed: 0, green: 1, blue: 0, alpha: 0.5)
+                }
+                
+                p.addChild(line)
+            }
             return SKAction.follow( path, asOffset: false, orientToPath: orient, duration: time)
             
         }

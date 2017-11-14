@@ -988,6 +988,15 @@ extension GameScene {
     
     func redirectAllShips(){
         
+        let lines = children.filter { if let _ = $0 as? ShipPath {
+                return true
+            }
+            return false
+        }
+        
+        for x in lines {
+            x.removeFromParent()
+        }
         
         let tow = towerTiles()
         let shi = shipTiles()
@@ -1005,10 +1014,15 @@ extension GameScene {
         
         changeCamera()
         
+        
     }
     
     
     func possibleToSand(at point:MapPoint)->Bool{
+        
+        let k = mapTiles.kind(point: point)
+        
+        guard k != .pirateBase, k != .homeBase else { return false}
         
         let ships = self.navigatableBoats(at: point)
         guard ships.flatMap({$0 as? TowerNode}).isEmpty else { return false }
