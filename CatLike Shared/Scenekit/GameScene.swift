@@ -14,16 +14,14 @@ import GameKit
 
 class GameScene: SKScene {
     
-    var mapTiles = MapHandler()
+    
     fileprivate var hud = HUD()
     
-    //  var intervalTime:TimeInterval = 5
-    //  var lastLaunch:Date = Date.distantPast
+    fileprivate var level = GameLevel()
     
+    var mapTiles = MapHandler()
     var launchClock = PirateClock(5)
     var playableRect = CGRect.zero
-    var victoryShipLevel  = 3
-    var boatLevel = 0
     
     let tapClock = PirateClock(0.5)
     
@@ -33,43 +31,25 @@ class GameScene: SKScene {
     
     fileprivate var towers:[TowerNode] = []
     fileprivate var ships:[PirateNode] = []
-    let maxTowers = 7
-    
-    let defaultFloor = 0.7
-    
     
     fileprivate var routeDebug:[String:[MapPoint]] = [:]
-    var startTime = Date()
+    
     
     weak var followingShip:TowerNode?
     
-    let playSound = true
     
-    var points:Int = 0
     var zoomOutOnRedirect = false
     var ai:TowerAI? = TowerAI()
-    var victorySpeed:Double = 1
+    
     var gameState: GameState = .initial {
         didSet {
             hud.updateGameState(from: oldValue, to: gameState)
-            
             playSea()
-            
-            
-            
-            
-            
         }
     }
     
     
-    func victoryShipStartingLevel()->Int{
-        return victoryShipLevel + points/10
-    }
     
-    func towerStartingLevel()->Int{
-        return 4 + points/10
-    }
     
     func playSea() {
         stopSea()
@@ -93,7 +73,7 @@ class GameScene: SKScene {
             }
         }
         
-        if playSound {
+        if level.playSound {
             let me = SKAudioNode(fileNamed:"SeaStorm.caf")
             me.name = "backgroundStorm"
             me.autoplayLooped = true
@@ -167,7 +147,7 @@ class GameScene: SKScene {
             tower.removeFromParent()
         }
         
-        points = 0
+        level.clear()
         guard let background = mapTiles.tiles else {return }
         
         hud.removeFromParent()
@@ -184,10 +164,7 @@ class GameScene: SKScene {
         updateLabels()
         launchClock.adjust(interval:5)
         launchClock.tickNext()
-        launchClock.floor = defaultFloor
-        victoryShipLevel = 3
-        boatLevel = 0
-        victorySpeed  = 1
+        launchClock.floor = level.defaultFloor
         counterShipClock.adjust(interval:5)
         
     }
@@ -215,11 +192,15 @@ class GameScene: SKScene {
         guard let tile  = self.childNode(withName: "//MapTiles") as? SKTileMapNode else { return }
         mapTiles.load(map:tile)
         
-        launchClock.floor = defaultFloor
+        level.clear()
+        level.clearShips()
+        level.info = mapTiles.deltas
+        
+        mapTiles.multipleStart = ( GKRandomSource.sharedRandom().nextUniform() > 0.75)
         mapTiles.refreshMap()
         gameState = .start
-        points = 0
-        startTime = Date()
+        
+        
         
         let maxAspectRatio:CGFloat = 16.0/9.0
         let playableHeight = size.width / maxAspectRatio
@@ -256,7 +237,8 @@ class GameScene: SKScene {
     }
     
     func updateLabels() {
-        towersRemainingLabel.text = "Towers Remaining: \(towersRemaining()) Str:\(victoryShipStartingLevel())"
+        let strength = level.victoryShipStartingLevel()
+        towersRemainingLabel.text = "Towers Remaining: \(towersRemaining()) Str:\(strength)"
         if towersRemaining() > 0 {
             towersRemainingLabel.fontColor = .white
         } else {
@@ -264,7 +246,7 @@ class GameScene: SKScene {
             towersRemainingLabel.fontColor = .red
         }
         
-        shipsKilledLabel.text = "Ships: \(hud.kills) Points:\(points)"
+        shipsKilledLabel.text = "Ships: \(hud.kills) Points:\(level.points)"
         if hud.kills < 1 {
             shipsKilledLabel.text = ""
         }
@@ -307,7 +289,7 @@ class GameScene: SKScene {
         }
         
         if let  trip = mapTiles.randomRoute() ,  let shipPosition =  mapTiles.convert(mappoint:trip.start) {
-            let ship =  PirateNode.makeShip(kind: shipInfo.ship.kind, modfier:launchClock.length()/8, route:trip, level: boatLevel)
+            let ship =  PirateNode.makeShip(kind: shipInfo.ship.kind, modfier:launchClock.length()/8, route:trip, level: level.boatLevel)
             launchClock.adjust(interval: 10)
             ship.position = shipPosition
             add(ship: ship)
@@ -343,7 +325,13 @@ class GameScene: SKScene {
         case .play:
             manageTapWhilePlaying(point: point)
         case .win, .lose:
+            let d = DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .medium)
+            
+            let filename = d.replacingOccurrences(of: ":", with: "_").replacingOccurrences(of: "/", with: "").replacingOccurrences(of: " ", with: "")
+            
+            self.level.write(name: "game_\(filename).txt")
             self.restart()
+            
         case .reload:
             if let touchedNode =
                 atPoint(point) as? SKLabelNode {
@@ -374,13 +362,13 @@ class GameScene: SKScene {
             let s = shipTiles().count
             let r = self.mapTiles.voyages[0]
             if r.shortestRoute(map: self.mapTiles, using: waterSet).count > s * 2 {
-            launchClock.reduce(factor: 0.99)
-            launchAttack(timeOverTile:max(2.5,launchClock.length())/8)
+                launchClock.reduce(factor: 0.99)
+                launchAttack(timeOverTile:max(2.5,launchClock.length())/8)
                 
             } else {
-                boatLevel += 1
+                level.boatLevel += 1
                 launchClock.reduce(factor: 1.5)
-                print("next level for boats \(boatLevel)")
+                print("next level for boats \(level.boatLevel)")
             }
         }
         
@@ -476,7 +464,7 @@ extension GameScene {
         
         if let place = mapTiles.convert(mappoint: towerPoint){
             let tower = TowerNode(range:90)
-            tower.hitsRemain = towerStartingLevel()
+            tower.hitsRemain = level.towerStartingLevel()
             tower.position = place
             self.addChild(tower)
             towers.append(tower)
@@ -519,7 +507,7 @@ extension GameScene {
     }
     
     func towersRemaining()->Int{
-        return  maxTowers - towers.count
+        return  level.maxTowers - towers.count
     }
     
     
@@ -532,6 +520,13 @@ extension GameScene {
     func isDeepIntoGame()->Bool{
         
         return  launchClock.length() < launchClock.floor + 2.1
+    }
+    
+    func shouldPlaySound()->Bool{
+         if level.playSound,  !isDeepIntoGame()  {
+            return true
+        }
+        return false
     }
     
     func adjust(traveler:Navigatable, existing:Set<MapPoint> ){
@@ -657,7 +652,7 @@ extension GameScene {
         self.addChild(ship)
         adjust(traveler: ship, existing: shipTiles())
         
-        if !playSound,
+        if !level.playSound,
             let n = ship.childNode(withName: "seasound") {
             n.removeFromParent()
         }
@@ -676,24 +671,8 @@ extension GameScene {
         hud.kills += 1
         updateLabels()
         
-        switch ship.kind {
-        case .battle:
-            points += 6
-        case .crusier:
-            points += 1
-        case .destroyer:
-            points += 5
-        case .galley:
-            points += 2
-        case .motor:
-            points += 3
-        case .row:
-            points += 0
-        case .bomber:
-            points += 5
-            
-       
-        }
+        self.level.adjustPoints(kind:ship.kind)
+        
         
     }
     
@@ -701,9 +680,11 @@ extension GameScene {
         
         if let trip = mapTiles.randomRoute(),  let shipPosition =  mapTiles.convert(mappoint:trip.start) {
             
-            let ship =  randomShip( modfier:timeOverTile, route: trip, at: -startTime.timeIntervalSinceNow, level:boatLevel)
+            let time = -level.startTime.timeIntervalSinceNow
+            let ship =  randomShip( modfier:timeOverTile, route: trip, at: time, level:level.boatLevel)
             ship.position = shipPosition
             add(ship: ship)
+            level.add(ship: ship, at: time)
             
         }
         
@@ -724,7 +705,7 @@ extension GameScene {
         if let trip = mapTiles.randomRoute(),   let startingPostion =  mapTiles.convert(mappoint: trip.finish) {
             
             
-            let victoryShip = DefenderTower(timeOverTile: victorySpeed, route: Voyage(start: trip.finish, finish: trip.start))
+            let victoryShip = DefenderTower(timeOverTile: level.victorySpeed, route: Voyage(start: trip.finish, finish: trip.start))
             
             victoryShip.position = startingPostion
             
@@ -735,8 +716,8 @@ extension GameScene {
             #else
                 victoryShip.fillColor = NSColor(calibratedRed: 152/255.0, green: 104/255.0, blue: 31/255.0, alpha: 1)
             #endif
-            victoryShip.hitsRemain = victoryShipStartingLevel()
-            victoryShipLevel += 2
+            victoryShip.hitsRemain = level.victoryShipStartingLevel()
+            level.victoryShipLevel += 2
             
             self.towers.append(victoryShip)
             self.addChild(victoryShip)
@@ -771,7 +752,7 @@ extension GameScene {
             updateLabels()
             
             adjust(traveler: sandShip, existing: towerTiles())
-
+            
             sandShip.run(sandShip.wakeAction(), withKey:"wake")
             sandShip.setScale(0.3)
             sandShip.run(SKAction.scale(to: 1, duration: 6))
@@ -804,6 +785,7 @@ extension GameScene {
         
     }
     
+
     func availableWater(around tile:MapPoint)->Set<MapPoint>{
         let water:Set<Landscape> = [.water,.path]
         var lifeBoatTiles = mapTiles.tiles(near:tile,radius:2,kinds:water)
@@ -817,7 +799,6 @@ extension GameScene {
         }
         return lifeBoatTiles
     }
-    
     
     func removeFrom(shipTile:MapPoint){
         
@@ -992,7 +973,7 @@ extension GameScene {
     func redirectAllShips(){
         
         let lines = children.filter { if let _ = $0 as? ShipPath {
-                return true
+            return true
             }
             return false
         }
@@ -1056,7 +1037,7 @@ extension GameScene : SKPhysicsContactDelegate {
         
         if let _  = contact.bodyA.node as? TowerNode,
             let _ = contact.bodyB.node as? TowerNode {
-           // print("\(p1) tower colided with tower \(p2)")
+            // print("\(p1) tower colided with tower \(p2)")
             return
         }
         
@@ -1096,7 +1077,7 @@ extension GameScene : SKPhysicsContactDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
                 
                 [weak p1, weak p2] in
-                 let mytiles = self.towerTiles().union(self.shipTiles())
+                let mytiles = self.towerTiles().union(self.shipTiles())
                 
                 
                 if let n = p1 {
@@ -1161,10 +1142,10 @@ extension GameScene: TowerPlayerActionDelegate {
             if towersRemaining() > 0 {
                 if let t = followingShip as? DefenderTower,
                     let sandShip = t.sandToHome(scene: self){
-                        self.towers.append(sandShip)
-                        self.addChild(sandShip)
-                        updateLabels()
-                        adjust(traveler: sandShip, existing: towerTiles())
+                    self.towers.append(sandShip)
+                    self.addChild(sandShip)
+                    updateLabels()
+                    adjust(traveler: sandShip, existing: towerTiles())
                 } else {
                     launchSandShip()
                 }
@@ -1190,9 +1171,9 @@ extension GameScene: TowerPlayerActionDelegate {
             
             showNextTower()
         case .fasterBoats:
-            victorySpeed = victorySpeed * 0.95
+            level.victorySpeed = level.victorySpeed * 0.95
         case .strongerBoats:
-            victoryShipLevel += 1
+            level.victoryShipLevel += 1
         }
         
     }

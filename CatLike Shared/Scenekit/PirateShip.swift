@@ -40,6 +40,9 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     var route = Voyage.offGrid()
     var isDying = false
     
+    var startModfier:Double = 0
+    var startLevel:Int = 0
+    
     func allowedTiles() -> Set<Landscape> {
         return routeSet
     }
@@ -173,6 +176,8 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         ship.route = r
         ship.kind = aKind
         ship.zPosition = 3
+        ship.startLevel = shipLevel
+        ship.startModfier = modfier
         
         ship.gun.landscapes =   [.sand,.water,.path]
         ship.gun.clock.tickNext()
@@ -245,13 +250,13 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         }
         
         if isKill {
-            if scene.playSound, !scene.isDeepIntoGame(){
-                
+            if scene.shouldPlaySound(){
                 scene.run(PirateNode.sinkSound)
             }
         }
         
     }
+    
     
     func targetTiles(scene:GameScene)->Set<MapPoint>{
         
@@ -281,7 +286,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
         if  let dest =  scene.mapTiles.convert(mappoint: at){
             let ball = CannonBall(tower: self, dest: dest, speed: self.gun.flightDuration)
             self.gun.clock.update()
-            if scene.playSound,  !scene.isDeepIntoGame()  {
+            if scene.shouldPlaySound()  {
                 
                 
                 let me = SKAudioNode(fileNamed:"Gun Cannon.caf")

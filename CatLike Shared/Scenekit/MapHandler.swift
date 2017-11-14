@@ -223,7 +223,7 @@ class MapHandler{
     var deltas = GameInfo()
     var voyages:[Voyage] = []
     
-    let multipleStart = true
+    var multipleStart = true
     
     func kind(point:MapPoint)->Landscape{
         guard let tiles = tiles ,
@@ -596,4 +596,7 @@ extension MapHandler {
         
         return path
     }
+    
+    
+    
 }
