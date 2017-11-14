@@ -35,6 +35,9 @@ class GameScene: SKScene {
     fileprivate var ships:[PirateNode] = []
     let maxTowers = 7
     
+    let defaultFloor = 0.7
+    
+    
     fileprivate var routeDebug:[String:[MapPoint]] = [:]
     var startTime = Date()
     
@@ -181,7 +184,7 @@ class GameScene: SKScene {
         updateLabels()
         launchClock.adjust(interval:5)
         launchClock.tickNext()
-        launchClock.floor = 1.2
+        launchClock.floor = defaultFloor
         victoryShipLevel = 3
         boatLevel = 0
         victorySpeed  = 1
@@ -212,7 +215,7 @@ class GameScene: SKScene {
         guard let tile  = self.childNode(withName: "//MapTiles") as? SKTileMapNode else { return }
         mapTiles.load(map:tile)
         
-        launchClock.floor = 1.2
+        launchClock.floor = defaultFloor
         mapTiles.refreshMap()
         gameState = .start
         points = 0

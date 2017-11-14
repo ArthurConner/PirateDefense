@@ -223,6 +223,8 @@ class MapHandler{
     var deltas = GameInfo()
     var voyages:[Voyage] = []
     
+    let multipleStart = true
+    
     func kind(point:MapPoint)->Landscape{
         guard let tiles = tiles ,
             let de = tiles.tileDefinition(atColumn: point.col, row: point.row),
@@ -368,7 +370,10 @@ class MapHandler{
         startIslands.removeAll()
         var sWaters:[WaterFront] = []
         //islands.count
-        for i in 1..<2 {
+        
+        let upperbound = multipleStart ? islands.count : 2
+        //for i in 1..<2 {
+        for i in 1..<upperbound {
             let x = islands[i]
             if let h = WaterFront(x,self) {
                 startIslands.append(x)
@@ -416,19 +421,19 @@ class MapHandler{
             }
             
             
-            var startIslands:[Island] = []
+            var formedIslands:[Island] = []
             for _ in 0..<iLimit + 2 {
                 
                 let isle = Island(map: self)
                 
-                startIslands.append(isle)
+                formedIslands.append(isle)
                 isle.addPoint(point:  MapPoint(
                     row:GKRandomSource.sharedRandom().nextInt(upperBound:mapAdj-4) + 2,
                     col:GKRandomSource.sharedRandom().nextInt(upperBound:mapAdj - 4 ) + 2))
             }
             
             
-            for addIdle in startIslands{
+            for addIdle in formedIslands{
                 addIdle.merge()
                 if let peak = addIdle.peak() {
                     
