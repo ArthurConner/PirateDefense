@@ -37,6 +37,7 @@ class GameScene: SKScene {
     
     weak var followingShip:TowerNode?
     
+    var loadFromFile:String? = "/Users/arthurc/code/catsaves/game_Nov14,2017at3_35_49PM.txt"
     
     var zoomOutOnRedirect = false
     var ai:TowerAI? = TowerAI()
@@ -192,15 +193,25 @@ class GameScene: SKScene {
         guard let tile  = self.childNode(withName: "//MapTiles") as? SKTileMapNode else { return }
         mapTiles.load(map:tile)
         
-        level.clear()
-        level.clearShips()
-        level.info = mapTiles.deltas
-        
         mapTiles.multipleStart = ( GKRandomSource.sharedRandom().nextUniform() > 0.75)
         mapTiles.refreshMap()
         gameState = .start
         
+        level.load(map: mapTiles)
         
+        
+        if let l  = GameLevel.read(name: "base.txt") {
+            level = l
+            level.apply(to: mapTiles)
+        }
+ 
+        
+        
+        if level.hasAI, ai == nil {
+            self.ai = TowerAI()
+        } else {
+            self.ai = nil
+        }
         
         let maxAspectRatio:CGFloat = 16.0/9.0
         let playableHeight = size.width / maxAspectRatio
@@ -229,11 +240,11 @@ class GameScene: SKScene {
         
         guard let v = mapTiles.voyages.first, let pos =  mapTiles.convert(mappoint: v.finish) else {return}
         
-        let dest = SKShapeNode(circleOfRadius:20)
-        dest.fillColor = .clear
-        dest.position = pos
-        self.listener = dest
-        self.addChild(dest)
+        let hearer = SKShapeNode(circleOfRadius:20)
+        hearer.fillColor = .clear
+        hearer.position = pos
+        self.listener = hearer
+        self.addChild(hearer)
     }
     
     func updateLabels() {
@@ -262,11 +273,9 @@ class GameScene: SKScene {
     @objc func sendMap(){
         
         mapTiles.deltas.ships.removeAll()
-        
         for ship in ships {
             mapTiles.deltas.ships[ship.shipID] = ship.proxy()
         }
-        
         mapTiles.deltas.towers.removeAll()
         
         for  tower in self.towers {
@@ -274,9 +283,7 @@ class GameScene: SKScene {
         }
         
         let obj = GameMessage(info:mapTiles.deltas)
-        
         PirateServiceManager.shared.send(obj, kind: .SendingDelta)
-        
         mapTiles.deltas.clear()
     }
     
@@ -303,7 +310,7 @@ class GameScene: SKScene {
         setupWorldPhysics()
         self.setUpScene()
         self.addChild(hud)
-        self.ai = nil
+        // self.ai = nil
         
         NotificationCenter.default.addObserver(self, selector: #selector(sendMap), name: GameNotif.NeedMap.notification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(launchFromRemote), name: GameNotif.launchShip.notification, object: nil)
@@ -362,7 +369,8 @@ class GameScene: SKScene {
             let s = shipTiles().count
             let r = self.mapTiles.voyages[0]
             if r.shortestRoute(map: self.mapTiles, using: waterSet).count > s * 2 {
-                launchClock.reduce(factor: 0.99)
+                
+                
                 launchAttack(timeOverTile:max(2.5,launchClock.length())/8)
                 
             } else {
@@ -523,7 +531,7 @@ extension GameScene {
     }
     
     func shouldPlaySound()->Bool{
-         if level.playSound,  !isDeepIntoGame()  {
+        if level.playSound,  !isDeepIntoGame()  {
             return true
         }
         return false
@@ -678,13 +686,24 @@ extension GameScene {
     
     func launchAttack(timeOverTile:Double) {
         
-        if let trip = mapTiles.randomRoute(),  let shipPosition =  mapTiles.convert(mappoint:trip.start) {
-            
-            let time = -level.startTime.timeIntervalSinceNow
-            let ship =  randomShip( modfier:timeOverTile, route: trip, at: time, level:level.boatLevel)
+        
+        if let (ship,interval) = level.nextShip(),
+             let shipPosition =  mapTiles.convert(mappoint:ship.route.start){
             ship.position = shipPosition
             add(ship: ship)
-            level.add(ship: ship, at: time)
+            launchClock.adjust(interval: interval)
+            
+        } else {
+            if let trip = mapTiles.randomRoute(),  let shipPosition =  mapTiles.convert(mappoint:trip.start) {
+                
+                let time = -level.startTime.timeIntervalSinceNow
+                let ship =  randomShip( modfier:timeOverTile, route: trip, at: time, level:level.boatLevel)
+                ship.position = shipPosition
+                add(ship: ship)
+                level.add(ship: ship, at: launchClock.length())
+                launchClock.reduce(factor: 0.99)
+                
+            }
             
         }
         
@@ -785,7 +804,7 @@ extension GameScene {
         
     }
     
-
+    
     func availableWater(around tile:MapPoint)->Set<MapPoint>{
         let water:Set<Landscape> = [.water,.path]
         var lifeBoatTiles = mapTiles.tiles(near:tile,radius:2,kinds:water)

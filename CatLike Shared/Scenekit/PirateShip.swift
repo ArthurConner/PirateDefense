@@ -313,12 +313,15 @@ class BomberNode : PirateNode {
         
         var towersDestroyed:[Fireable] = []
         
+        guard !self.isDying else { return }
        
         
         defer {
             for x in towersDestroyed {
                 if let tow = x as? TowerNode {
                     tow.die(scene: scene, isKill: true)
+                } else if let s = x as? PirateNode {
+                    s.die(scene: scene, isKill: true)
                 }
             }
         }
@@ -363,18 +366,34 @@ class BomberNode : PirateNode {
                         
                     }
                     let killMe = scene.children.filter(isGood) as! [Fireable]
+                    var shouldChange = true
                     for x in killMe {
-                        if x.hitsRemain < 10 {
+                        
+                        let p = scene.tileOf(node: x as! SKNode)!
+                        
+                        let damage = max(self.blastRadius - p.distance(manhattan: scene.tileOf(node: self)!),1) * 5
+                        
+                        
+                        
+                        if x.hitsRemain < damage {
                             towersDestroyed.append(x)
                         } else {
-                            let stop = x.hitsRemain/2
+                            let stop = x.hitsRemain - damage
+                            print("damaged \(x.hitsRemain) by \(damage)")
                             while x.hitsRemain > stop {
                                 x.hit(scene: scene)
                             }
+                            shouldChange = false
                         }
                     }
-                    towersDestroyed.append(contentsOf: killMe )
-                    scene.mapTiles.changeTile(at: x, to: toNext)
+                    
+                    //towersDestroyed.append(contentsOf: killMe )
+                    
+                    if shouldChange {
+                      
+                        scene.mapTiles.changeTile(at: x, to: toNext)
+                        
+                    }
                 }
                 
             }
