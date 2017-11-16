@@ -16,24 +16,24 @@ fileprivate struct ShipLaunch : Codable {
     let modfier:Double
     let routeIndex:Int
     let level:Int
-
+    
     let radius:Int?
-   
+    
     
     init( ship:PirateNode,time:TimeInterval, index:Int){
         interval = time
-       
+        
         kind = ship.kind
         level = ship.startLevel
         modfier = ship.startModfier
         routeIndex = index
-     
+        
         if let n = ship as? BomberNode {
             radius = n.blastRadius
         } else {
             radius = nil
         }
-
+        
     }
     
     func ship(route:Voyage)->PirateNode{
@@ -58,7 +58,7 @@ fileprivate struct MapHolder : Codable {
         var all:[String] = []
         
         if let  m = tiles.tiles {
- 
+            
             for r in 0..<m.numberOfRows{
                 var currentRow:[Landscape] = []
                 for c in 0..<m.numberOfColumns{
@@ -151,7 +151,7 @@ class GameLevel : Codable {
     let playSound = false
     
     fileprivate var launches:[ShipLaunch] = []
-
+    
     var hasAI = false
     var journies:[Voyage] = []
     var points:Int = 0
@@ -224,16 +224,32 @@ class GameLevel : Codable {
         return 4 + points/10
     }
     
+    static func pathOf(name:String)->URL{
+        
+        let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
+        let subDir = (documentsPath as NSString).appendingPathComponent("CatLike")
+        let url = URL(fileURLWithPath: subDir)
+        if !FileManager.default.fileExists(atPath:subDir){
+            
+            try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
+            
+        }
+        
+        
+        return url.appendingPathComponent(name)
+    }
+    
+    
     func write(name:String){
-        let path = "/Users/arthurc/code/catsaves/\(name)"
-          do {
+        let path = GameLevel.pathOf(name: name)
+        do {
             let coder = JSONEncoder()
             coder.outputFormatting = .prettyPrinted
             
             let data = try coder.encode(self)
             
-            try data.write(to: URL(fileURLWithPath: path))
-         
+            try data.write(to: path)
+            
             
         } catch let error {
             ErrorHandler.handle(.networkIssue, "Unable to send message \(error)")
@@ -241,12 +257,9 @@ class GameLevel : Codable {
     }
     
     static func read(name:String)->GameLevel?{
-    
-        let path = "/Users/arthurc/code/catsaves/\(name)"
-        let u = URL(fileURLWithPath: path)
-      
         
-       
+        let u = GameLevel.pathOf(name: name)
+        
         do {
             
             let data =  try Data(contentsOf:u)
@@ -260,10 +273,10 @@ class GameLevel : Codable {
         } catch let error {
             ErrorHandler.handle(.networkIssue, "Unable to send message \(error)")
         }
-    
+        
         return nil
     }
-
+    
     
     func adjustPoints(kind:ShipKind){
         switch kind {
