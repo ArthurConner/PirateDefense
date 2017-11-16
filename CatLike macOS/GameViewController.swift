@@ -63,6 +63,11 @@ extension GameViewController:GameTypeModeDelegate {
             let b = BoatScene.newGameScene()
             b.showButtons = false
             nextGame = b
+            
+        case .editor:
+            let e = EditorScene.newGameScene()
+            nextGame = e
+            
         case .unknown:
             nextGame = WelcomeScene.newGameScene()
             

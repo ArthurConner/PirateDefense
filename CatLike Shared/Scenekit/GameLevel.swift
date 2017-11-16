@@ -88,6 +88,12 @@ class GameLevel : Codable {
     }
     
 
+    static func defaultName()->String{
+        let d = DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .medium)
+        
+        let filename = d.replacingOccurrences(of: ":", with: "_").replacingOccurrences(of: "/", with: "").replacingOccurrences(of: " ", with: "")
+        return "game_\(filename).txt"
+    }
     
     static func rootDir()->String{
         let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]

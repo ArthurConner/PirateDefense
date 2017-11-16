@@ -41,6 +41,8 @@ class ActionTableController: NSViewController  {
     
     let boats:[ShipKind] = [.crusier,.galley,.motor,.destroyer,.battle]
     let kinds:[String] = ["Play Random Level","Create new level"]
+    let edititems:[EditorSceneActions] = [.island , .water , .start,.finish,.run , .save]
+    
     var existing:[String] = []
     
     let towerAct:[TowerPlayerActions] = [.launchPaver,.launchTerra, .KillAllTowers, .fasterBoats, .strongerBoats ,.showNextShip]
@@ -53,6 +55,8 @@ class ActionTableController: NSViewController  {
                 self.title = "Towers"
             case .ship:
                 self.title = "Ships"
+            case .editor:
+                self.title = "Editing"
             case .unknown:
                 self.title = "Get Started"
             }
@@ -124,6 +128,10 @@ extension ActionTableController : NSTableViewDelegate {
         case .ship:
             let kind = boats[row]
             configure(cell: cell, toBoat: kind)
+        case .editor:
+            let m = edititems[row]
+            cell.imageView?.image = nil
+            cell.textField?.stringValue = m.rawValue
         case .unknown:
             cell.imageView?.image = nil
             
@@ -158,11 +166,42 @@ extension ActionTableController : NSTableViewDelegate {
             let prox = ShipProxy(kind: kind, shipID: "", position: CGPoint.zero, angle: 0)
             let message = ShipLaunchMessage(ship: prox)
             PirateServiceManager.shared.send(message, kind: .launchShip)
+        
+        case .editor:
+            print("picked something")
+            if let gc = self.gameController(), let e = gc.myScene as? EditorScene {
+                
+                let act = edititems[row]
+                
+                if act != .run, act != .save {
+                    e.gameState = act
+                } else {
+                    if let name = e.didSave() {
+                        if act == .run {
+                            self.gameState = .tower
+                            
+                            if  let gc = self.gameController()  {
+                                gc.load(levelName:  name)
+                            }
+                        } else {
+                            self.gameState = .unknown
+                        }
+                        
+                        
+                    }
+                    
+                }
+
+          
+            }
+            
         case .unknown:
             if row == 0 {
                 
                 self.gameState = .tower
-            } else if row > 1 {
+            } else if row == 1 {
+                self.gameState = .editor
+            } else {
                 
                 self.gameState = .tower
                 
@@ -189,6 +228,9 @@ extension ActionTableController : NSTableViewDataSource {
             return  towerAct.count
         case .ship:
             return boats.count
+        case .editor:
+            return edititems.count
+            
         case .unknown:
             return kinds.count + existing.count
             

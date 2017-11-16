@@ -12,6 +12,7 @@ import Foundation
 enum GameTypeModes {
     case unknown
     case tower
+    case editor
     case ship
 }
 

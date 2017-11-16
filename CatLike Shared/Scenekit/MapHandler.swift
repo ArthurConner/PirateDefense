@@ -600,3 +600,44 @@ extension MapHandler {
     
     
 }
+
+
+extension MapHandler {
+    
+    func addIsland(at:MapPoint){
+        
+        
+        
+       var formedIslands:[Island] = self.islands
+       self.islands = []
+            
+        let isle = Island(map: self)
+            
+        formedIslands.append(isle)
+        isle.addPoint(point: at)
+       
+        
+        
+        for addIdle in formedIslands{
+            addIdle.merge()
+            if let peak = addIdle.peak() {
+                
+                var didCreateIsand = false
+                for isle in islands {
+                    if isle.contains(point: peak) {
+                        didCreateIsand = true
+                    }
+                }
+                
+                if (!didCreateIsand){
+                    islands.append(addIdle)
+                }
+                
+            }
+        }
+        
+        for isle in islands{
+            isle.terraform()
+        }
+    }
+}

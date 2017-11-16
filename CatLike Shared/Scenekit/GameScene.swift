@@ -320,11 +320,8 @@ class GameScene: SKScene {
         case .play:
             manageTapWhilePlaying(point: point)
         case .win, .lose:
-            let d = DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .medium)
-            
-            let filename = d.replacingOccurrences(of: ":", with: "_").replacingOccurrences(of: "/", with: "").replacingOccurrences(of: " ", with: "")
-            
-            self.level.write(name: "game_\(filename).txt")
+         
+            self.level.write(name: GameLevel.defaultName() )
             self.restart()
             
         case .reload:
