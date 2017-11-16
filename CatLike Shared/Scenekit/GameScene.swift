@@ -17,7 +17,7 @@ class GameScene: SKScene {
     
     fileprivate var hud = HUD()
     
-    fileprivate var level = GameLevel()
+    var level = GameLevel()
     
     var mapTiles = MapHandler()
     var launchClock = PirateClock(5)
@@ -37,86 +37,18 @@ class GameScene: SKScene {
     
     weak var followingShip:TowerNode?
     
-    var loadFromFile:String? = "/Users/arthurc/code/catsaves/game_Nov14,2017at3_35_49PM.txt"
-    
     var zoomOutOnRedirect = false
     var ai:TowerAI? = TowerAI()
     
     var gameState: GameState = .initial {
         didSet {
             hud.updateGameState(from: oldValue, to: gameState)
-            playSea()
+            playBackgroundNoise()
         }
     }
     
     
-    
-    
-    func playSea() {
-        stopSea()
-        guard let f = mapTiles.voyages.first?.finish, let p = mapTiles.convert(mappoint: f) else {
-            ErrorHandler.handle(.wrongGameState, "we don't have a starting point")
-            return
-            
-        }
-        
-        for x in children {
-            if let kill = x.childNode(withName: "seasound") as? SKAudioNode{
-                kill.run(SKAction.sequence([SKAction.stop(),SKAction.removeFromParent()]))
-            }
-            
-            if let b = x as? Fireable {
-                b.gun.clock.enabled = false
-            }
-            
-            if let b = x as? CannonBall {
-                b.removeFromParent()
-            }
-        }
-        
-        if level.playSound {
-            let me = SKAudioNode(fileNamed:"SeaStorm.caf")
-            me.name = "backgroundStorm"
-            me.autoplayLooped = true
-            me.isPositional = true
-            me.position = p
-            
-            me.run(SKAction.changeVolume(to: 0.1, duration: 0.3))
-            
-            
-            self.addChild(me)
-            
-            
-        }
-    }
-    
-    func stopSea(){
-        for x in self.children{
-            x.removeAction(forKey: "wake")
-            x.removeAction(forKey: "move")
-        }
-        
-        if let m = self.childNode(withName: "backgroundStorm") {
-            m.removeFromParent()
-        }
-        self.mapTiles.tiles?.removeAllActions()
-    }
-    
-    
-    func towerTiles()->Set<MapPoint>{
-        return  Set<MapPoint>(towers.flatMap({tileOf(node:$0)}))
-    }
-    
-    func shipTiles()->Set<MapPoint>{
-        return  Set<MapPoint>(ships.flatMap({tileOf(node:$0)}))
-    }
-    
-    func navigatableBoats(at point:MapPoint)->[Navigatable]{
-        let p1 = self.children.filter({self.tileOf(node: $0) == point})
-        return p1.flatMap{$0 as? Navigatable}
-        
-    }
-    
+    //MARK: scene loading
     
     class func newGameScene(numTiles:Int) -> GameScene {
         guard let scene = SKScene(fileNamed: "GameScene") as? GameScene else {
@@ -126,15 +58,8 @@ class GameScene: SKScene {
         
         scene.scaleMode = .aspectFit
         scene.backgroundColor = .orange
-        
-        #if os(iOS) || os(tvOS)
             
-            scene.backgroundColor = UIColor(red: 0, green: 0.33, blue: 0.44, alpha: 1)
-            
-        #else
-            scene.backgroundColor = NSColor(calibratedRed: 0, green: 0.33, blue: 0.44, alpha: 1)
-        #endif
-        
+        scene.backgroundColor =  ColorUtils.shared.r( 0, g: 0.33, b: 0.44)
         
         return scene
     }
@@ -176,14 +101,7 @@ class GameScene: SKScene {
         gameState = .start
         hud.kills = 0
     }
-    
-    func tileOf(node:SKNode)->MapPoint? {
-        return self.mapTiles.map(coordinate: node.position)
-    }
-    
-    
-    
-    
+
     func setupWorldPhysics() {
         physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
         physicsWorld.contactDelegate = self
@@ -198,15 +116,12 @@ class GameScene: SKScene {
         gameState = .start
         
         level.load(map: mapTiles)
-        
-        
-        if let l  = GameLevel.read(name: "base.txt") {
+ 
+        if let name = level.nextLevelName, let l  = GameLevel.read(name: name) {
             level = l
             level.apply(to: mapTiles)
         }
- 
-        
-        
+
         if level.hasAI, ai == nil {
             self.ai = TowerAI()
         } else {
@@ -320,6 +235,79 @@ class GameScene: SKScene {
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
+    
+    //MARK: Helper Functions
+    
+    func playBackgroundNoise() {
+        stopBackgroundNoise()
+        guard let f = mapTiles.voyages.first?.finish, let p = mapTiles.convert(mappoint: f) else {
+            ErrorHandler.handle(.wrongGameState, "we don't have a starting point")
+            return
+            
+        }
+        
+        for x in children {
+            if let kill = x.childNode(withName: "seasound") as? SKAudioNode{
+                kill.run(SKAction.sequence([SKAction.stop(),SKAction.removeFromParent()]))
+            }
+            
+            if let b = x as? Fireable {
+                b.gun.clock.enabled = false
+            }
+            
+            if let b = x as? CannonBall {
+                b.removeFromParent()
+            }
+        }
+        
+        if level.playSound {
+            let me = SKAudioNode(fileNamed:"SeaStorm.caf")
+            me.name = "backgroundStorm"
+            me.autoplayLooped = true
+            me.isPositional = true
+            me.position = p
+            
+            me.run(SKAction.changeVolume(to: 0.1, duration: 0.3))
+            
+            
+            self.addChild(me)
+            
+            
+        }
+    }
+    
+    func stopBackgroundNoise(){
+        for x in self.children{
+            x.removeAction(forKey: "wake")
+            x.removeAction(forKey: "move")
+        }
+        
+        if let m = self.childNode(withName: "backgroundStorm") {
+            m.removeFromParent()
+        }
+        self.mapTiles.tiles?.removeAllActions()
+    }
+    
+    
+    func towerTiles()->Set<MapPoint>{
+        return  Set<MapPoint>(towers.flatMap({tileOf(node:$0)}))
+    }
+    
+    func shipTiles()->Set<MapPoint>{
+        return  Set<MapPoint>(ships.flatMap({tileOf(node:$0)}))
+    }
+    
+    func navigatableBoats(at point:MapPoint)->[Navigatable]{
+        let p1 = self.children.filter({self.tileOf(node: $0) == point})
+        return p1.flatMap{$0 as? Navigatable}
+        
+    }
+    
+    func tileOf(node:SKNode)->MapPoint? {
+        return self.mapTiles.map(coordinate: node.position)
+    }
+    
+    
     
     func handle(point: CGPoint){
         
@@ -542,7 +530,8 @@ extension GameScene {
         
         guard let ship = traveler as? SKNode else {return}
         
-        if let followLine = traveler.sailAction(usingTiles:mapTiles, orient: true, existing: existing) {
+        let (f,p) = traveler.sailAction(usingTiles:mapTiles, orient: true, existing: existing)
+        if let followLine = f {
             ship.run(followLine,withKey:"move")
             ship.removeAction(forKey: "wake")
             if !isDeepIntoGame() {
@@ -554,6 +543,10 @@ extension GameScene {
         } else {
             ship.removeAction(forKey:"move")
             ship.removeAction(forKey: "wake")
+        }
+        
+        if let path = p , let b = level.showsPaths, b{
+            self.addChild(path)
         }
         
         /*
@@ -728,13 +721,8 @@ extension GameScene {
             
             victoryShip.position = startingPostion
             
-            #if os(iOS) || os(tvOS)
-                
-                victoryShip.fillColor = .purple
-                
-            #else
-                victoryShip.fillColor = NSColor(calibratedRed: 152/255.0, green: 104/255.0, blue: 31/255.0, alpha: 1)
-            #endif
+            victoryShip.fillColor = ColorUtils.shared.r(152/255.0, g: 104/255.0, b: 31/255.0)
+            
             victoryShip.hitsRemain = level.victoryShipStartingLevel()
             level.victoryShipLevel += 2
             
@@ -890,7 +878,9 @@ extension GameScene {
         }
         
         cam.position = curShip.position
-        if let r = curShip.sailAction(usingTiles:mapTiles, orient:false, existing: []){
+        let (r,_) = curShip.sailAction(usingTiles:mapTiles, orient:false, existing: [])
+        
+        if let r = r {
             cam.run(r,withKey:"moveCam")
         }
     }
@@ -949,7 +939,10 @@ extension GameScene {
             
             let (cam,hadCam) = makeCamera()
             
-            if let nav = x as? Navigatable, let rAction = nav.sailAction(usingTiles:mapTiles, orient:false, existing: []) {
+            
+            if let nav = x as? Navigatable{
+                
+                let (rAction, _ )  = nav.sailAction(usingTiles:mapTiles, orient:false, existing: [])
                 
                 func distance(_ a: CGPoint, _ b: CGPoint) -> CGFloat {
                     let xDist = a.x - b.x
@@ -960,7 +953,9 @@ extension GameScene {
                 if hadCam {
                     
                     if distance(cam.position, x.position) < 10 {
-                        cam.run(rAction)
+                        if let rAction = rAction {
+                            cam.run(rAction)
+                        }
                     } else {
                         sweep(camera: cam, to: x.position, time: 3, post: rAction)
                     }

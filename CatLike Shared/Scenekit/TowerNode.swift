@@ -232,11 +232,8 @@ class TowerNode: SKShapeNode , Fireable {
         } else {
             
             let ratio = CGFloat(hitsRemain)/CGFloat(maxHealth)
-            #if os(OSX)
-                self.fillColor = NSColor.white.blended(withFraction: ratio, of: .red) ?? .purple
-            #else
-                self.fillColor = UIColor.purple
-            #endif
+            self.fillColor = ColorUtils.shared.blend(.white,.red,ratio:ratio)
+        
         }
         
     }
@@ -360,11 +357,8 @@ class DefenderTower: TowerNode, Navigatable {
     }
    
    
-    #if os(OSX)
-    var baseColor = NSColor.purple
-    #else
-    var baseColor = UIColor.purple
-    #endif
+    var baseColor = OurColor.purple
+
     
     convenience init(timeOverTile:Double, route nextR:Voyage) {
   
@@ -431,11 +425,8 @@ class DefenderTower: TowerNode, Navigatable {
         super.hit(scene: scene)
         
         let ratio = CGFloat(hitsRemain)/CGFloat(maxHealth)
-        #if os(OSX)
-            self.fillColor = NSColor.white.blended(withFraction: ratio, of: self.baseColor) ?? self.baseColor
-        #else
-            self.fillColor = self.baseColor
-        #endif
+        self.fillColor = ColorUtils.shared.blend(.white, self.baseColor, ratio: ratio)
+
     }
     
     

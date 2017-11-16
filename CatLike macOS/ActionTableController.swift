@@ -163,11 +163,13 @@ extension ActionTableController : NSTableViewDelegate {
                 
                 self.gameState = .tower
             } else if row > 1 {
-                if let level = GameLevel.read(name: existing[row-2]),
-                    let gc = self.gameController()  {
-                    gc.load(level:level)
+                
+                self.gameState = .tower
+                
+                if  let gc = self.gameController()  {
+                    gc.load(levelName:  existing[row-2])
                 }
-             //   self.gameState = .tower
+                
             }
         }
         

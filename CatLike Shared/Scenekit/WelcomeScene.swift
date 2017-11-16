@@ -14,13 +14,9 @@ import GameKit
 class WelcomeScene : SKScene {
     
     
+    let back = ColorUtils.shared.r(0.64, g:0.8, b:1)
     
-    #if os(iOS) || os(tvOS)
-    // Touch-based event handling
-  let back = UIColor(displayP3Red: 0.64, green: 0.80, blue: 1, alpha: 1)
-    #else
-    let back = NSColor.blue
-    #endif
+
     var mapTiles = MapHandler()
     fileprivate var hud = HUD()
     

@@ -58,11 +58,9 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
     
     let shipID = "\(Date.timeIntervalSinceReferenceDate)_\(GKRandomSource.sharedRandom().nextUniform())"
     
-    #if os(OSX)
-    var wakeColor = NSColor.white
-    #else
-    var wakeColor = UIColor.white
-    #endif
+    
+    var wakeColor = OurColor.white
+
     
     static func makeShip(kind aKind:ShipKind, modfier:Double, route r:Voyage, level shipLevel:Int)->PirateNode {
         

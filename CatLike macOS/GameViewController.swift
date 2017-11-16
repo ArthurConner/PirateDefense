@@ -38,8 +38,13 @@ class GameViewController: NSViewController {
     }
     
     
-    func load(level:GameLevel){
+    func load(levelName:String){
+        guard let scene = myScene as? GameScene
+            
+            else { return}
         
+        scene.level.nextLevelName = levelName
+        scene.restart()
     }
     
 }

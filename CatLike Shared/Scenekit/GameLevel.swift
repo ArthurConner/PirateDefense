@@ -10,6 +10,251 @@ import Foundation
 import GameKit
 
 
+
+
+class GameLevel : Codable {
+    
+    var defaultFloor = 0.7
+    var maxTowers = 9
+    var playSound = true
+    var decay = 0.99
+    
+    fileprivate var launches:[ShipLaunch] = []
+    
+    var showsPaths:Bool? = false
+    
+    var hasAI = false
+    var journies:[Voyage] = []
+    var points:Int = 0
+    var victorySpeed:Double = 1
+    var boatLevel = 0
+    var victoryShipLevel = 3
+    var isRecording = true
+    fileprivate var info = MapHolder(grid:[])
+    var startTime = Date()
+    var currentIndex = 0
+    var nextLevelName:String? = nil
+    var intro:String? = nil
+    
+    
+    var probalities:[ShipKind:ShipProbality] = [
+        .battle:ShipProbality(base: -300, slope: 1.5, final: 80),
+        .galley:ShipProbality(base: 1, slope: 2, final: 500),
+        .motor:ShipProbality(base: 10, slope: 0.75, final: 20),
+        .destroyer:ShipProbality(base: -220, slope: 0.8, final: 150),
+        .crusier:ShipProbality(base: 0, slope: 0.8, final: 30),
+        .bomber:ShipProbality(base: -70, slope: 0.8, final: 80),
+        ]
+    
+    enum CodingKeys: String, CodingKey
+    {
+        case journies
+        case info
+        case launches
+        case defaultFloor
+        case maxTowers
+        case probalities
+        case nextLevelName
+        case intro
+        case decay
+        case showsPaths
+        
+        
+    }
+    
+    func clear(){
+        points = 0
+        currentIndex = 0
+        victoryShipLevel = 3
+        victorySpeed  = 1
+        boatLevel = 0
+        victoryShipLevel = 3
+        startTime = Date()
+    }
+    
+
+    func load( map:MapHandler){
+        
+        clear()
+        clearShips()
+        
+        self.info = MapHolder(map: map)
+        self.journies = map.voyages
+    }
+    
+    func apply(to map:MapHandler){
+        map.voyages = self.journies
+        info.adjust(map: map)
+    }
+    
+
+    
+    static func rootDir()->String{
+        let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
+        let subDir = (documentsPath as NSString).appendingPathComponent("CatLike")
+        return subDir
+    }
+    
+    static func pathOf(name:String)->URL{
+        
+        let subDir = rootDir()
+        
+        let url = URL(fileURLWithPath: subDir)
+        if !FileManager.default.fileExists(atPath:subDir){
+            try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
+        }
+        return url.appendingPathComponent(name)
+    }
+    
+    
+    func write(name:String){
+        let path = GameLevel.pathOf(name: name)
+        do {
+            let coder = JSONEncoder()
+            coder.outputFormatting = .prettyPrinted
+            let data = try coder.encode(self)
+            try data.write(to: path)
+            
+            try data.write(to:  path)
+            
+            
+        } catch let error {
+            ErrorHandler.handle(.networkIssue, "Unable to send message \(error)")
+        }
+    }
+    
+    static func read(name:String)->GameLevel?{
+        
+        let u = GameLevel.pathOf(name: name)
+        
+        do {
+            let data =  try Data(contentsOf:u)
+            let coder = JSONDecoder()
+            let ret =  try coder.decode(GameLevel.self, from: data)
+            
+            return ret
+            
+        } catch let error {
+            ErrorHandler.handle(.networkIssue, "Unable to send message \(error)")
+        }
+        
+        return nil
+    }
+    
+    
+}
+
+//MARK: Handling ships
+extension GameLevel {
+    
+    func add(ship:PirateNode, at:TimeInterval){
+        guard  isRecording else { return }
+        
+        var routeNum = -1
+        
+        for (i, x) in self.journies.enumerated() {
+            if x == ship.route{
+                routeNum = i
+            }
+        }
+        launches.append(ShipLaunch(ship: ship, time: at, index:routeNum))
+        currentIndex += 1
+    }
+    
+    func hasShip()->Bool{
+        return currentIndex < launches.count
+    }
+    
+    func clearShips(){
+        launches.removeAll()
+    }
+    
+    func victoryShipStartingLevel()->Int{
+        return victoryShipLevel + points/10
+    }
+    
+    func towerStartingLevel()->Int{
+        return 4 + points/10
+    }
+    
+    func adjustPoints(kind:ShipKind){
+        switch kind {
+        case .battle:
+            points += 6
+        case .crusier:
+            points += 1
+        case .destroyer:
+            points += 5
+        case .galley:
+            points += 2
+        case .motor:
+            points += 3
+        case .row:
+            points += 0
+        case .bomber:
+            points += 5
+            
+            
+        }
+    }
+    
+    func nextShip()->(PirateNode,TimeInterval)?{
+        
+        guard hasShip() else { return nil }
+        
+        let b = launches[currentIndex]
+        guard b.routeIndex < journies.count else { return nil }
+        
+        let route = journies[b.routeIndex]
+        let ship = b.ship(route: route)
+        
+        currentIndex += 1
+        
+        return (ship, b.interval)
+        
+    }
+    
+    func randomShipKind( at:TimeInterval)->ShipKind{
+        
+        var kinds:[ShipKind] = []
+        var ranks:[Double] = []
+        for (k,prob) in probalities {
+            
+            let r = prob.percentage(at: at)
+            if r > 0 {
+                kinds.append(k)
+                ranks.append(r)
+            }
+            
+        }
+        
+        let total = ranks.reduce(0, +)
+        let xp = Double(GKRandomSource.sharedRandom().nextUniform())
+        let x = xp * total
+        
+        var sum:Double = 0
+        
+        for (i, r) in ranks.enumerated() {
+            
+            sum += r
+            if x < sum {
+                return kinds[i]
+            }
+        }
+        
+        return .galley
+    }
+    
+    func randomShip( modfier:Double, route:Voyage) -> PirateNode{
+        
+        let at = -startTime.timeIntervalSinceNow
+        let kind = randomShipKind(at:at)
+        return PirateNode.makeShip(kind:kind, modfier:modfier, route: route, level:boatLevel)
+        
+    }
+}
+
+
 fileprivate struct ShipLaunch : Codable {
     let interval:TimeInterval
     let kind:ShipKind
@@ -147,248 +392,4 @@ struct ShipProbality : Codable {
         return  min(max((base + slope * at)/5 , 0 ),final)
     }
     
-}
-
-class GameLevel : Codable {
-    
-    let defaultFloor = 0.7
-    var maxTowers = 9
-    let playSound = false
-    let decay = 0.99
-    
-    fileprivate var launches:[ShipLaunch] = []
-    
-    var hasAI = false
-    var journies:[Voyage] = []
-    var points:Int = 0
-    var victorySpeed:Double = 1
-    var boatLevel = 0
-    var victoryShipLevel = 3
-    var isRecording = true
-    fileprivate var info = MapHolder(grid:[])
-    var startTime = Date()
-    var currentIndex = 0
-    
-    
-    
-    var probalities:[ShipKind:ShipProbality] = [
-        .battle:ShipProbality(base: -300, slope: 1.5, final: 80),
-        .galley:ShipProbality(base: 1, slope: 2, final: 500),
-        .motor:ShipProbality(base: 10, slope: 0.75, final: 20),
-        .destroyer:ShipProbality(base: -220, slope: 0.8, final: 150),
-        .crusier:ShipProbality(base: 0, slope: 0.8, final: 30),
-        
-        .bomber:ShipProbality(base: -70, slope: 0.8, final: 80),
-        
-        ]
-    
-    enum CodingKeys: String, CodingKey
-    {
-        case journies
-        case info
-        case launches
-        case defaultFloor
-        case maxTowers
-        case probalities
-        
-    }
-    
-    func clear(){
-        points = 0
-        currentIndex = 0
-        victoryShipLevel = 3
-        victorySpeed  = 1
-        boatLevel = 0
-        victoryShipLevel = 3
-        startTime = Date()
-    }
-    
-    func add(ship:PirateNode, at:TimeInterval){
-        guard  isRecording else { return }
-        
-        var routeNum = -1
-        
-        for (i, x) in self.journies.enumerated() {
-            if x == ship.route{
-                routeNum = i
-            }
-        }
-        launches.append(ShipLaunch(ship: ship, time: at, index:routeNum))
-        currentIndex += 1
-    }
-    
-    func hasShip()->Bool{
-        return currentIndex < launches.count
-    }
-    
-    func load( map:MapHandler){
-        
-        clear()
-        clearShips()
-        
-        self.info = MapHolder(map: map)
-        self.journies = map.voyages
-    }
-    
-    func apply(to map:MapHandler){
-        map.voyages = self.journies
-        info.adjust(map: map)
-    }
-    
-    func clearShips(){
-        launches.removeAll()
-    }
-    
-    func victoryShipStartingLevel()->Int{
-        return victoryShipLevel + points/10
-    }
-    
-    func towerStartingLevel()->Int{
-        return 4 + points/10
-    }
-    
-    
-    static func rootDir()->String{
-        let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
-        let subDir = (documentsPath as NSString).appendingPathComponent("CatLike")
-        return subDir
-    }
-    
-    static func pathOf(name:String)->URL{
-        
-        let subDir = rootDir()
-        
-        let url = URL(fileURLWithPath: subDir)
-        if !FileManager.default.fileExists(atPath:subDir){
-            try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
-        }
-        return url.appendingPathComponent(name)
-    }
-    
-    
-    func write(name:String){
-        let path = GameLevel.pathOf(name: name)
-        do {
-            let coder = JSONEncoder()
-            coder.outputFormatting = .prettyPrinted
-            let data = try coder.encode(self)
-            try data.write(to: path)
-            
-            try data.write(to: URL(fileURLWithPath: path))
-            
-            
-        } catch let error {
-            ErrorHandler.handle(.networkIssue, "Unable to send message \(error)")
-        }
-    }
-    
-    static func read(name:String)->GameLevel?{
-        
-        let path = "/Users/arthurc/code/catsaves/\(name)"
-        let u = URL(fileURLWithPath: path)
-        
-        let u = GameLevel.pathOf(name: name)
-        
-        do {
-            let data =  try Data(contentsOf:u)
-            let coder = JSONDecoder()
-            let ret =  try coder.decode(GameLevel.self, from: data)
-            
-            return ret
-            
-        } catch let error {
-            ErrorHandler.handle(.networkIssue, "Unable to send message \(error)")
-        }
-        
-        return nil
-    }
-    
-    
-    func adjustPoints(kind:ShipKind){
-        switch kind {
-        case .battle:
-            points += 6
-        case .crusier:
-            points += 1
-        case .destroyer:
-            points += 5
-        case .galley:
-            points += 2
-        case .motor:
-            points += 3
-        case .row:
-            points += 0
-        case .bomber:
-            points += 5
-            
-            
-        }
-    }
-    
-    func nextShip()->(PirateNode,TimeInterval)?{
-        
-        guard hasShip() else { return nil }
-        
-        let b = launches[currentIndex]
-        guard b.routeIndex < journies.count else { return nil }
-        
-        let route = journies[b.routeIndex]
-        let ship = b.ship(route: route)
-        
-        currentIndex += 1
-        
-        return (ship, b.interval)
-        
-    }
-    
-    
-}
-
-extension GameLevel {
-    
-    
-    
-    
-    
-    func randomShipKind( at:TimeInterval)->ShipKind{
-        
-        var kinds:[ShipKind] = []
-        var ranks:[Double] = []
-        for (k,prob) in probalities {
-            
-            let r = prob.percentage(at: at)
-            if r > 0 {
-                kinds.append(k)
-                ranks.append(r)
-            }
-            
-        }
-        
-        let total = ranks.reduce(0, +)
-        let xp = Double(GKRandomSource.sharedRandom().nextUniform())
-        let x = xp * total
-        
-        var sum:Double = 0
-        
-        for (i, r) in ranks.enumerated() {
-            
-            sum += r
-            if x < sum {
-                return kinds[i]
-            }
-        }
-        
-        
-        return .galley
-        
-        
-    }
-    
-    func randomShip( modfier:Double, route:Voyage) -> PirateNode{
-        
-        let at = -startTime.timeIntervalSinceNow
-        let kind = randomShipKind(at:at)
-        return PirateNode.makeShip(kind:kind, modfier:modfier, route: route, level:boatLevel)
-        
-    }
 }

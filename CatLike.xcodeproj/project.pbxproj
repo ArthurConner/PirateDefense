@@ -114,6 +114,9 @@
 		0EE8F8111F91202700F6B105 /* ViewControllerGlue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EE8F80F1F91202700F6B105 /* ViewControllerGlue.swift */; };
 		0EE8F8121F91202700F6B105 /* ViewControllerGlue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EE8F80F1F91202700F6B105 /* ViewControllerGlue.swift */; };
 		0EE8F8151F914E2200F6B105 /* iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0EE8F8131F914E2200F6B105 /* iPhone.storyboard */; };
+		0EF5FBC81FBE111100F47C11 /* ColorUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF5FBC71FBE111100F47C11 /* ColorUtils.swift */; };
+		0EF5FBC91FBE13F700F47C11 /* ColorUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF5FBC71FBE111100F47C11 /* ColorUtils.swift */; };
+		0EF5FBCA1FBE13F800F47C11 /* ColorUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF5FBC71FBE111100F47C11 /* ColorUtils.swift */; };
 		0EFC5E441F7C0A65007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
 		0EFC5E451F7C0FC3007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
 		0EFC5E461F7C0FC4007D5AB6 /* Clock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E431F7C0A65007D5AB6 /* Clock.swift */; };
@@ -183,6 +186,7 @@
 		0EE8F80B1F91198800F6B105 /* ActionTableController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionTableController.swift; sourceTree = "<group>"; };
 		0EE8F80F1F91202700F6B105 /* ViewControllerGlue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerGlue.swift; sourceTree = "<group>"; };
 		0EE8F8141F914E2200F6B105 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/iPhone.storyboard; sourceTree = "<group>"; };
+		0EF5FBC71FBE111100F47C11 /* ColorUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorUtils.swift; sourceTree = "<group>"; };
 		0EFC5E431F7C0A65007D5AB6 /* Clock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clock.swift; sourceTree = "<group>"; };
 		0EFC5E471F7C201F007D5AB6 /* CannonBall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannonBall.swift; sourceTree = "<group>"; };
 		0EFC5E4B1F7C3E9C007D5AB6 /* TowerAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerAI.swift; sourceTree = "<group>"; };
@@ -240,6 +244,7 @@
 				4A75DBB51FBD4C850061512F /* EditorScene.sks */,
 				0EB31FB61F82963100F9D1A7 /* Network.swift */,
 				0EA97F7E1F82E6DF003EBB40 /* NetworkPeer.swift */,
+				0EF5FBC71FBE111100F47C11 /* ColorUtils.swift */,
 				0EA97F821F82EA5B003EBB40 /* ErrorHandler.swift */,
 				0EE8F80F1F91202700F6B105 /* ViewControllerGlue.swift */,
 				0EA97F7D1F82E6A9003EBB40 /* Scenekit */,
@@ -537,6 +542,7 @@
 				0EE8F8101F91202700F6B105 /* ViewControllerGlue.swift in Sources */,
 				0E49DBFD1F85A9DD00A09774 /* WelcomeScene.swift in Sources */,
 				0E53B5AF1F796C350020A31C /* Types.swift in Sources */,
+				0EF5FBC81FBE111100F47C11 /* ColorUtils.swift in Sources */,
 				0E4501201F742E50008493C2 /* MapHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -564,6 +570,7 @@
 				0E53B5BC1F79BE050020A31C /* HUD.swift in Sources */,
 				0EA97F841F82EA5B003EBB40 /* ErrorHandler.swift in Sources */,
 				0EE8F8111F91202700F6B105 /* ViewControllerGlue.swift in Sources */,
+				0EF5FBC91FBE13F700F47C11 /* ColorUtils.swift in Sources */,
 				0E53B5B01F796C350020A31C /* Types.swift in Sources */,
 				0E4501211F742E50008493C2 /* MapHandler.swift in Sources */,
 			);
@@ -576,6 +583,7 @@
 				0EFC5E4E1F7C434C007D5AB6 /* TowerAI.swift in Sources */,
 				4A75DBB41FBD4C440061512F /* EditorScene.swift in Sources */,
 				0E4501081F742D1A008493C2 /* GameScene.swift in Sources */,
+				0EF5FBCA1FBE13F800F47C11 /* ColorUtils.swift in Sources */,
 				0EE8F80D1F91198800F6B105 /* ActionTableController.swift in Sources */,
 				0EB31FB91F82963100F9D1A7 /* Network.swift in Sources */,
 				0EB31FBD1F829B5500F9D1A7 /* BoatScene.swift in Sources */,
