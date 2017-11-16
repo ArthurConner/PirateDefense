@@ -37,6 +37,11 @@ class GameViewController: NSViewController {
         skView.showsNodeCount = true
     }
     
+    
+    func load(level:GameLevel){
+        
+    }
+    
 }
 
 

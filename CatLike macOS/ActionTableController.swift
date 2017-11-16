@@ -18,7 +18,21 @@ class ActionTableController: NSViewController  {
     
     let cellID:NSUserInterfaceItemIdentifier = NSUserInterfaceItemIdentifier(rawValue:"boatLaunch")
     
+    func reloadList(){
+
+        existing.removeAll()
+        
+        do {
+            let levels = try FileManager.default.contentsOfDirectory(atPath: GameLevel.rootDir()).filter({$0.hasSuffix("txt")})
+            existing.append(contentsOf: levels)
+        } catch {
+            print("no levels found")
+        }
+       
+    }
+    
     override func viewDidLoad() {
+        reloadList()
         super.viewDidLoad()
         gameState = .unknown
         // Do view setup here.
@@ -26,7 +40,9 @@ class ActionTableController: NSViewController  {
     
     
     let boats:[ShipKind] = [.crusier,.galley,.motor,.destroyer,.battle]
-    let kinds:[String] = ["Play Ship", "Play Tower"]
+    let kinds:[String] = ["Play Random Level","Create new level"]
+    var existing:[String] = []
+    
     let towerAct:[TowerPlayerActions] = [.launchPaver,.launchTerra, .KillAllTowers, .fasterBoats, .strongerBoats ,.showNextShip]
     
     var gameState: GameTypeModes = .unknown {
@@ -61,7 +77,6 @@ class ActionTableController: NSViewController  {
                 return ret
             }
         }
-        
         return nil
         
     }
@@ -100,11 +115,7 @@ extension ActionTableController : NSTableViewDelegate {
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         
         guard let cell = tableView.makeView(withIdentifier: self.cellID, owner: nil) as? NSTableCellView else { return nil }
-        
-        // Configure the cell...
-        
-        
-        
+
         switch gameState {
         case .tower:
             let kind = towerAct[row]
@@ -115,8 +126,13 @@ extension ActionTableController : NSTableViewDelegate {
             configure(cell: cell, toBoat: kind)
         case .unknown:
             cell.imageView?.image = nil
-            cell.textField?.stringValue = kinds[row]
             
+            if row < 2 {
+            cell.textField?.stringValue = kinds[row]
+            } else {
+                cell.textField?.stringValue = existing[row-2]
+                
+            }
         }
         
         
@@ -145,9 +161,13 @@ extension ActionTableController : NSTableViewDelegate {
         case .unknown:
             if row == 0 {
                 
-                self.gameState = .ship
-            } else {
                 self.gameState = .tower
+            } else if row > 1 {
+                if let level = GameLevel.read(name: existing[row-2]),
+                    let gc = self.gameController()  {
+                    gc.load(level:level)
+                }
+             //   self.gameState = .tower
             }
         }
         
@@ -168,7 +188,7 @@ extension ActionTableController : NSTableViewDataSource {
         case .ship:
             return boats.count
         case .unknown:
-            return kinds.count
+            return kinds.count + existing.count
             
         }
     }
