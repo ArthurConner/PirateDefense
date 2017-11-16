@@ -109,9 +109,9 @@ class EditorScene: SKScene {
                 
                 let p = MapPoint(row:r,col:c)
                 let k = mapTiles.kind(point: p)
-                if k == .homeBase {
+                if k == .pirateBase {
                     home = p
-                } else if k == .pirateBase {
+                } else if k == .homeBase {
                     bases.append(p)
                 }
                
@@ -120,9 +120,7 @@ class EditorScene: SKScene {
         
         
         guard let h = home, !bases.isEmpty else { return nil }
-        
         level.load(map: mapTiles)
-        
         level.journies.removeAll()
         
         for i in bases {
@@ -166,24 +164,24 @@ class EditorScene: SKScene {
                 mapTiles.changeTile(at: towerPoint, to: .water)
             }
         case .start:
-            if current == .pirateBase {
+            if current == .homeBase {
                 mapTiles.changeTile(at: towerPoint, to: .sand)
             } else {
-                mapTiles.changeTile(at: towerPoint, to: .pirateBase)
+                mapTiles.changeTile(at: towerPoint, to: .homeBase)
             }
         case .finish:
             
             for r in 0..<tile.numberOfRows{
                 for c in 0..<tile.numberOfColumns{
                     let check = MapPoint(row:r,col:c)
-                    if  mapTiles.kind(point: check) == .homeBase{
+                    if  mapTiles.kind(point: check) == .pirateBase{
                         mapTiles.changeTile(at:check, to: .sand)
                     }
                     
                 }
             }
             
-            mapTiles.changeTile(at: towerPoint, to: .homeBase)
+            mapTiles.changeTile(at: towerPoint, to: .pirateBase)
             
         }
         
