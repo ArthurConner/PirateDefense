@@ -95,19 +95,19 @@ fileprivate struct MapHolder : Codable {
         case .unknown:
             return "u"
         case .pirateBase:
-            return "+"
+            return "p"
         case .inland:
-            return "~"
+            return "^"
         case .path:
             return "-"
         case .water:
-            return " "
+            return "~"
         case .top:
-            return "^"
+            return "@"
         case .homeBase:
             return "*"
         case .sand:
-            return "."
+            return " "
         }
     }
     
@@ -116,19 +116,19 @@ fileprivate struct MapHolder : Codable {
             
         case "u" :
             return .unknown
-        case  "+" :
+        case  "p" :
             return .pirateBase
-        case "~" :
+        case "^" :
             return .inland
         case "-":
             return .path
-        case " " :
+        case "~" :
             return .water
-        case "^" :
+        case "@" :
             return .top
         case "*" :
             return .homeBase
-        case "." :
+        case " " :
             return .sand
         default:
             return .unknown
