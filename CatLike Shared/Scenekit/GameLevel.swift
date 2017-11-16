@@ -267,7 +267,7 @@ class GameLevel : Codable {
     
     
     func write(name:String){
-        let path = "/Users/arthurc/code/catsaves/\(name)"
+        let path = GameLevel.pathOf(name: name)
         do {
             let coder = JSONEncoder()
             coder.outputFormatting = .prettyPrinted
@@ -286,6 +286,8 @@ class GameLevel : Codable {
         
         let path = "/Users/arthurc/code/catsaves/\(name)"
         let u = URL(fileURLWithPath: path)
+        
+        let u = GameLevel.pathOf(name: name)
         
         do {
             let data =  try Data(contentsOf:u)
