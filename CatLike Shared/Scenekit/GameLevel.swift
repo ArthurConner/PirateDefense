@@ -247,13 +247,32 @@ class GameLevel : Codable {
         return 4 + points/10
     }
     
+    
+    static func rootDir()->String{
+        let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
+        let subDir = (documentsPath as NSString).appendingPathComponent("CatLike")
+        return subDir
+    }
+    
+    static func pathOf(name:String)->URL{
+        
+        let subDir = rootDir()
+        
+        let url = URL(fileURLWithPath: subDir)
+        if !FileManager.default.fileExists(atPath:subDir){
+            try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
+        }
+        return url.appendingPathComponent(name)
+    }
+    
+    
     func write(name:String){
         let path = "/Users/arthurc/code/catsaves/\(name)"
         do {
             let coder = JSONEncoder()
             coder.outputFormatting = .prettyPrinted
-            
             let data = try coder.encode(self)
+            try data.write(to: path)
             
             try data.write(to: URL(fileURLWithPath: path))
             
@@ -269,12 +288,9 @@ class GameLevel : Codable {
         let u = URL(fileURLWithPath: path)
         
         do {
-            
             let data =  try Data(contentsOf:u)
             let coder = JSONDecoder()
-            
             let ret =  try coder.decode(GameLevel.self, from: data)
-            
             
             return ret
             
