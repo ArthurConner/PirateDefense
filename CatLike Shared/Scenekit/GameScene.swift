@@ -696,12 +696,12 @@ extension GameScene {
         } else {
             if let trip = mapTiles.randomRoute(),  let shipPosition =  mapTiles.convert(mappoint:trip.start) {
                 
-                let time = -level.startTime.timeIntervalSinceNow
-                let ship =  randomShip( modfier:timeOverTile, route: trip, at: time, level:level.boatLevel)
+              
+                let ship =  level.randomShip( modfier:timeOverTile, route: trip)
                 ship.position = shipPosition
                 add(ship: ship)
                 level.add(ship: ship, at: launchClock.length())
-                launchClock.reduce(factor: 0.99)
+                launchClock.reduce(factor: level.decay)
                 
             }
             

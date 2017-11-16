@@ -7,7 +7,7 @@
 //
 
 import Foundation
-
+import GameKit
 
 
 fileprivate struct ShipLaunch : Codable {
@@ -16,24 +16,24 @@ fileprivate struct ShipLaunch : Codable {
     let modfier:Double
     let routeIndex:Int
     let level:Int
-
+    
     let radius:Int?
-   
+    
     
     init( ship:PirateNode,time:TimeInterval, index:Int){
         interval = time
-       
+        
         kind = ship.kind
         level = ship.startLevel
         modfier = ship.startModfier
         routeIndex = index
-     
+        
         if let n = ship as? BomberNode {
             radius = n.blastRadius
         } else {
             radius = nil
         }
-
+        
     }
     
     func ship(route:Voyage)->PirateNode{
@@ -44,21 +44,17 @@ fileprivate struct ShipLaunch : Codable {
         return x
     }
     
-    
-    
-    
-    
 }
 
 fileprivate struct MapHolder : Codable {
     
-    let grid:String
+    let grid:[String]
     
     init(map tiles:MapHandler){
         var all:[String] = []
         
         if let  m = tiles.tiles {
- 
+            
             for r in 0..<m.numberOfRows{
                 var currentRow:[Landscape] = []
                 for c in 0..<m.numberOfColumns{
@@ -72,15 +68,13 @@ fileprivate struct MapHolder : Codable {
                 
             }
         }
-        self.init(grid:all.joined(separator: "\n"))
+        self.init(grid:all)
     }
     
     func adjust(map:MapHandler){
-        let rows  = grid.split(separator: "\n")
         
         
-        
-        for (r, currentRow) in rows.enumerated() {
+        for (r, currentRow) in grid.enumerated() {
             let cols = currentRow.split(separator: ",")
             for (c, k) in cols.enumerated(){
                 let p = MapPoint(row: r, col: c)
@@ -91,7 +85,7 @@ fileprivate struct MapHolder : Codable {
         
     }
     
-    init(grid ag:String){
+    init(grid ag:[String]){
         grid = ag
     }
     
@@ -103,11 +97,11 @@ fileprivate struct MapHolder : Codable {
         case .pirateBase:
             return "+"
         case .inland:
-            return "%"
+            return "~"
         case .path:
             return "-"
         case .water:
-            return "~"
+            return " "
         case .top:
             return "^"
         case .homeBase:
@@ -124,11 +118,11 @@ fileprivate struct MapHolder : Codable {
             return .unknown
         case  "+" :
             return .pirateBase
-        case "%" :
+        case "~" :
             return .inland
         case "-":
             return .path
-        case "~" :
+        case " " :
             return .water
         case "^" :
             return .top
@@ -144,14 +138,26 @@ fileprivate struct MapHolder : Codable {
     
 }
 
+struct ShipProbality : Codable {
+    let base:Double
+    let slope:Double
+    let final:Double
+    
+    func percentage(at:TimeInterval)->Double{
+        return  min(max((base + slope * at)/5 , 0 ),final)
+    }
+    
+}
+
 class GameLevel : Codable {
     
     let defaultFloor = 0.7
-    let maxTowers = 9
+    var maxTowers = 9
     let playSound = false
+    let decay = 0.99
     
     fileprivate var launches:[ShipLaunch] = []
-
+    
     var hasAI = false
     var journies:[Voyage] = []
     var points:Int = 0
@@ -159,15 +165,32 @@ class GameLevel : Codable {
     var boatLevel = 0
     var victoryShipLevel = 3
     var isRecording = true
-    fileprivate var info = MapHolder(grid:"")
+    fileprivate var info = MapHolder(grid:[])
     var startTime = Date()
     var currentIndex = 0
+    
+    
+    
+    var probalities:[ShipKind:ShipProbality] = [
+        .battle:ShipProbality(base: -300, slope: 1.5, final: 80),
+        .galley:ShipProbality(base: 1, slope: 2, final: 500),
+        .motor:ShipProbality(base: 10, slope: 0.75, final: 20),
+        .destroyer:ShipProbality(base: -220, slope: 0.8, final: 150),
+        .crusier:ShipProbality(base: 0, slope: 0.8, final: 30),
+        
+        .bomber:ShipProbality(base: -70, slope: 0.8, final: 80),
+        
+        ]
     
     enum CodingKeys: String, CodingKey
     {
         case journies
         case info
         case launches
+        case defaultFloor
+        case maxTowers
+        case probalities
+        
     }
     
     func clear(){
@@ -226,14 +249,14 @@ class GameLevel : Codable {
     
     func write(name:String){
         let path = "/Users/arthurc/code/catsaves/\(name)"
-          do {
+        do {
             let coder = JSONEncoder()
             coder.outputFormatting = .prettyPrinted
             
             let data = try coder.encode(self)
             
             try data.write(to: URL(fileURLWithPath: path))
-         
+            
             
         } catch let error {
             ErrorHandler.handle(.networkIssue, "Unable to send message \(error)")
@@ -241,12 +264,10 @@ class GameLevel : Codable {
     }
     
     static func read(name:String)->GameLevel?{
-    
+        
         let path = "/Users/arthurc/code/catsaves/\(name)"
         let u = URL(fileURLWithPath: path)
-      
         
-       
         do {
             
             let data =  try Data(contentsOf:u)
@@ -260,10 +281,10 @@ class GameLevel : Codable {
         } catch let error {
             ErrorHandler.handle(.networkIssue, "Unable to send message \(error)")
         }
-    
+        
         return nil
     }
-
+    
     
     func adjustPoints(kind:ShipKind){
         switch kind {
@@ -303,4 +324,53 @@ class GameLevel : Codable {
     }
     
     
+}
+
+extension GameLevel {
+    
+    
+    
+    
+    
+    func randomShipKind( at:TimeInterval)->ShipKind{
+        
+        var kinds:[ShipKind] = []
+        var ranks:[Double] = []
+        for (k,prob) in probalities {
+            
+            let r = prob.percentage(at: at)
+            if r > 0 {
+                kinds.append(k)
+                ranks.append(r)
+            }
+            
+        }
+        
+        let total = ranks.reduce(0, +)
+        let xp = Double(GKRandomSource.sharedRandom().nextUniform())
+        let x = xp * total
+        
+        var sum:Double = 0
+        
+        for (i, r) in ranks.enumerated() {
+            
+            sum += r
+            if x < sum {
+                return kinds[i]
+            }
+        }
+        
+        
+        return .galley
+        
+        
+    }
+    
+    func randomShip( modfier:Double, route:Voyage) -> PirateNode{
+        
+        let at = -startTime.timeIntervalSinceNow
+        let kind = randomShipKind(at:at)
+        return PirateNode.makeShip(kind:kind, modfier:modfier, route: route, level:boatLevel)
+        
+    }
 }
