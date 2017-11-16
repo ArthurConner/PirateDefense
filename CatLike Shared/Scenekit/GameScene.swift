@@ -320,10 +320,8 @@ class GameScene: SKScene {
         case .play:
             manageTapWhilePlaying(point: point)
         case .win, .lose:
-         
-            self.level.write(name: GameLevel.defaultName() )
             self.restart()
-            
+
         case .reload:
             if let touchedNode =
                 atPoint(point) as? SKLabelNode {
@@ -1185,6 +1183,11 @@ extension GameScene: TowerPlayerActionDelegate {
             level.victorySpeed = level.victorySpeed * 0.95
         case .strongerBoats:
             level.victoryShipLevel += 1
+        case .exit:
+            print("going to exit")
+        case .save:
+            
+            self.level.write(name: GameLevel.defaultName() )
         }
         
     }

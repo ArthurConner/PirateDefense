@@ -14,8 +14,9 @@ import GameKit
 enum EditorSceneActions:String {
     case island = "Make Islands"
     case water = "Toggle Water"
-    case start = "Toggle target"
+    case start = "Toggle Target"
     case finish = "Toggle Home"
+    case clear = "Clear"
     case run = "Run"
     case save = "Save"
     
@@ -43,17 +44,24 @@ class EditorScene: SKScene {
     var mapTiles = MapHandler()
     var currentName:String?
     
-    func setUpScene() {
+    
+    func clear(){
+       
         guard let tile  = self.childNode(withName: "//MapTiles") as? SKTileMapNode else { return }
-        mapTiles.load(map:tile)
-        mapTiles.refreshMap()
-        
+
         for r in 0..<tile.numberOfRows{
             for c in 0..<tile.numberOfColumns{
                 let p = MapPoint(row:r,col:c)
                 mapTiles.changeTile(at:p, to: .water)
             }
         }
+    }
+    func setUpScene() {
+        guard let tile  = self.childNode(withName: "//MapTiles") as? SKTileMapNode else { return }
+        mapTiles.load(map:tile)
+        mapTiles.refreshMap()
+        
+        clear()
         
         level.load(map: mapTiles)
         
@@ -79,6 +87,11 @@ class EditorScene: SKScene {
     
     var gameState: EditorSceneActions = .island {
         didSet {
+            
+            if gameState == .clear {
+                clear()
+                gameState = .island
+            }
             print("changingState")
         }
     }
@@ -140,11 +153,12 @@ class EditorScene: SKScene {
         let current = mapTiles.kind(point: towerPoint)
         
         switch  gameState {
-        case .run, .save:
+        case .run, .save, .clear:
             ErrorHandler.handle(.logic, "should not be clicking here")
         case .island:
             mapTiles.addIsland(at: towerPoint)
             
+        
         case .water:
             if current == .water {
                 mapTiles.changeTile(at: towerPoint, to: .sand)

@@ -41,14 +41,15 @@ class ActionTableController: NSViewController  {
     
     let boats:[ShipKind] = [.crusier,.galley,.motor,.destroyer,.battle]
     let kinds:[String] = ["Play Random Level","Create new level"]
-    let edititems:[EditorSceneActions] = [.island , .water , .start,.finish,.run , .save]
+    let edititems:[EditorSceneActions] = [.clear, .island , .water , .start,.finish, .run , .save]
     
     var existing:[String] = []
     
-    let towerAct:[TowerPlayerActions] = [.launchPaver,.launchTerra, .KillAllTowers, .fasterBoats, .strongerBoats ,.showNextShip]
+    let towerAct:[TowerPlayerActions] = [.launchPaver,.launchTerra, .KillAllTowers, .fasterBoats, .strongerBoats ,.showNextShip, .save, .exit]
     
     var gameState: GameTypeModes = .unknown {
         didSet {
+            reloadList()
             self.tableView.reloadData()
             switch gameState {
             case .tower:
@@ -56,6 +57,7 @@ class ActionTableController: NSViewController  {
             case .ship:
                 self.title = "Ships"
             case .editor:
+                reloadList()
                 self.title = "Editing"
             case .unknown:
                 self.title = "Get Started"
@@ -157,10 +159,14 @@ extension ActionTableController : NSTableViewDelegate {
         switch gameState {
         case .tower:
             let kind = towerAct[row ]
+            if kind == .exit {
+                self.gameState = .unknown
+            } else {
             if let gc = gameController() {
                 gc.didTower(action: kind)
             }
         
+            }
         case .ship:
             let kind = boats[row]
             let prox = ShipProxy(kind: kind, shipID: "", position: CGPoint.zero, angle: 0)
