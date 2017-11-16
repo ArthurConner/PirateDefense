@@ -123,6 +123,12 @@
 		0EFC5E4C1F7C3E9C007D5AB6 /* TowerAI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E4B1F7C3E9C007D5AB6 /* TowerAI.swift */; };
 		0EFC5E4D1F7C434B007D5AB6 /* TowerAI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E4B1F7C3E9C007D5AB6 /* TowerAI.swift */; };
 		0EFC5E4E1F7C434C007D5AB6 /* TowerAI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFC5E4B1F7C3E9C007D5AB6 /* TowerAI.swift */; };
+		4A75DBB21FBD4C440061512F /* EditorScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A75DBB11FBD4C440061512F /* EditorScene.swift */; };
+		4A75DBB31FBD4C440061512F /* EditorScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A75DBB11FBD4C440061512F /* EditorScene.swift */; };
+		4A75DBB41FBD4C440061512F /* EditorScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A75DBB11FBD4C440061512F /* EditorScene.swift */; };
+		4A75DBB61FBD4C850061512F /* EditorScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4A75DBB51FBD4C850061512F /* EditorScene.sks */; };
+		4A75DBB71FBD4C850061512F /* EditorScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4A75DBB51FBD4C850061512F /* EditorScene.sks */; };
+		4A75DBB81FBD4C850061512F /* EditorScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 4A75DBB51FBD4C850061512F /* EditorScene.sks */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -180,6 +186,8 @@
 		0EFC5E431F7C0A65007D5AB6 /* Clock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clock.swift; sourceTree = "<group>"; };
 		0EFC5E471F7C201F007D5AB6 /* CannonBall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CannonBall.swift; sourceTree = "<group>"; };
 		0EFC5E4B1F7C3E9C007D5AB6 /* TowerAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TowerAI.swift; sourceTree = "<group>"; };
+		4A75DBB11FBD4C440061512F /* EditorScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorScene.swift; sourceTree = "<group>"; };
+		4A75DBB51FBD4C850061512F /* EditorScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = EditorScene.sks; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -229,6 +237,7 @@
 				0E4500CF1F742D1A008493C2 /* GameScene.sks */,
 				0EB31FBE1F829E2E00F9D1A7 /* BoatScene.sks */,
 				0E49DBF41F85A91700A09774 /* WelcomeScene.sks */,
+				4A75DBB51FBD4C850061512F /* EditorScene.sks */,
 				0EB31FB61F82963100F9D1A7 /* Network.swift */,
 				0EA97F7E1F82E6DF003EBB40 /* NetworkPeer.swift */,
 				0EA97F821F82EA5B003EBB40 /* ErrorHandler.swift */,
@@ -296,6 +305,7 @@
 				0E49DBFC1F85A9DD00A09774 /* WelcomeScene.swift */,
 				0E45011F1F742E50008493C2 /* MapHandler.swift */,
 				0EBB2C051FBB80D000C3035A /* GameLevel.swift */,
+				4A75DBB11FBD4C440061512F /* EditorScene.swift */,
 				0E49DBF01F85547900A09774 /* MapPoint.swift */,
 				0E4500D01F742D1A008493C2 /* GameScene.swift */,
 				0EB31FBA1F829B5500F9D1A7 /* BoatScene.swift */,
@@ -441,6 +451,7 @@
 				0EE8F7FE1F90382D00F6B105 /* Galley.piano.caf in Resources */,
 				0EE8F7EC1F901B7E00F6B105 /* Sink.caf in Resources */,
 				0E4501091F742D1A008493C2 /* Assets.xcassets in Resources */,
+				4A75DBB61FBD4C850061512F /* EditorScene.sks in Resources */,
 				0E4501281F743493008493C2 /* PirateTileSet.sks in Resources */,
 				0EE8F7EA1F901B7E00F6B105 /* Gun Cannon.caf in Resources */,
 				0EE8F8001F90382D00F6B105 /* battleship.Basses.caf in Resources */,
@@ -455,6 +466,7 @@
 				0E3080DE1F87DB1C00A57FC5 /* GLIMSTIC.TTF in Resources */,
 				0EB31FC01F829E2E00F9D1A7 /* BoatScene.sks in Resources */,
 				0EE8F7F51F901F4F00F6B105 /* SeaStorm.caf in Resources */,
+				4A75DBB71FBD4C850061512F /* EditorScene.sks in Resources */,
 				0EE8F8011F90386900F6B105 /* battleship.Basses.caf in Resources */,
 				0E49DBF61F85A91700A09774 /* WelcomeScene.sks in Resources */,
 				0E4500F01F742D1A008493C2 /* Main.storyboard in Resources */,
@@ -479,6 +491,7 @@
 				0E3080DF1F87DB1C00A57FC5 /* GLIMSTIC.TTF in Resources */,
 				0EB31FC11F829E2E00F9D1A7 /* BoatScene.sks in Resources */,
 				0EE8F7F61F901F4F00F6B105 /* SeaStorm.caf in Resources */,
+				4A75DBB81FBD4C850061512F /* EditorScene.sks in Resources */,
 				0EE8F8021F90386A00F6B105 /* battleship.Basses.caf in Resources */,
 				0E49DBF71F85A91700A09774 /* WelcomeScene.sks in Resources */,
 				0E4500FE1F742D1A008493C2 /* Main.storyboard in Resources */,
@@ -512,6 +525,7 @@
 				0E4500DC1F742D1A008493C2 /* GameViewController.swift in Sources */,
 				0E53B5B31F796CC60020A31C /* PirateShip.swift in Sources */,
 				0EFC5E481F7C201F007D5AB6 /* CannonBall.swift in Sources */,
+				4A75DBB21FBD4C440061512F /* EditorScene.swift in Sources */,
 				0EFC5E441F7C0A65007D5AB6 /* Clock.swift in Sources */,
 				0EA065711F97FD0500BD0B6E /* Navigatable.swift in Sources */,
 				0E49DBF11F85547900A09774 /* MapPoint.swift in Sources */,
@@ -536,6 +550,7 @@
 				0E4501071F742D1A008493C2 /* GameScene.swift in Sources */,
 				0EA97F801F82E6DF003EBB40 /* NetworkPeer.swift in Sources */,
 				0EB31FB81F82963100F9D1A7 /* Network.swift in Sources */,
+				4A75DBB31FBD4C440061512F /* EditorScene.swift in Sources */,
 				0EB31FBC1F829B5500F9D1A7 /* BoatScene.swift in Sources */,
 				0EA065721F97FDA900BD0B6E /* Navigatable.swift in Sources */,
 				0E49DBFE1F85A9DD00A09774 /* WelcomeScene.swift in Sources */,
@@ -559,6 +574,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0EFC5E4E1F7C434C007D5AB6 /* TowerAI.swift in Sources */,
+				4A75DBB41FBD4C440061512F /* EditorScene.swift in Sources */,
 				0E4501081F742D1A008493C2 /* GameScene.swift in Sources */,
 				0EE8F80D1F91198800F6B105 /* ActionTableController.swift in Sources */,
 				0EB31FB91F82963100F9D1A7 /* Network.swift in Sources */,
