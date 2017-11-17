@@ -19,7 +19,7 @@ class GameLevel : Codable {
     var playSound = true
     var decay = 0.99
     
-    fileprivate var launches:[ShipLaunch] = []
+    var launches:[ShipLaunch] = []
     
     var showsPaths:Bool? = false
     
@@ -261,7 +261,7 @@ extension GameLevel {
 }
 
 
-fileprivate struct ShipLaunch : Codable {
+ struct ShipLaunch : Codable {
     let interval:TimeInterval
     let kind:ShipKind
     let modfier:Double

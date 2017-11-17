@@ -14,7 +14,7 @@ class ActionTableController: NSViewController  {
     
     @IBOutlet weak var tableView: NSTableView!
     
-    
+    let isEditor = true
     
     let cellID:NSUserInterfaceItemIdentifier = NSUserInterfaceItemIdentifier(rawValue:"boatLaunch")
     
@@ -41,7 +41,7 @@ class ActionTableController: NSViewController  {
     
     let boats:[ShipKind] = [.crusier,.galley,.motor,.destroyer,.battle]
     let kinds:[String] = ["Play Random Level","Create new level"]
-    let edititems:[EditorSceneActions] = [.clear, .island , .water , .start,.finish, .run , .save]
+    let edititems:[EditorSceneActions] = [.clear, .island , .water , .start, .finish, .ships, .run , .save]
     
     var existing:[String] = []
     
@@ -208,11 +208,16 @@ extension ActionTableController : NSTableViewDelegate {
             } else if row == 1 {
                 self.gameState = .editor
             } else {
-                
-                self.gameState = .tower
-                
-                if  let gc = self.gameController()  {
+                if isEditor {
+                    self.gameState = .editor
+                    if let gc = self.gameController(), let e = gc.myScene as? EditorScene {
+                        e.load(levelName:  existing[row-2])
+                    }
+                } else {
+                    self.gameState = .tower
+                    if  let gc = self.gameController()  {
                     gc.load(levelName:  existing[row-2])
+                }
                 }
                 
             }
