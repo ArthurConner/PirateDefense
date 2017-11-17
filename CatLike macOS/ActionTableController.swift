@@ -19,7 +19,7 @@ class ActionTableController: NSViewController  {
     let cellID:NSUserInterfaceItemIdentifier = NSUserInterfaceItemIdentifier(rawValue:"boatLaunch")
     
     func reloadList(){
-
+        
         existing.removeAll()
         
         do {
@@ -28,7 +28,7 @@ class ActionTableController: NSViewController  {
         } catch {
             print("no levels found")
         }
-       
+        
     }
     
     override func viewDidLoad() {
@@ -40,8 +40,8 @@ class ActionTableController: NSViewController  {
     
     
     let boats:[ShipKind] = [.crusier,.galley,.motor,.destroyer,.battle]
-    let kinds:[String] = ["Play Random Level","Create new level"]
-    let edititems:[EditorSceneActions] = [.clear, .island , .water , .start, .finish, .ships, .prob, .run , .save]
+    let kinds:[String] = ["Play New Level","Edit New level"]
+    let edititems:[EditorSceneActions] = [.clear, .island , .water , .start, .finish, .ships, .prob, .run , .save, .exit]
     
     var existing:[String] = []
     
@@ -121,7 +121,7 @@ extension ActionTableController : NSTableViewDelegate {
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         
         guard let cell = tableView.makeView(withIdentifier: self.cellID, owner: nil) as? NSTableCellView else { return nil }
-
+        
         switch gameState {
         case .tower:
             let kind = towerAct[row]
@@ -138,7 +138,7 @@ extension ActionTableController : NSTableViewDelegate {
             cell.imageView?.image = nil
             
             if row < 2 {
-            cell.textField?.stringValue = kinds[row]
+                cell.textField?.stringValue = kinds[row]
             } else {
                 cell.textField?.stringValue = existing[row-2]
                 
@@ -162,43 +162,47 @@ extension ActionTableController : NSTableViewDelegate {
             if kind == .exit {
                 self.gameState = .unknown
             } else {
-            if let gc = gameController() {
-                gc.didTower(action: kind)
-            }
-        
+                if let gc = gameController() {
+                    gc.didTower(action: kind)
+                }
+                
             }
         case .ship:
             let kind = boats[row]
             let prox = ShipProxy(kind: kind, shipID: "", position: CGPoint.zero, angle: 0)
             let message = ShipLaunchMessage(ship: prox)
             PirateServiceManager.shared.send(message, kind: .launchShip)
-        
+            
         case .editor:
             print("picked something")
             if let gc = self.gameController(), let e = gc.myScene as? EditorScene {
                 
                 let act = edititems[row]
                 
-                if act != .run, act != .save {
+                switch act{
+                    
+                case .island, .water, .start, .finish, .clear, .ships, .prob:
                     e.gameState = act
-                } else {
+                case .run:
                     if let name = e.didSave() {
-                        if act == .run {
-                            self.gameState = .tower
-                            
-                            if  let gc = self.gameController()  {
-                                gc.load(levelName:  name)
-                            }
-                        } else {
-                            self.gameState = .unknown
+                        
+                        self.gameState = .tower
+                        
+                        if  let gc = self.gameController()  {
+                            gc.load(levelName:  name)
                         }
                         
                         
                     }
-                    
+                case .save:
+                    if let _ = e.didSave() {
+                        self.gameState = .unknown
+                    }
+                case .exit:
+                    self.gameState = .unknown
                 }
-
-          
+                
+                
             }
             
         case .unknown:
@@ -216,8 +220,8 @@ extension ActionTableController : NSTableViewDelegate {
                 } else {
                     self.gameState = .tower
                     if  let gc = self.gameController()  {
-                    gc.load(levelName:  existing[row-2])
-                }
+                        gc.load(levelName:  existing[row-2])
+                    }
                 }
                 
             }
@@ -225,7 +229,7 @@ extension ActionTableController : NSTableViewDelegate {
         
         
         tableView.deselectAll(nil)
-
+        
         
     }
 }

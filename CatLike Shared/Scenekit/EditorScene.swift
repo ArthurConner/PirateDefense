@@ -21,6 +21,7 @@ enum EditorSceneActions:String {
     case prob = "Ship Probality"
     case run = "Run"
     case save = "Save"
+    case exit = "Exit"
     
 }
 
@@ -178,7 +179,7 @@ class EditorScene: SKScene {
         let current = mapTiles.kind(point: towerPoint)
         
         switch  gameState {
-        case .run, .save, .clear:
+        case .run, .save, .clear, .exit:
             ErrorHandler.handle(.logic, "should not be clicking here")
         case .ships:
             handleShipTap(point: point)
