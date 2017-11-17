@@ -323,13 +323,126 @@ extension EditorScene {
 
 extension EditorScene {
     
+    func clearProb() {
+        let x = children
+        
+        for n in x {
+            
+            if let a = n as? PirateNode {
+                a.removeFromParent()
+            } else if let a = n as? SKShapeNode {
+                a.removeFromParent()
+            }
+        }
+    }
+    
+    func refreshProb(){
+        
+        clearProb()
+        self.backgroundColor = ColorUtils.shared.seaColor()
+
+        
+        struct ProbRamp{
+            let p1:CGPoint
+            let p2:CGPoint
+            let kind:ShipKind
+            
+            init(prob:ShipProbality, kind k:ShipKind) {
+                p1 = CGPoint(x: 0, y: prob.base)
+               
+                if prob.slope != 0 {
+                    let lastX = (prob.final - prob.base)/prob.slope
+                    p2 = CGPoint(x:lastX,y:prob.final)
+                } else {
+                    p2 = p1
+                }
+                
+                kind = k
+                
+            }
+            
+            func makeShip(isFirst:Bool)->PirateNode{
+                let p = isFirst ? p1 : p2
+                
+                let s1 = PirateNode.makeShip(kind: kind, modfier: Double(p.x), route: Voyage.offGrid(), level: 0)
+                s1.position = p
+                s1.zPosition = 10
+                if let x = s1.childNode(withName: "seasound"){
+                    x.removeFromParent()
+                }
+                return s1
+            }
+            
+        }
+        
+        var probs:[ProbRamp] = []
+
+        for (k,prob) in level.probalities {
+            probs.append(ProbRamp(prob: prob, kind: k))
+        }
+        
+        let maxX = probs.map{ return $0.p2.x }.reduce(0, { x ,y in return max(x,y)})
+        
+        let maxY = probs.map{ return max($0.p2.y,$0.p1.y) }.reduce(0, { x ,y in return max(x,y)})
+        let minY = probs.map{ return min($0.p2.y,$0.p1.y) }.reduce(0, { x ,y in return min(x,y)})
+        
+        
+        
+        let trans = CGAffineTransform(translationX: -maxX/2, y: 0).concatenating(CGAffineTransform(scaleX: 2, y: 1))
+        
+        
+        let axisLine = CGMutablePath()
+        axisLine.move(to: CGPoint(x:0,y:maxY).applying(trans))
+        axisLine.addLine(to: CGPoint(x:0,y:minY).applying(trans))
+        axisLine.addLine(to:  CGPoint(x:0,y:0).applying(trans))
+        axisLine.addLine(to:  CGPoint(x:maxX,y:0).applying(trans))
+        
+        let axis = SKShapeNode(path: axisLine)
+        axis.lineWidth = 3
+        axis.strokeColor = .white
+        axis.zPosition = 6
+        self.addChild(axis)
+        
+        
+        
+        for prob in probs {
+         
+            let p1 = prob.p1.applying(trans)
+            let f = prob.makeShip(isFirst: true)
+            f.position = p1
+            self.addChild(f)
+            
+            let p2 = prob.p2.applying(trans)
+            let l = prob.makeShip(isFirst: false)
+            l.position = p2
+            self.addChild(l)
+            
+            
+            let p3 = CGPoint(x:maxX,y:p2.y).applying(trans)
+            let a = CGMutablePath()
+            a.move(to: p1)
+            a.addLine(to: p2)
+            a.addLine(to: p3)
+            
+            let axis = SKShapeNode(path: a)
+            axis.lineWidth = 3
+            axis.strokeColor = l.wakeColor
+            axis.zPosition = 5
+            self.addChild(axis)
+            
+        }
+        
+
+        
+    }
+    
     func loadProbMode(){
         guard let tile  = mapTiles.tiles else { return  }
         tile.isHidden = true
 
         
         physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
-        
+        refreshProb()
  
         
     }

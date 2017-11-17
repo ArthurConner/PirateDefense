@@ -14,7 +14,7 @@ import GameKit
 class WelcomeScene : SKScene {
     
     
-    let back = ColorUtils.shared.r(0.64, g:0.8, b:1)
+    let back = ColorUtils.shared.seaColor()
     
 
     var mapTiles = MapHandler()

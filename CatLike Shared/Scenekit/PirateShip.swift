@@ -110,7 +110,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             
             let b = BomberNode(imageNamed: "Bomber" )
             ship = b
-            ship.wakeColor = .red
+            ship.wakeColor = .black
             body = SKPhysicsBody(circleOfRadius: 20)
             body.restitution = 0.5
             ship.waterSpeed = modfier * max(1, Double(shipLevel))
@@ -148,7 +148,7 @@ class PirateNode: SKSpriteNode,  Fireable, Navigatable {
             
         case .battle:
             ship = PirateNode(imageNamed: "Battleship" )
-            ship.wakeColor = .black
+            ship.wakeColor = .gray
             body = SKPhysicsBody(circleOfRadius: 35)
             body.restitution = 0.9
             ship.waterSpeed = modfier * 8

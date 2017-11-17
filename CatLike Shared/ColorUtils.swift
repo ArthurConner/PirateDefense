@@ -56,6 +56,10 @@ class ColorUtils {
         
     }
     
+    func seaColor()->OurColor{
+        return r(0.64, g:0.8, b:1)
+    }
+    
     func alpha(_ c:OurColor, rate:CGFloat) -> OurColor {
         
        
