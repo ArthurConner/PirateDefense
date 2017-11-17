@@ -18,7 +18,7 @@ enum EditorSceneActions:String {
     case finish = "Toggle Home"
     case clear = "Clear"
     case ships = "Ship Sequence"
-    case prob = "Ship Probality"
+    case prob = "Ship Probability"
     case run = "Run"
     case save = "Save"
     case exit = "Exit"
@@ -46,6 +46,9 @@ class EditorScene: SKScene {
     var level = GameLevel()
     var mapTiles = MapHandler()
     var currentName:String?
+    var lastPoint:CGPoint? = nil
+    var currentNode:PirateNode? = nil
+    var currentTrans:CGAffineTransform? = nil
     
     var gameState: EditorSceneActions = .island {
         didSet {
@@ -65,9 +68,9 @@ class EditorScene: SKScene {
     }
     
     func clear(){
-       
+        
         guard let tile  = self.childNode(withName: "//MapTiles") as? SKTileMapNode else { return }
-
+        
         for r in 0..<tile.numberOfRows{
             for c in 0..<tile.numberOfColumns{
                 let p = MapPoint(row:r,col:c)
@@ -94,17 +97,17 @@ class EditorScene: SKScene {
         clear()
         
         level.load(map: mapTiles)
-
+        
     }
     
     override func didMove(to view: SKView) {
         self.setUpScene()
-
+        
     }
     
-
     
-
+    
+    
     
     func loadMapMode() {
         guard let tile  = mapTiles.tiles else { return  }
@@ -123,7 +126,7 @@ class EditorScene: SKScene {
     }
     
     
-
+    
     
     
     func didSave()->String?{
@@ -142,7 +145,7 @@ class EditorScene: SKScene {
                 } else if k == .homeBase {
                     bases.append(p)
                 }
-               
+                
             }
         }
         
@@ -157,7 +160,7 @@ class EditorScene: SKScene {
             
         }
         
-      
+        
         let name = currentName ?? GameLevel.defaultName()
         level.write(name: name)
         
@@ -165,42 +168,69 @@ class EditorScene: SKScene {
         return name
     }
     
-    func handle(point: CGPoint){
+    func handleMapClick(point:CGPoint,want:Landscape,other:Landscape)->Bool{
         
-        guard let towerPoint = mapTiles.map(coordinate: point)
-            else { return }
-        
-        print(towerPoint)
-        
-        guard let tile  = mapTiles.tiles else { return }
+        let lastTile:MapPoint?
         
         
+        guard let towerTile = mapTiles.map(coordinate: point)
+            else { return  false}
         
-        let current = mapTiles.kind(point: towerPoint)
+        
+        
+        
+        
+        
+        let current = mapTiles.kind(point: towerTile)
+        
+        
+        if let p = lastPoint,  let p1 = mapTiles.map(coordinate: p){
+            lastTile = p1
+        } else {
+            lastTile = nil
+        }
+        
+        if let l = lastTile, l == towerTile {
+            return false
+        }
+        
+        
+        
+        if current == want {
+            mapTiles.changeTile(at: towerTile, to: other)
+        } else {
+            mapTiles.changeTile(at: towerTile, to: want)
+        }
+        
+        
+        return true
+    }
+    
+    func beginWith(point: CGPoint){
         
         switch  gameState {
         case .run, .save, .clear, .exit:
-            ErrorHandler.handle(.logic, "should not be clicking here")
+            break
         case .ships:
             handleShipTap(point: point)
         case .prob:
-            handleShipProbality(point: point)
+            beginShipProbability(point: point)
         case .island:
-            mapTiles.addIsland(at: towerPoint)
-
-        case .water:
-            if current == .water {
-                mapTiles.changeTile(at: towerPoint, to: .sand)
-            } else {
-                mapTiles.changeTile(at: towerPoint, to: .water)
+            if let towerTile = mapTiles.map(coordinate: point){
+                mapTiles.addIsland(at: towerTile)
             }
+        case .water:
+            if handleMapClick(point: point, want: .water, other: .sand) {
+                lastPoint = point
+            }
+            
         case .start:
-            if current == .homeBase {
-                mapTiles.changeTile(at: towerPoint, to: .sand)
-            } else {
-                mapTiles.changeTile(at: towerPoint, to: .homeBase)
+            if handleMapClick(point: point, want: .homeBase, other: .sand) {
+                lastPoint = point
             }
         case .finish:
+            
+            guard let tile  = mapTiles.tiles else { return  }
             
             for r in 0..<tile.numberOfRows{
                 for c in 0..<tile.numberOfColumns{
@@ -211,11 +241,42 @@ class EditorScene: SKScene {
                     
                 }
             }
-            
-            mapTiles.changeTile(at: towerPoint, to: .pirateBase)
-            
+            if let towerTile = mapTiles.map(coordinate: point){
+                mapTiles.changeTile(at: towerTile, to: .pirateBase)
+            }
         }
         
+    }
+    
+    
+    func moveWith(point: CGPoint){
+        
+        switch  gameState {
+        case .run, .save, .clear, .exit, .island:
+            break
+        case .ships:
+            break
+        case .prob:
+            moveShipProbability(point: point)
+        case .water, .start,.finish:
+            beginWith(point: point)
+        }
+    }
+    
+    func endWith(point:CGPoint){
+        
+        switch  gameState {
+        case .run, .save, .clear, .exit, .island:
+            break
+        case .ships:
+            break
+        case .prob:
+            endShipProbability(point: point)
+        case .water, .start,.finish:
+            break
+        }
+        
+        lastPoint = nil
     }
     
 }
@@ -231,16 +292,17 @@ class EditorScene: SKScene {
             
             for t in touches {
                 let loc = t.location(in: self)
-                handle(point: loc)
+                beginWith(point: loc)
             }
         }
         
         override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-            handle(touches: touches)
+            //handle(touches: touches)
         }
         
         override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
             // handle(touches: touches)
+            //mo
         }
         
         override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -260,15 +322,15 @@ class EditorScene: SKScene {
     extension EditorScene {
         
         override func mouseDown(with event: NSEvent) {
-            handle(point:  event.location(in: self))
+            beginWith(point:  event.location(in: self))
         }
         
         override func mouseDragged(with event: NSEvent) {
-            handle(point:  event.location(in: self))
+            moveWith(point:  event.location(in: self))
         }
         
         override func mouseUp(with event: NSEvent) {
-            
+            endWith(point:  event.location(in: self))
         }
         
     }
@@ -281,7 +343,7 @@ extension EditorScene {
         
         var row = 0
         var col = 0
-
+        
         physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
         
         
@@ -307,7 +369,7 @@ extension EditorScene {
         
     }
     
-
+    
     
     func handleShipTap(point: CGPoint){
         
@@ -340,43 +402,9 @@ extension EditorScene {
         
         clearProb()
         self.backgroundColor = ColorUtils.shared.seaColor()
-
-        
-        struct ProbRamp{
-            let p1:CGPoint
-            let p2:CGPoint
-            let kind:ShipKind
-            
-            init(prob:ShipProbality, kind k:ShipKind) {
-                p1 = CGPoint(x: 0, y: prob.base)
-               
-                if prob.slope != 0 {
-                    let lastX = (prob.final - prob.base)/prob.slope
-                    p2 = CGPoint(x:lastX,y:prob.final)
-                } else {
-                    p2 = p1
-                }
-                
-                kind = k
-                
-            }
-            
-            func makeShip(isFirst:Bool)->PirateNode{
-                let p = isFirst ? p1 : p2
-                
-                let s1 = PirateNode.makeShip(kind: kind, modfier: Double(p.x), route: Voyage.offGrid(), level: 0)
-                s1.position = p
-                s1.zPosition = 10
-                if let x = s1.childNode(withName: "seasound"){
-                    x.removeFromParent()
-                }
-                return s1
-            }
-            
-        }
         
         var probs:[ProbRamp] = []
-
+        
         for (k,prob) in level.probalities {
             probs.append(ProbRamp(prob: prob, kind: k))
         }
@@ -391,6 +419,8 @@ extension EditorScene {
         let trans = CGAffineTransform(translationX: -maxX/2, y: 0).concatenating(CGAffineTransform(scaleX: 2, y: 1))
         
         
+        currentTrans = trans
+        
         let axisLine = CGMutablePath()
         axisLine.move(to: CGPoint(x:0,y:maxY).applying(trans))
         axisLine.addLine(to: CGPoint(x:0,y:minY).applying(trans))
@@ -403,10 +433,8 @@ extension EditorScene {
         axis.zPosition = 6
         self.addChild(axis)
         
-        
-        
         for prob in probs {
-         
+            
             let p1 = prob.p1.applying(trans)
             let f = prob.makeShip(isFirst: true)
             f.position = p1
@@ -432,30 +460,130 @@ extension EditorScene {
             
         }
         
-
+        
         
     }
     
     func loadProbMode(){
         guard let tile  = mapTiles.tiles else { return  }
         tile.isHidden = true
-
+        
         
         physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
         refreshProb()
- 
+        
         
     }
     
-    func handleShipProbality(point: CGPoint){
+    func beginShipProbability(point: CGPoint){
         
         if let p:PirateNode = self.nodes(at: point).filter({if let _ = $0 as? PirateNode{
             return true
             }
             return false}).first as? PirateNode {
             
+            currentNode = p
             print("touched p \(p.kind)")
         }
     }
+    
+    func moveShipProbability(point: CGPoint){
+        guard let ship = currentNode else { return }
+        ship.position = point
+    }
+    
+    func endShipProbability(point: CGPoint){
+        guard let ship = currentNode else { return }
+        print(ship.name ?? "foo")
+        currentNode = nil
+        
+        if  let p = level.probalities[ship.kind], let trans = currentTrans{
+            
+            let prob = ProbRamp(prob: p, kind: ship.kind)
+            let final:ShipProbability
+            
+            if ship.name ==  "start\(ship.kind)"   {
+                final = prob.adjust(first: ship.position, trans: trans.inverted())
+            } else {
+                final = prob.adjust(last: ship.position, trans: trans.inverted())
+            }
+            level.probalities[ship.kind] = final
+            refreshProb()
+            
+        }
+        
+        
+    }
+    
+}
 
+
+
+struct ProbRamp{
+    let p1:CGPoint
+    let p2:CGPoint
+    let kind:ShipKind
+    
+    init(prob:ShipProbability, kind k:ShipKind) {
+        p1 = CGPoint(x: 0, y: prob.base)
+        
+        if prob.slope != 0 {
+            let lastX = (prob.final - prob.base)/prob.slope
+            p2 = CGPoint(x:lastX,y:prob.final)
+        } else {
+            p2 = p1
+        }
+        
+        kind = k
+        
+    }
+    
+    func makeShip(isFirst:Bool)->PirateNode{
+        let p = isFirst ? p1 : p2
+        
+        let s1 = PirateNode.makeShip(kind: kind, modfier: Double(p.x), route: Voyage.offGrid(), level: 0)
+        s1.position = p
+        s1.zPosition = 10
+        
+        s1.name = isFirst ? "start\(kind)" : "final\(kind)"
+        
+        if let x = s1.childNode(withName: "seasound"){
+            x.removeFromParent()
+        }
+        return s1
+    }
+    
+    func adjust(first:CGPoint, trans:CGAffineTransform) -> ShipProbability {
+        
+        let base = first.applying(trans).y
+        let final = p2.y
+        let slope:CGFloat
+        
+        if p2.x != 0 {
+            slope = (p2.y - base)/p2.x
+        } else {
+            slope = 0
+        }
+        
+        return  ShipProbability(base: Double(base), slope: Double(slope), final: Double(final))
+        
+    }
+    
+    func adjust(last:CGPoint, trans:CGAffineTransform) -> ShipProbability {
+        
+        let p3 = last.applying(trans)
+        let base = p1.y
+        let final = p3.y
+        let slope:CGFloat
+        
+        if p3.x != 0 {
+            slope = (p3.y - base)/p3.x
+        } else {
+            slope = 0
+        }
+        
+        return  ShipProbability(base: Double(base), slope: Double(slope), final: Double(final))
+        
+    }
+    
 }

@@ -1202,7 +1202,7 @@ extension GameScene: TowerPlayerActionDelegate {
             
             for t in touches {
                 let loc = t.location(in: self)
-                handle(point: loc)
+                beginWith(point: loc)
             }
         }
         

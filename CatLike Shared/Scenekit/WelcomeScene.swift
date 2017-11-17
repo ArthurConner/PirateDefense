@@ -15,8 +15,6 @@ class WelcomeScene : SKScene {
     
     
     let back = ColorUtils.shared.seaColor()
-    
-
     var mapTiles = MapHandler()
     fileprivate var hud = HUD()
     
@@ -114,7 +112,7 @@ class WelcomeScene : SKScene {
             
             for t in touches {
                 let loc = t.location(in: self)
-                handle(point: loc)
+                beginWith(point: loc)
             }
         }
         

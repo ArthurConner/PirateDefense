@@ -20,7 +20,6 @@ class GameLevel : Codable {
     var decay = 0.99
     
     var launches:[ShipLaunch] = []
-    
     var showsPaths:Bool? = false
     
     var hasAI = false
@@ -37,13 +36,13 @@ class GameLevel : Codable {
     var intro:String? = nil
     
     
-    var probalities:[ShipKind:ShipProbality] = [
-        .battle:ShipProbality(base: -300, slope: 1.5, final: 80),
-        .galley:ShipProbality(base: 1, slope: 2, final: 500),
-        .motor:ShipProbality(base: 10, slope: 0.75, final: 20),
-        .destroyer:ShipProbality(base: -220, slope: 0.8, final: 150),
-        .crusier:ShipProbality(base: 0, slope: 0.8, final: 30),
-        .bomber:ShipProbality(base: -70, slope: 0.8, final: 80),
+    var probalities:[ShipKind:ShipProbability] = [
+        .battle:ShipProbability(base: -300, slope: 1.5, final: 80),
+        .galley:ShipProbability(base: 1, slope: 2, final: 500),
+        .motor:ShipProbability(base: 10, slope: 0.75, final: 20),
+        .destroyer:ShipProbability(base: -220, slope: 0.8, final: 150),
+        .crusier:ShipProbability(base: 0, slope: 0.8, final: 30),
+        .bomber:ShipProbability(base: -70, slope: 0.8, final: 80),
         ]
     
     enum CodingKeys: String, CodingKey
@@ -72,7 +71,7 @@ class GameLevel : Codable {
         startTime = Date()
     }
     
-
+    
     func load( map:MapHandler){
         
         clear()
@@ -87,7 +86,7 @@ class GameLevel : Codable {
         info.adjust(map: map)
     }
     
-
+    
     static func defaultName()->String{
         let d = DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .medium)
         
@@ -261,7 +260,7 @@ extension GameLevel {
 }
 
 
- struct ShipLaunch : Codable {
+struct ShipLaunch : Codable {
     let interval:TimeInterval
     let kind:ShipKind
     let modfier:Double
@@ -389,7 +388,7 @@ fileprivate struct MapHolder : Codable {
     
 }
 
-struct ShipProbality : Codable {
+struct ShipProbability : Codable {
     let base:Double
     let slope:Double
     let final:Double
