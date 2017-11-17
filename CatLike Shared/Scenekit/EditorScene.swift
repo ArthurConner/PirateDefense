@@ -17,7 +17,8 @@ enum EditorSceneActions:String {
     case start = "Toggle Target"
     case finish = "Toggle Home"
     case clear = "Clear"
-    case ships = "Ships"
+    case ships = "Ship Sequence"
+    case prob = "Ship Probality"
     case run = "Run"
     case save = "Save"
     
@@ -45,6 +46,22 @@ class EditorScene: SKScene {
     var mapTiles = MapHandler()
     var currentName:String?
     
+    var gameState: EditorSceneActions = .island {
+        didSet {
+            loadMapMode()
+            if gameState == .ships {
+                loadSequenceMode()
+            } else if gameState == .prob {
+                loadProbMode()
+            } 
+            
+            if gameState == .clear {
+                clear()
+                gameState = .island
+            }
+            print("changingState")
+        }
+    }
     
     func clear(){
        
@@ -84,41 +101,12 @@ class EditorScene: SKScene {
 
     }
     
-    func loadShips(){
-         guard let tile  = mapTiles.tiles else { return  }
-        tile.isHidden = true
-        
-        var row = 0
-        var col = 0
-        //tile.numberOfRows
- 
-            physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
 
-        
-        for x in level.launches {
-            
-            let p = MapPoint(row: row, col: col)
-            if let d = mapTiles.convert(mappoint: p) {
-                let ship = PirateNode.makeShip(kind: x.kind, modfier: x.modfier, route: Voyage(start: p, finish: p), level:  x.level)
-                ship.position = d
-                ship.position = CGPoint(x:30 * row,y:70 * col)
-                if let x = ship.childNode(withName: "seasound"){
-                    x.removeFromParent()
-                }
-                self.addChild(ship)
-            }
-            
-            col += 1
-            if col > tile.numberOfColumns {
-                col = 0
-                row += 1
-            }
-        }
-        
-    }
     
-    func unloadShips() {
-         guard let tile  = mapTiles.tiles else { return  }
+
+    
+    func loadMapMode() {
+        guard let tile  = mapTiles.tiles else { return  }
         
         tile.isHidden = false
         
@@ -133,34 +121,8 @@ class EditorScene: SKScene {
         
     }
     
-    func handleShipTap(point: CGPoint){
-        
-        if let p:PirateNode = self.nodes(at: point).filter({if let _ = $0 as? PirateNode{
-            return true
-            }
-            return false}).first as? PirateNode {
-            
-            print("touched p \(p.kind)") 
-        }
-    }
     
-    var gameState: EditorSceneActions = .island {
-        didSet {
-            
-            if gameState == .ships {
-                loadShips()
-            } else {
-                unloadShips()
-            }
-            
-            if gameState == .clear {
-                clear()
-                gameState = .island
-            }
-            print("changingState")
-        }
-    }
-    
+
     
     
     func didSave()->String?{
@@ -220,10 +182,11 @@ class EditorScene: SKScene {
             ErrorHandler.handle(.logic, "should not be clicking here")
         case .ships:
             handleShipTap(point: point)
+        case .prob:
+            handleShipProbality(point: point)
         case .island:
             mapTiles.addIsland(at: towerPoint)
-            
-        
+
         case .water:
             if current == .water {
                 mapTiles.changeTile(at: towerPoint, to: .sand)
@@ -309,3 +272,76 @@ class EditorScene: SKScene {
         
     }
 #endif
+
+extension EditorScene {
+    func loadSequenceMode(){
+        guard let tile  = mapTiles.tiles else { return  }
+        tile.isHidden = true
+        
+        var row = 0
+        var col = 0
+
+        physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
+        
+        
+        for x in level.launches {
+            
+            let p = MapPoint(row: row, col: col)
+            if let d = mapTiles.convert(mappoint: p) {
+                let ship = PirateNode.makeShip(kind: x.kind, modfier: x.modfier, route: Voyage(start: p, finish: p), level:  x.level)
+                ship.position = d
+                ship.position = CGPoint(x:30 * row,y:70 * col)
+                if let x = ship.childNode(withName: "seasound"){
+                    x.removeFromParent()
+                }
+                self.addChild(ship)
+            }
+            
+            col += 1
+            if col > tile.numberOfColumns {
+                col = 0
+                row += 1
+            }
+        }
+        
+    }
+    
+
+    
+    func handleShipTap(point: CGPoint){
+        
+        if let p:PirateNode = self.nodes(at: point).filter({if let _ = $0 as? PirateNode{
+            return true
+            }
+            return false}).first as? PirateNode {
+            
+            print("touched p \(p.kind)")
+        }
+    }
+}
+
+extension EditorScene {
+    
+    func loadProbMode(){
+        guard let tile  = mapTiles.tiles else { return  }
+        tile.isHidden = true
+
+        
+        physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
+        
+ 
+        
+    }
+    
+    func handleShipProbality(point: CGPoint){
+        
+        if let p:PirateNode = self.nodes(at: point).filter({if let _ = $0 as? PirateNode{
+            return true
+            }
+            return false}).first as? PirateNode {
+            
+            print("touched p \(p.kind)")
+        }
+    }
+
+}
