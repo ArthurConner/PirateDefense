@@ -115,14 +115,7 @@ class EditorScene: SKScene {
         
         tile.isHidden = false
         
-        let nodes = self.children
-        
-        for n in nodes {
-            
-            if let x = n as? PirateNode {
-                x.removeFromParent()
-            }
-        }
+        clearProb()
         
     }
     
@@ -176,12 +169,7 @@ class EditorScene: SKScene {
         
         guard let towerTile = mapTiles.map(coordinate: point)
             else { return  false}
-        
-        
-        
-        
-        
-        
+
         let current = mapTiles.kind(point: towerTile)
         
         
@@ -194,8 +182,6 @@ class EditorScene: SKScene {
         if let l = lastTile, l == towerTile {
             return false
         }
-        
-        
         
         if current == want {
             mapTiles.changeTile(at: towerTile, to: other)
@@ -342,29 +328,32 @@ extension EditorScene {
         guard let tile  = mapTiles.tiles else { return  }
         tile.isHidden = true
         
-        var row = 0
-        var col = 0
+        let width:CGFloat = 550
+        var y:CGFloat = 400
+        var x:CGFloat = -width
         
         physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
         
         
-        for x in level.launches {
+        for launch in level.launches {
             
-            let p = MapPoint(row: row, col: col)
-            if let d = mapTiles.convert(mappoint: p) {
-                let ship = PirateNode.makeShip(kind: x.kind, modfier: x.modfier, route: Voyage(start: p, finish: p), level:  x.level)
-                ship.position = d
-                ship.position = CGPoint(x:30 * row,y:70 * col)
+       
+          
+                let ship = PirateNode.makeShip(kind: launch.kind, modfier: launch.modfier, route: Voyage.offGrid(), level:  launch.level)
+
+                ship.position = CGPoint(x:x,y:y)
                 if let x = ship.childNode(withName: "seasound"){
                     x.removeFromParent()
                 }
+                ship.physicsBody = nil
+            //ship.removeAllActions()
                 self.addChild(ship)
-            }
             
-            col += 1
-            if col > tile.numberOfColumns {
-                col = 0
-                row += 1
+            
+            x += 15 * CGFloat(launch.modfier * 8 / level.defaultFloor)
+            if x > width{
+                x = -width
+                y -= 70
             }
         }
         
@@ -482,6 +471,8 @@ extension EditorScene {
         var upperPoint:[ShipKind:[CGPoint]] = [:]
         var lowerPoint:[ShipKind:[CGPoint]] = [:]
         
+        
+        
         for i in 0..<50 {
             let t = Double(i * 10)
             
@@ -552,6 +543,12 @@ extension EditorScene {
             
         }
         
+        let button = SKShapeNode(circleOfRadius: 50)
+        button.name = "Generate"
+        button.fillColor = .yellow
+        button.position = CGPoint(x: -10, y: 0).applying(trans)
+        self.addChild(button)
+        
         
         
         
@@ -579,6 +576,13 @@ extension EditorScene {
     
     func beginShipProbability(point: CGPoint){
         
+        let list = self.nodes(at: point).filter{  return $0.name == "Generate" }
+        if let _ = list.first {
+            generateLaunches()
+            self.gameState = .ships
+            return
+        }
+        
         if let p:PirateNode = self.nodes(at: point).filter({if let _ = $0 as? PirateNode{
             return true
             }
@@ -604,6 +608,13 @@ extension EditorScene {
         print(ship.name ?? "foo")
         currentNode = nil
         
+        let list = self.nodes(at: point).filter{  return $0.name == "Generate" }
+        if let _ = list.first {
+            generateLaunches()
+            self.gameState = .ships
+            return
+        }
+        
         if  let p = level.probalities[ship.kind], let trans = currentTrans{
             
             let prob = ProbRamp(prob: p, kind: ship.kind)
@@ -620,6 +631,24 @@ extension EditorScene {
         }
         
         
+    }
+    
+    func generateLaunches(){
+        level.launches.removeAll()
+        
+        var t:Double = 0
+        var mod:Double = 5
+        
+        while t < 600 {
+            let shipK = level.randomShipKind(at: t)
+            let boat =  PirateNode.makeShip(kind:shipK, modfier:mod/8, route:Voyage.offGrid(), level:0)
+            let prob = ShipLaunch(ship: boat, time: mod, index: 0)
+            level.launches.append(prob)
+            
+            mod = max(mod * level.decay, level.defaultFloor)
+            t += mod
+            
+        }
     }
     
 }
@@ -653,7 +682,7 @@ struct ProbRamp{
         s1.zPosition = 10
         
         s1.name = isFirst ? "start\(kind)" : "final\(kind)"
-        
+        s1.physicsBody = nil
         if let x = s1.childNode(withName: "seasound"){
             x.removeFromParent()
         }

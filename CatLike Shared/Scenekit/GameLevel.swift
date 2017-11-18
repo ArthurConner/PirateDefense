@@ -75,7 +75,7 @@ class GameLevel : Codable {
     func load( map:MapHandler){
         
         clear()
-        clearShips()
+       // clearShips()
         
         self.info = MapHolder(map: map)
         self.journies = map.voyages

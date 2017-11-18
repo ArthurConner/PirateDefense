@@ -41,7 +41,7 @@ class ActionTableController: NSViewController  {
     
     let boats:[ShipKind] = [.crusier,.galley,.motor,.destroyer,.battle]
     let kinds:[String] = ["Play New Level","Edit New level"]
-    let edititems:[EditorSceneActions] = [.clear, .island , .water , .start, .finish, .ships, .prob, .run , .save, .exit]
+    let edititems:[EditorSceneActions] = [.clear, .island , .water , .start, .finish,  .prob, .run , .save, .exit]
     
     var existing:[String] = []
     
