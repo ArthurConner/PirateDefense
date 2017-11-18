@@ -219,6 +219,8 @@ extension GameLevel {
         
     }
     
+
+    
     func randomShipKind( at:TimeInterval)->ShipKind{
         
         var kinds:[ShipKind] = []

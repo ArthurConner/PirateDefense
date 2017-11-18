@@ -49,6 +49,7 @@ class EditorScene: SKScene {
     var lastPoint:CGPoint? = nil
     var currentNode:PirateNode? = nil
     var currentTrans:CGAffineTransform? = nil
+    var isCumaltive = false
     
     var gameState: EditorSceneActions = .island {
         didSet {
@@ -398,7 +399,7 @@ extension EditorScene {
         }
     }
     
-    func refreshProb(){
+    func refreshLineProb(){
         
         clearProb()
         self.backgroundColor = ColorUtils.shared.seaColor()
@@ -464,6 +465,107 @@ extension EditorScene {
         
     }
     
+    
+    
+    func refreshCumlative(){
+        
+        clearProb()
+        self.backgroundColor = ColorUtils.shared.seaColor()
+        
+        let xMax:CGFloat = 500.0
+        
+        let trans = CGAffineTransform(translationX: -xMax/2, y: -0.5).concatenating(CGAffineTransform(scaleX: 2, y: 500))
+        
+        currentTrans = trans
+        
+        let keys = level.probalities.keys.sorted(by:{$0.rawValue < $1.rawValue})
+        var upperPoint:[ShipKind:[CGPoint]] = [:]
+        var lowerPoint:[ShipKind:[CGPoint]] = [:]
+        
+        for i in 0..<50 {
+            let t = Double(i * 10)
+            
+            var upperTotal:CGFloat = 0
+            
+            
+            var upperMax:CGFloat = 0
+            
+            for k in keys {
+                let prob = level.probalities[k]
+                upperMax += CGFloat(max(prob?.percentage(at: t) ?? 0 ,0))
+            }
+            
+            if upperMax > 0 {
+            
+            for k in keys {
+                let prob = level.probalities[k]
+                let add = CGFloat(max(prob?.percentage(at: t) ?? 0 ,0))/upperMax
+                var list = lowerPoint[k] ?? []
+                list.append(CGPoint(x:CGFloat(t),y:upperTotal))
+                lowerPoint[k] = list
+                
+                upperTotal =  upperTotal + CGFloat(add)
+                
+                var ulist = upperPoint[k] ?? []
+                ulist.append(CGPoint(x:CGFloat(t),y:upperTotal))
+                upperPoint[k] = ulist
+                
+                
+                
+            }
+            
+            }
+            
+            
+            
+        }
+        
+        
+        for k in keys {
+            
+            
+            
+            if let l = lowerPoint[k], let u = upperPoint[k], let f = l.first{
+                let body = CGMutablePath()
+                body.move(to: f.applying(trans))
+                var b:[CGPoint] = l
+                b.append(contentsOf:u.reversed())
+                
+                for i in 1..<b.count{
+                    let p = b[i].applying(trans)
+                    body.addLine(to: p)
+                    
+                }
+                
+                body.closeSubpath()
+                
+                
+                let s1 = PirateNode.makeShip(kind: k, modfier:0, route: Voyage.offGrid(), level: 0)
+                
+                let region = SKShapeNode(path: body)
+                region.fillColor = s1.wakeColor
+                region.strokeColor = s1.wakeColor
+                self.addChild(region)
+            }
+            
+            
+            
+        }
+        
+        
+        
+        
+        
+    }
+    
+    func refreshProb() {
+        if isCumaltive {
+            refreshCumlative()
+        } else {
+            refreshLineProb()
+        }
+    }
+    
     func loadProbMode(){
         guard let tile  = mapTiles.tiles else { return  }
         tile.isHidden = true
@@ -493,7 +595,12 @@ extension EditorScene {
     }
     
     func endShipProbability(point: CGPoint){
-        guard let ship = currentNode else { return }
+        guard let ship = currentNode else {
+            isCumaltive = !isCumaltive
+            refreshProb()
+            return
+            
+        }
         print(ship.name ?? "foo")
         currentNode = nil
         
