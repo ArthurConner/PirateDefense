@@ -169,7 +169,7 @@ class EditorScene: SKScene {
         
         guard let towerTile = mapTiles.map(coordinate: point)
             else { return  false}
-
+        
         let current = mapTiles.kind(point: towerTile)
         
         
@@ -285,23 +285,39 @@ class EditorScene: SKScene {
         
         override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
             //handle(touches: touches)
+            for t in touches {
+                let loc = t.location(in: self)
+                beginWith(point: loc)
+            }
+            
         }
         
         override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
             // handle(touches: touches)
             //mo
+            for t in touches {
+                let loc = t.location(in: self)
+                moveWith(point: loc)
+            }
+            
         }
         
         override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+            for t in touches {
+                let loc = t.location(in: self)
+                endWith(point: loc)
+            }
             
         }
         
-        override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-            
-        }
+    
+    
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         
-        
+}
+
     }
+
 #endif
 
 #if os(OSX)
@@ -337,17 +353,17 @@ extension EditorScene {
         
         for launch in level.launches {
             
-       
-          
-                let ship = PirateNode.makeShip(kind: launch.kind, modfier: launch.modfier, route: Voyage.offGrid(), level:  launch.level)
-
-                ship.position = CGPoint(x:x,y:y)
-                if let x = ship.childNode(withName: "seasound"){
-                    x.removeFromParent()
-                }
-                ship.physicsBody = nil
+            
+            
+            let ship = PirateNode.makeShip(kind: launch.kind, modfier: launch.modfier, route: Voyage.offGrid(), level:  launch.level)
+            
+            ship.position = CGPoint(x:x,y:y)
+            if let x = ship.childNode(withName: "seasound"){
+                x.removeFromParent()
+            }
+            ship.physicsBody = nil
             //ship.removeAllActions()
-                self.addChild(ship)
+            self.addChild(ship)
             
             
             x += 15 * CGFloat(launch.modfier * 8 / level.defaultFloor)
@@ -487,24 +503,24 @@ extension EditorScene {
             }
             
             if upperMax > 0 {
-            
-            for k in keys {
-                let prob = level.probalities[k]
-                let add = CGFloat(max(prob?.percentage(at: t) ?? 0 ,0))/upperMax
-                var list = lowerPoint[k] ?? []
-                list.append(CGPoint(x:CGFloat(t),y:upperTotal))
-                lowerPoint[k] = list
                 
-                upperTotal =  upperTotal + CGFloat(add)
+                for k in keys {
+                    let prob = level.probalities[k]
+                    let add = CGFloat(max(prob?.percentage(at: t) ?? 0 ,0))/upperMax
+                    var list = lowerPoint[k] ?? []
+                    list.append(CGPoint(x:CGFloat(t),y:upperTotal))
+                    lowerPoint[k] = list
+                    
+                    upperTotal =  upperTotal + CGFloat(add)
+                    
+                    var ulist = upperPoint[k] ?? []
+                    ulist.append(CGPoint(x:CGFloat(t),y:upperTotal))
+                    upperPoint[k] = ulist
+                    
+                    
+                    
+                }
                 
-                var ulist = upperPoint[k] ?? []
-                ulist.append(CGPoint(x:CGFloat(t),y:upperTotal))
-                upperPoint[k] = ulist
-                
-                
-                
-            }
-            
             }
             
             
@@ -683,6 +699,9 @@ struct ProbRamp{
         
         s1.name = isFirst ? "start\(kind)" : "final\(kind)"
         s1.physicsBody = nil
+        
+        
+        s1.run(SKAction.scale(by: 90, duration: 0.25))
         if let x = s1.childNode(withName: "seasound"){
             x.removeFromParent()
         }

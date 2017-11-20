@@ -82,6 +82,8 @@ extension GameViewController:GameTypeModeDelegate {
         case .unknown:
             nextGame = WelcomeScene.newGameScene()
             
+        case .editor:
+            nextGame = EditorScene.newGameScene()
         }
         
         

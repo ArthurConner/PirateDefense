@@ -24,11 +24,16 @@ class ActionTableViewController: UITableViewController {
     
     
     let boats:[ShipKind] = [.crusier,.galley,.motor,.destroyer,.battle]
-    let kinds:[String] = ["Play Ship", "Play Tower"]
-    let towerAct:[TowerPlayerActions] = [.launchPaver, .KillAllTowers ]
+    let kinds:[String] = ["Play Game", "Edit Blank"]
+    let towerAct:[TowerPlayerActions] = [.launchPaver, .KillAllTowers, .save, .exit ]
+    let edititems:[EditorSceneActions] = [.clear, .island , .water , .start, .finish,  .prob, .run , .save, .exit]
+    var existing:[String] = []
+    
+    var isEditor = true
     
     var gameState: GameTypeModes = .unknown {
         didSet {
+            reloadList()
             self.tableView.reloadData()
             switch gameState {
             case .tower:
@@ -37,13 +42,38 @@ class ActionTableViewController: UITableViewController {
                 self.title = "Ships"
             case .unknown:
                 self.title = "Get Started"
+            case .editor:
+                self.title = "Editor"
             }
-        }
+            if let gc = pushGC {
+                gc.didSet(game: self.gameState)
+                
+            } else  if let split = splitViewController {
+                
+                if let gc = gameController(){
+                    gc.didSet(game: self.gameState)
+                }
+                
+                split.toggleMasterView()
+            }        }
     }
     
-     weak var pushGC:GameViewController?
+    weak var pushGC:GameViewController?
     
+    func reloadList(){
+        
+        existing.removeAll()
+        
+        do {
+            let levels = try FileManager.default.contentsOfDirectory(atPath: GameLevel.rootDir()).filter({$0.hasSuffix("txt")})
+            existing.append(contentsOf: levels)
+        } catch {
+            print("no levels found")
+        }
+        
+    }
     override func viewDidLoad() {
+        reloadList()
         super.viewDidLoad()
         
         
@@ -67,7 +97,7 @@ class ActionTableViewController: UITableViewController {
                 let detailViewController = nav.topViewController as?  GameViewController {
                 return detailViewController
             }
-           // split.toggleMasterView()
+            // split.toggleMasterView()
         }
         
         return nil
@@ -84,15 +114,7 @@ class ActionTableViewController: UITableViewController {
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         
-        switch gameState {
-        case .tower:
-            return 1
-        case .ship:
-            return 1
-        case .unknown:
-            return 1
-            
-        }
+        return 1
         
     }
     
@@ -106,8 +128,9 @@ class ActionTableViewController: UITableViewController {
         case .ship:
             return boats.count
         case .unknown:
-            return kinds.count
-            
+            return kinds.count + existing.count
+        case .editor:
+            return edititems.count
         }
     }
     
@@ -153,9 +176,17 @@ class ActionTableViewController: UITableViewController {
         case .ship:
             let kind = boats[indexPath.row]
             configure(cell: cell, toBoat: kind)
+        case .editor:
+            let ed = edititems[indexPath.row]
+            cell.imageView?.image = nil
+            cell.textLabel?.text = ed.rawValue
         case .unknown:
             cell.imageView?.image = nil
-            cell.textLabel?.text = kinds[indexPath.row]
+            if indexPath.row < kinds.count {
+                cell.textLabel?.text = kinds[indexPath.row]
+            } else {
+                cell.textLabel?.text = existing[indexPath.row - kinds.count]
+            }
             
         }
         
@@ -163,13 +194,72 @@ class ActionTableViewController: UITableViewController {
         return cell
     }
     
+    func runLevel(name:String){
+        self.gameState = .tower
+        
+        if  let gc = self.gameController()?.myScene as? GameScene  {
+            gc.level.nextLevelName = name
+            gc.restart()
+            //  gc.load(levelName:  name)
+        }
+        
+    }
+    func handleUnknownSelect(row:Int){
+        
+        if row == 0{
+            self.gameState = .tower
+        } else if row == 1 {
+            self.gameState = .editor
+        } else {
+            
+            if isEditor {
+                self.gameState = .editor
+                if let gc = self.gameController(), let e = gc.myScene as? EditorScene {
+                    e.load(levelName:  existing[row-2])
+                }
+            } else {
+                runLevel(name: existing[row-2])
+            }
+            
+        }
+        
+    }
+    func handleEditorSelect(row:Int){
+        print("picked something")
+        if let gc = self.gameController(), let e = gc.myScene as? EditorScene {
+            
+            let act = edititems[row]
+            
+            switch act{
+                
+            case .island, .water, .start, .finish, .clear, .ships, .prob:
+                e.gameState = act
+            case .run:
+                if let name = e.didSave() {
+                    runLevel(name: name)
+                    
+                }
+            case .save:
+                if let _ = e.didSave() {
+                    self.gameState = .unknown
+                }
+            case .exit:
+                self.gameState = .unknown
+            }
+            
+            
+        }    }
+    
+    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         switch gameState {
         case .tower:
             //ErrorHandler.handle(.logic, "There aren't any cells for towers")
             let kind = towerAct[indexPath.row]
-            if let gc = self.gameController() {
+            if kind == .exit {
+                self.gameState = .unknown
+            }  else if let gc = self.gameController() {
                 gc.didTower(action:kind)
             }
         case .ship:
@@ -177,31 +267,19 @@ class ActionTableViewController: UITableViewController {
             let prox = ShipProxy(kind: kind, shipID: "", position: CGPoint.zero, angle: 0)
             let message = ShipLaunchMessage(ship: prox)
             PirateServiceManager.shared.send(message, kind: .launchShip)
-        case .unknown:
-            if indexPath.row == 0 {
-                
-                self.gameState = .ship
-            } else {
-                self.gameState = .tower
-            }
             
-            if let gc = pushGC {
-                gc.didSet(game: self.gameState)
-     
-            } else  if let split = splitViewController {
-                
-                if let gc = gameController(){
-                    gc.didSet(game: self.gameState)
-                }
-              
-                split.toggleMasterView()
-            }
+        case .unknown:
+            handleUnknownSelect(row: indexPath.row)
+            
+            
+        case .editor:
+            handleEditorSelect(row: indexPath.row)
             
         }
         
         
         if let _ = pushGC {
-        
+            
             if let n = self.navigationController {
                 n.popViewController(animated: true)
             }
@@ -212,7 +290,7 @@ class ActionTableViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetail" {
             if let   controller = (segue.destination as! UINavigationController).topViewController as? GameViewController{
-
+                
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }

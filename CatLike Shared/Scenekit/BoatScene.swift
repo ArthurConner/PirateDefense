@@ -293,7 +293,7 @@ class BoatScene : SKScene {
             
             for t in touches {
                 let loc = t.location(in: self)
-                beginWith(point: loc)
+             //   beginWith(point: loc)
             }
         }
         
