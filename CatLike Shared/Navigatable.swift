@@ -24,7 +24,7 @@ protocol Navigatable {
 
 
 class ShipPath: SKShapeNode {
-    
+    var route:[MapPoint] = []
 }
 extension Navigatable {
     
@@ -33,7 +33,7 @@ extension Navigatable {
         return  SKAction.repeatForever(SKAction.sequence([SKAction.run(wake),SKAction.wait(forDuration: self.waterSpeed/3)]))
     }
     
-    func sailAction(usingTiles tiles:MapHandler, orient:Bool=true, existing:Set<MapPoint>)->(SKAction?,ShipPath?) {
+    func sailAction(usingTiles tiles:MapHandler, orient:Bool=true, existing:[Set<MapPoint>])->(SKAction?,ShipPath?) {
         
         let dest = self.route.finish
         
@@ -71,7 +71,7 @@ extension Navigatable {
             let time =  self.waterSpeed * Double(route.count)
             
                 let line = ShipPath(path: path)
-            
+                line.route = route
                 
                 if let s = self as? PirateNode {
                     

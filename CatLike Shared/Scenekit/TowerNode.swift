@@ -608,7 +608,7 @@ class TeraTower: TowerNode, Navigatable {
                 if let m = getDestPoint(scene:scene),
                     pos != m {
                     self.route = Voyage(start: pos, finish: m)
-                    scene.adjust(traveler: self,existing: scene.towerTiles())
+                    scene.adjust(traveler: self,existing: [])
                 }
                 
                 

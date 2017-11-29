@@ -85,13 +85,22 @@ struct MapPoint:Codable{
     }
     
     
-    fileprivate func _minpath(to dest:MapPoint,map:MapHandler, using:Set<Landscape>, existing:Set<MapPoint>, count:Int)->[MapPoint]{
+    fileprivate func _minpath(to dest:MapPoint,map:MapHandler, using:Set<Landscape>, existing eAtLevel:[Set<MapPoint>], count:Int)->[MapPoint]{
         
         var visited:[MapPoint:MapPoint] = [self:self]
         var nextLevel = [self]
         var counter = 0
         
+        var pathNo = 0
         while !nextLevel.isEmpty{
+            let existing:Set<MapPoint>
+            if pathNo < eAtLevel.count {
+                existing =  eAtLevel[pathNo]
+            pathNo += 1
+            } else {
+                existing = []
+            }
+            
             var addMe:Set<MapPoint> = []
             for x in nextLevel {
                 for ad in x.adj(max: map.mapAdj){
@@ -145,7 +154,7 @@ struct MapPoint:Codable{
  }
  }
  */
-    func minpath(to dest:MapPoint,map:MapHandler, using:Set<Landscape>, existing:Set<MapPoint>)->[MapPoint]{
+    func minpath(to dest:MapPoint,map:MapHandler, using:Set<Landscape>, existing:[Set<MapPoint>])->[MapPoint]{
         
         var nextMin = 0
         while nextMin < existing.count{

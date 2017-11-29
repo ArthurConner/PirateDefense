@@ -51,6 +51,8 @@ class EditorScene: SKScene {
     var currentTrans:CGAffineTransform? = nil
     var isCumaltive = false
     
+    var isToggleOn = false
+    
     var gameState: EditorSceneActions = .island {
         didSet {
             loadMapMode()
@@ -162,6 +164,19 @@ class EditorScene: SKScene {
         return name
     }
     
+    
+    func startMapClick(point:CGPoint,want:Landscape,other:Landscape)->Bool{
+        
+        
+        guard let towerTile = mapTiles.map(coordinate: point)
+            else { return  false}
+        
+        let current = mapTiles.kind(point: towerTile)
+        isToggleOn = (current == want )
+        
+        return handleMapClick(point:point, want:want, other:other)
+        
+    }
     func handleMapClick(point:CGPoint,want:Landscape,other:Landscape)->Bool{
         
         let lastTile:MapPoint?
@@ -170,7 +185,6 @@ class EditorScene: SKScene {
         guard let towerTile = mapTiles.map(coordinate: point)
             else { return  false}
         
-        let current = mapTiles.kind(point: towerTile)
         
         
         if let p = lastPoint,  let p1 = mapTiles.map(coordinate: p){
@@ -183,7 +197,7 @@ class EditorScene: SKScene {
             return false
         }
         
-        if current == want {
+        if isToggleOn {
             mapTiles.changeTile(at: towerTile, to: other)
         } else {
             mapTiles.changeTile(at: towerTile, to: want)
@@ -207,12 +221,12 @@ class EditorScene: SKScene {
                 mapTiles.addIsland(at: towerTile)
             }
         case .water:
-            if handleMapClick(point: point, want: .water, other: .sand) {
+            if startMapClick(point: point, want: .water, other: .sand) {
                 lastPoint = point
             }
             
         case .start:
-            if handleMapClick(point: point, want: .homeBase, other: .sand) {
+            if startMapClick(point: point, want: .homeBase, other: .sand) {
                 lastPoint = point
             }
         case .finish:
@@ -245,7 +259,17 @@ class EditorScene: SKScene {
             break
         case .prob:
             moveShipProbability(point: point)
-        case .water, .start,.finish:
+        case .water:
+            if handleMapClick(point: point, want: .water, other: .sand) {
+                lastPoint = point
+            }
+            
+        case .start:
+            if handleMapClick(point: point, want: .homeBase, other: .sand) {
+                lastPoint = point
+            }
+            
+        case .finish:
             beginWith(point: point)
         }
     }
@@ -310,14 +334,14 @@ class EditorScene: SKScene {
             
         }
         
-    
-    
-    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         
-}
-
+        
+        override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+            
+        }
+        
     }
-
+    
 #endif
 
 #if os(OSX)

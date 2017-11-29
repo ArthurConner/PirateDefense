@@ -25,7 +25,7 @@ class ActionTableViewController: UITableViewController {
     
     let boats:[ShipKind] = [.crusier,.galley,.motor,.destroyer,.battle]
     let kinds:[String] = ["Play Game", "Edit Blank"]
-    let towerAct:[TowerPlayerActions] = [.launchPaver, .KillAllTowers, .save, .exit ]
+    let towerAct:[TowerPlayerActions] = [.launchPaver, .KillAllTowers,.sound, .path, .save, .exit ]
     let edititems:[EditorSceneActions] = [.clear, .island , .water , .start, .finish,  .prob, .run , .save, .exit]
     var existing:[String] = []
     

@@ -58,7 +58,7 @@ class GameScene: SKScene {
         
         scene.scaleMode = .aspectFit
         scene.backgroundColor = .orange
-            
+        
         scene.backgroundColor =  ColorUtils.shared.r( 0, g: 0.33, b: 0.44)
         
         return scene
@@ -101,7 +101,7 @@ class GameScene: SKScene {
         gameState = .start
         hud.kills = 0
     }
-
+    
     func setupWorldPhysics() {
         physicsWorld.gravity = CGVector(dx: 0.0, dy: 0.0)
         physicsWorld.contactDelegate = self
@@ -116,12 +116,12 @@ class GameScene: SKScene {
         gameState = .start
         
         level.load(map: mapTiles)
- 
+        
         if let name = level.nextLevelName, let l  = GameLevel.read(name: name) {
             level = l
             level.apply(to: mapTiles)
         }
-
+        
         if level.hasAI, ai == nil {
             self.ai = TowerAI()
         } else {
@@ -321,7 +321,7 @@ class GameScene: SKScene {
             manageTapWhilePlaying(point: point)
         case .win, .lose:
             self.restart()
-
+            
         case .reload:
             if let touchedNode =
                 atPoint(point) as? SKLabelNode {
@@ -351,15 +351,16 @@ class GameScene: SKScene {
             
             let s = shipTiles().count
             let r = self.mapTiles.voyages[0]
-            if r.shortestRoute(map: self.mapTiles, using: waterSet).count > s * 2 {
+            if r.shortestRoute(map: self.mapTiles, using: waterSet).count > Int(CGFloat(s) * level.bump) {
                 
                 
-                launchAttack(timeOverTile:max(2.5,launchClock.length())/8)
-                
+                //launchAttack(timeOverTile:max(2.5,launchClock.length())/8)
+                launchAttack(timeOverTile:max(level.speedFloor,launchClock.length()/8))
             } else {
                 level.boatLevel += 1
-                launchClock.reduce(factor: 1.5)
-                print("next level for boats \(level.boatLevel)")
+                //launchClock.reduce(factor: 4.5)
+                launchClock.adjust(interval: 5 + Double(level.boatLevel))
+                print("next level for boats \(level.boatLevel) time \(launchClock.length())")
             }
         }
         
@@ -520,10 +521,10 @@ extension GameScene {
         return false
     }
     
-    func adjust(traveler:Navigatable, existing:Set<MapPoint> ){
+    func adjust(traveler:Navigatable, existing:[Set<MapPoint>] )->ShipPath?{
         
         
-        guard let ship = traveler as? SKNode else {return}
+        guard let ship = traveler as? SKNode else {return nil}
         
         let (f,p) = traveler.sailAction(usingTiles:mapTiles, orient: true, existing: existing)
         if let followLine = f {
@@ -540,9 +541,16 @@ extension GameScene {
             ship.removeAction(forKey: "wake")
         }
         
-        if let path = p , let b = level.showsPaths, b{
-            self.addChild(path)
+        if let path = p {
+            if  let b = level.showsPaths, b{
+                self.addChild(path)
+            }
+            return p
         }
+        
+        return nil
+        
+        
         
         /*
          let dest = traveler.route.finish
@@ -646,7 +654,7 @@ extension GameScene {
     func add(ship:PirateNode){
         ships.append(ship)
         self.addChild(ship)
-        adjust(traveler: ship, existing: shipTiles())
+        let _ = adjust(traveler: ship, existing: [])
         
         if !level.playSound,
             let n = ship.childNode(withName: "seasound") {
@@ -676,7 +684,7 @@ extension GameScene {
         
         
         if let (ship,interval) = level.nextShip(),
-             let shipPosition =  mapTiles.convert(mappoint:ship.route.start){
+            let shipPosition =  mapTiles.convert(mappoint:ship.route.start){
             ship.position = shipPosition
             add(ship: ship)
             launchClock.adjust(interval: interval)
@@ -684,7 +692,7 @@ extension GameScene {
         } else {
             if let trip = mapTiles.randomRoute(),  let shipPosition =  mapTiles.convert(mappoint:trip.start) {
                 
-              
+                
                 let ship =  level.randomShip( modfier:timeOverTile, route: trip)
                 ship.position = shipPosition
                 add(ship: ship)
@@ -725,7 +733,7 @@ extension GameScene {
             self.addChild(victoryShip)
             updateLabels()
             
-            adjust(traveler: victoryShip,existing: towerTiles())
+            let _ = adjust(traveler: victoryShip,existing: [])
             
             counterShipClock.adjust(interval: launchClock.length() * 8)
             counterShipClock.update()
@@ -753,7 +761,7 @@ extension GameScene {
             self.addChild(sandShip)
             updateLabels()
             
-            adjust(traveler: sandShip, existing: towerTiles())
+            let _ = adjust(traveler: sandShip, existing: [])
             
             sandShip.run(sandShip.wakeAction(), withKey:"wake")
             sandShip.setScale(0.3)
@@ -777,7 +785,7 @@ extension GameScene {
             self.addChild(sandShip)
             updateLabels()
             
-            adjust(traveler: sandShip,existing: [])
+            let _ = adjust(traveler: sandShip,existing: [])
             
             
             sandShip.run(sandShip.wakeAction(), withKey:"wake")
@@ -991,18 +999,41 @@ extension GameScene {
             x.removeFromParent()
         }
         
-        let tow = towerTiles()
-        let shi = shipTiles()
-        for x in children {
-            
+      //  var tow = towerTiles()
+      //  var shi = shipTiles()
+        
+        
+        var useSet:[Set<MapPoint>] = []
+        
+        var items:[SKNode] = self.towers
+        for x in self.ships{
+            items.append( x)
+        }
+        
+        for x in items {
             if let boat = x as? Navigatable {
                 
-                if let _ = boat as? TowerNode {
-                    adjust(traveler: boat, existing: tow)
-                } else {
-                    adjust(traveler: boat, existing: shi)
+                
+                //if let _ = boat as? TowerNode {
+                if let p = adjust(traveler: boat, existing: useSet) {
+                    for (i,x) in p.route.enumerated() {
+                        if i < useSet.count {
+                            var nSet = useSet[i]
+                            nSet.insert(x)
+                            useSet[i] = nSet
+                        } else {
+                            let nSet:Set<MapPoint> = [x]
+                            useSet.append(nSet)
+                        }
+                        
+                    }
                 }
+              //  } else {
+                   // adjust(traveler: boat, existing: shi)
+               // }
+                
             }
+            
         }
         
         changeCamera()
@@ -1063,12 +1094,12 @@ extension GameScene : SKPhysicsContactDelegate {
                 
                 [weak p1, weak p2] in
                 
-                let mytiles = self.towerTiles().union(self.shipTiles())
+               // let mytiles = self.towerTiles().union(self.shipTiles())
                 if let n = p2 {
-                    self.adjust(traveler: n, existing: mytiles)
+                    let _ = self.adjust(traveler: n, existing: [])
                 }
                 if let n = p1 as? Navigatable {
-                    self.adjust(traveler: n, existing: mytiles)
+                    let _ = self.adjust(traveler: n, existing: [])
                 }
             }
             return
@@ -1090,10 +1121,10 @@ extension GameScene : SKPhysicsContactDelegate {
                 
                 
                 if let n = p1 {
-                    self.adjust(traveler: n, existing: mytiles)
+                    let _ = self.adjust(traveler: n, existing: [])
                 }
                 if let n = p2 as? Navigatable {
-                    self.adjust(traveler: n, existing: mytiles)
+                    let _ = self.adjust(traveler: n, existing: [])
                 }
             }
             
@@ -1154,7 +1185,7 @@ extension GameScene: TowerPlayerActionDelegate {
                     self.towers.append(sandShip)
                     self.addChild(sandShip)
                     updateLabels()
-                    adjust(traveler: sandShip, existing: towerTiles())
+                    let _ = adjust(traveler: sandShip, existing:[])
                 } else {
                     launchSandShip()
                 }
@@ -1166,7 +1197,7 @@ extension GameScene: TowerPlayerActionDelegate {
                     self.towers.append(sandShip)
                     self.addChild(sandShip)
                     updateLabels()
-                    adjust(traveler: sandShip, existing: [])
+                    let _ = adjust(traveler: sandShip, existing: [])
                 } else {
                     launchTeraShip()
                 }
@@ -1183,11 +1214,16 @@ extension GameScene: TowerPlayerActionDelegate {
             level.victorySpeed = level.victorySpeed * 0.95
         case .strongerBoats:
             level.victoryShipLevel += 1
+            
         case .exit:
             print("going to exit")
         case .save:
             
             self.level.write(name: GameLevel.defaultName() )
+        case .sound:
+            self.level.playSound = !self.level.playSound
+        case .path:
+            self.level.showsPaths = !(self.level.showsPaths ?? false)
         }
         
     }

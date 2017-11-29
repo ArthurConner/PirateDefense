@@ -28,6 +28,8 @@ enum TowerPlayerActions:String {
     case fasterBoats = "Faster Boats"
     case strongerBoats = "Stronger Boats"
     case showNextShip = "Show Next Ship"
+    case sound = "Toggle Sound"
+    case path = "Toggle Path"
     case save = "Save"
     case exit = "Exit"
     

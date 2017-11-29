@@ -14,10 +14,13 @@ import GameKit
 
 class GameLevel : Codable {
     
-    var defaultFloor = 0.7
+    var defaultFloor = 0.9
     var maxTowers = 9
     var playSound = true
-    var decay = 0.99
+    var decay = 0.96
+    var speedFloor = 0.3
+    
+    var bump:CGFloat = 1.8
     
     var launches:[ShipLaunch] = []
     var showsPaths:Bool? = false
@@ -57,6 +60,8 @@ class GameLevel : Codable {
         case intro
         case decay
         case showsPaths
+        case bump
+        case speedFloor
         
         
     }

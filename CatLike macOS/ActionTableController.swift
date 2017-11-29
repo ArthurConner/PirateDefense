@@ -45,7 +45,7 @@ class ActionTableController: NSViewController  {
     
     var existing:[String] = []
     
-    let towerAct:[TowerPlayerActions] = [.launchPaver,.launchTerra, .KillAllTowers, .fasterBoats, .strongerBoats ,.showNextShip, .save, .exit]
+    let towerAct:[TowerPlayerActions] = [.launchPaver,.launchTerra, .KillAllTowers, .fasterBoats, .strongerBoats ,.showNextShip, .sound, .path,  .save, .exit]
     
     var gameState: GameTypeModes = .unknown {
         didSet {
