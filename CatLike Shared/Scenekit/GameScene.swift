@@ -359,7 +359,7 @@ class GameScene: SKScene {
             } else {
                 level.boatLevel += 1
                 //launchClock.reduce(factor: 4.5)
-                launchClock.adjust(interval: 5 + Double(level.boatLevel))
+                launchClock.adjust(interval: 4 + Double(level.boatLevel)/2)
                 print("next level for boats \(level.boatLevel) time \(launchClock.length())")
             }
         }
@@ -709,7 +709,7 @@ extension GameScene {
     
     func launchVictoryShip(){
         
-        let tow = towers.filter({ if let x = $0 as? DefenderTower, x.allowsWin { return true}
+        let tow = towers.filter({ if let x = $0 as? VictoryTower, x.allowsWin { return true}
             return false })
         
         guard tow.count < 4 else {
@@ -720,7 +720,7 @@ extension GameScene {
         if let trip = mapTiles.randomRoute(),   let startingPostion =  mapTiles.convert(mappoint: trip.finish) {
             
             
-            let victoryShip = DefenderTower(timeOverTile: level.victorySpeed, route: Voyage(start: trip.finish, finish: trip.start))
+            let victoryShip = VictoryTower(timeOverTile: level.victorySpeed, route: Voyage(start: trip.finish, finish: trip.start))
             
             victoryShip.position = startingPostion
             
@@ -856,7 +856,7 @@ extension GameScene {
     }
     
     func moveCameraToNeareShip() {
-        let launchers = self.towers.flatMap({ $0 as? DefenderTower})
+        let launchers = self.towers.flatMap({ $0 as? VictoryTower})
         
         guard var curShip = launchers.first, let dest = mapTiles.voyages.first?.finish else { return }
         
@@ -1149,9 +1149,9 @@ extension GameScene : SKPhysicsContactDelegate {
 extension GameScene: TowerPlayerActionDelegate {
     
     func showNextTower(){
-        let t:[DefenderTower] = self.towers.filter({ if  let _  = $0 as? DefenderTower{return true}
+        let t:[VictoryTower] = self.towers.filter({ if  let _  = $0 as? VictoryTower{return true}
             return false
-        }) as! [DefenderTower]
+        }) as! [VictoryTower]
         
         guard let f = t.first else { return }
         
@@ -1180,7 +1180,7 @@ extension GameScene: TowerPlayerActionDelegate {
         switch action {
         case .launchPaver:
             if towersRemaining() > 0 {
-                if let t = followingShip as? DefenderTower,
+                if let t = followingShip as? VictoryTower,
                     let sandShip = t.sandToHome(scene: self){
                     self.towers.append(sandShip)
                     self.addChild(sandShip)
@@ -1192,7 +1192,7 @@ extension GameScene: TowerPlayerActionDelegate {
             }
         case .launchTerra:
             if towersRemaining() > 0 {
-                if let t = followingShip as? DefenderTower,
+                if let t = followingShip as? VictoryTower,
                     let sandShip = t.splitShip(scene: self){
                     self.towers.append(sandShip)
                     self.addChild(sandShip)

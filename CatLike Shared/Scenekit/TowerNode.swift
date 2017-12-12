@@ -345,7 +345,7 @@ class SandTower: TowerNode, Navigatable {
 }
 
 
-class DefenderTower: TowerNode, Navigatable {
+class VictoryTower: TowerNode, Navigatable {
     var waterSpeed: Double = 1
     var route = Voyage.offGrid()
     
@@ -382,6 +382,14 @@ class DefenderTower: TowerNode, Navigatable {
         body.restitution = 0.5
         self.zPosition = 3
         self.physicsBody = body
+        
+        let light = SKLightNode()
+        light.lightColor = .green
+       // light.lightingBitMask = light.categoryBitMask
+        light.ambientColor = .red
+        light.isEnabled = true
+       // light.falloff = 2
+        self.addChild(light)
         
     }
     
@@ -462,7 +470,7 @@ class DefenderTower: TowerNode, Navigatable {
         return nil
     }
     
-    func splitShip(scene:GameScene)->DefenderTower?{
+    func splitShip(scene:GameScene)->VictoryTower?{
         
         if  scene.towersRemaining() > 0,
             sandShipsRemaining > 0, self.hitsRemain > 3 ,  let startTile = scene.tileOf(node: self){
@@ -473,7 +481,7 @@ class DefenderTower: TowerNode, Navigatable {
             let rou = Voyage(start: startTile, finish: self.route.finish)
             let m = rou.shortestRoute(map: scene.mapTiles, using: waterSet)
             
-            let ret = DefenderTower(timeOverTile: self.waterSpeed / 10, route: rou)
+            let ret = VictoryTower(timeOverTile: self.waterSpeed / 10, route: rou)
             ret.hitsRemain = self.hitsRemain * 2/3
             ret.gun.clock.adjust(interval: self.gun.clock.length() * 2)
             ret.fillColor = .green
@@ -595,27 +603,18 @@ class TeraTower: TowerNode, Navigatable {
     override func checkAge(scene:GameScene)->Bool{
         
         guard let pos = scene.tileOf(node: self) else { return true}
-        
-        
-        
-        
-        
 
-        
         if gun.clock.needsUpdate() {
             
             if pos == route.finish {
                 if let m = getDestPoint(scene:scene),
                     pos != m {
                     self.route = Voyage(start: pos, finish: m)
-                    scene.adjust(traveler: self,existing: [])
+                    let _ = scene.adjust(traveler: self,existing: [])
                 }
                 
-                
             }
-            
-            
-            
+      
             if pos.path(to: self.route.finish, map: scene.mapTiles, using: self.allowedTiles()).count < 2 {
                 if let m = getDestPoint(scene:scene) {
                     self.route = Voyage(start: pos, finish: m)

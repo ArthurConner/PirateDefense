@@ -17,7 +17,7 @@ class GameLevel : Codable {
     var defaultFloor = 0.9
     var maxTowers = 9
     var playSound = true
-    var decay = 0.96
+    var decay = 0.98
     var speedFloor = 0.3
     
     var bump:CGFloat = 1.8
