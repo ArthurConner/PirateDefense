@@ -455,12 +455,36 @@ extension GameScene {
     func add(towerAt towerPoint:MapPoint){
         
         if let place = mapTiles.convert(mappoint: towerPoint){
-            let tower = TowerNode(range:90)
-            tower.hitsRemain = level.towerStartingLevel()
+            
+            
+            let tower:TowerNode
+            switch level.towermode {
+                
+            case .regular:
+                
+                 tower = TowerNode(range:90)
+                tower.hitsRemain = level.towerStartingLevel()
+                
+            case .siren:
+                 tower = SirenTower(radius: 10)
+   
+           
+            case .terraform:
+               
+                let v = Voyage(start: towerPoint, finish: mapTiles.voyages[0].finish)
+                
+                tower = TeraTower(timeOverTile: 3, route: v)
+                
+                
+            }
+         
             tower.position = place
             self.addChild(tower)
             towers.append(tower)
             tower.adjust(level:0)
+            if let t = tower as? TeraTower {
+                let _ = adjust(traveler: t,existing: [])
+            }
             
         }
         
@@ -521,12 +545,13 @@ extension GameScene {
         return false
     }
     
-    func adjust(traveler:Navigatable, existing:[Set<MapPoint>] )->ShipPath?{
+    func wander(dest:MapPoint, traveler:Navigatable, existing:[Set<MapPoint>] )->ShipPath?{
         
         
         guard let ship = traveler as? SKNode else {return nil}
         
-        let (f,p) = traveler.sailAction(usingTiles:mapTiles, orient: true, existing: existing)
+        
+        let (f,p) = traveler.changeDirection(dest:dest, usingTiles:mapTiles, orient: true, existing: existing)
         if let followLine = f {
             ship.run(followLine,withKey:"move")
             ship.removeAction(forKey: "wake")
@@ -549,8 +574,42 @@ extension GameScene {
         }
         
         return nil
+    }
+    
+    
+    func adjust(traveler:Navigatable, existing:[Set<MapPoint>] )->ShipPath?{
         
         
+        return wander(dest: traveler.route.finish, traveler: traveler, existing: existing)
+        
+        /*
+         guard let ship = traveler as? SKNode else {return nil}
+         
+         let (f,p) = traveler.sailAction(usingTiles:mapTiles, orient: true, existing: existing)
+         if let followLine = f {
+         ship.run(followLine,withKey:"move")
+         ship.removeAction(forKey: "wake")
+         if !isDeepIntoGame() {
+         ship.run(traveler.wakeAction(), withKey:"wake")
+         } else if let x = ship.childNode(withName: "seasound"), GKRandomSource.sharedRandom().nextUniform() < 0.1 {
+         x.removeFromParent()
+         }
+         
+         } else {
+         ship.removeAction(forKey:"move")
+         ship.removeAction(forKey: "wake")
+         }
+         
+         if let path = p {
+         if  let b = level.showsPaths, b{
+         self.addChild(path)
+         }
+         return p
+         }
+         
+         return nil
+         
+         */
         
         /*
          let dest = traveler.route.finish
@@ -999,8 +1058,8 @@ extension GameScene {
             x.removeFromParent()
         }
         
-      //  var tow = towerTiles()
-      //  var shi = shipTiles()
+        //  var tow = towerTiles()
+        //  var shi = shipTiles()
         
         
         var useSet:[Set<MapPoint>] = []
@@ -1028,9 +1087,9 @@ extension GameScene {
                         
                     }
                 }
-              //  } else {
-                   // adjust(traveler: boat, existing: shi)
-               // }
+                //  } else {
+                // adjust(traveler: boat, existing: shi)
+                // }
                 
             }
             
@@ -1094,7 +1153,7 @@ extension GameScene : SKPhysicsContactDelegate {
                 
                 [weak p1, weak p2] in
                 
-               // let mytiles = self.towerTiles().union(self.shipTiles())
+                // let mytiles = self.towerTiles().union(self.shipTiles())
                 if let n = p2 {
                     let _ = self.adjust(traveler: n, existing: [])
                 }
@@ -1191,6 +1250,16 @@ extension GameScene: TowerPlayerActionDelegate {
                 }
             }
         case .launchTerra:
+            
+            switch level.towermode{
+            case .regular:
+                level.towermode = .siren
+            case .siren:
+                level.towermode = .terraform
+            case .terraform:
+                level.towermode = .regular
+            }
+            /*
             if towersRemaining() > 0 {
                 if let t = followingShip as? VictoryTower,
                     let sandShip = t.splitShip(scene: self){
@@ -1202,6 +1271,7 @@ extension GameScene: TowerPlayerActionDelegate {
                     launchTeraShip()
                 }
             }
+ */
         case .KillAllTowers:
             let removeme = towers
             for x in removeme {
@@ -1297,6 +1367,12 @@ extension GameScene: TowerPlayerActionDelegate {
                  */
             case 3:
                 self.ai = nil
+            case 40:
+                self.level.towermode = .regular
+            case 37:
+                self.level.towermode = .siren
+            case 41:
+                self.level.towermode = .terraform
             default:
                 print("code \(m)")
             }

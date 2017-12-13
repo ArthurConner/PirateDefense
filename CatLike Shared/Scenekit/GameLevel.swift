@@ -10,6 +10,11 @@ import Foundation
 import GameKit
 
 
+enum TowerMode {
+    case regular
+    case terraform
+    case siren
+}
 
 
 class GameLevel : Codable {
@@ -38,6 +43,8 @@ class GameLevel : Codable {
     var nextLevelName:String? = nil
     var intro:String? = nil
     
+    
+    var towermode:TowerMode = .regular
     
     var probalities:[ShipKind:ShipProbability] = [
         .battle:ShipProbability(base: -300, slope: 1.5, final: 80),

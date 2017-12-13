@@ -33,9 +33,8 @@ extension Navigatable {
         return  SKAction.repeatForever(SKAction.sequence([SKAction.run(wake),SKAction.wait(forDuration: self.waterSpeed/3)]))
     }
     
-    func sailAction(usingTiles tiles:MapHandler, orient:Bool=true, existing:[Set<MapPoint>])->(SKAction?,ShipPath?) {
-        
-        let dest = self.route.finish
+    
+    func changeDirection(dest:MapPoint, usingTiles tiles:MapHandler, orient:Bool=true, existing:[Set<MapPoint>])->(SKAction?,ShipPath?){
         
         var retPath:ShipPath? = nil
         
@@ -70,29 +69,37 @@ extension Navigatable {
         if let path = tiles.pathOf(mappoints:route, startOveride:ship.position) {
             let time =  self.waterSpeed * Double(route.count)
             
-                let line = ShipPath(path: path)
-                line.route = route
+            let line = ShipPath(path: path)
+            line.route = route
+            
+            if let s = self as? PirateNode {
                 
-                if let s = self as? PirateNode {
-                    
-                    line.strokeColor = ColorUtils.shared.alpha(s.wakeColor,  rate: 0.2)
-                    line.lineWidth = CGFloat(s.hitsRemain)/4
-                }
+                line.strokeColor = ColorUtils.shared.alpha(s.wakeColor,  rate: 0.2)
+                line.lineWidth = CGFloat(s.hitsRemain)/4
+            }
             
-                if let f = self as? TowerNode {
-                    
-                    line.strokeColor = ColorUtils.shared.alpha(.purple,  rate: 0.2)
-                    line.lineWidth = log2(CGFloat(f.hitsRemain)) + 1
-                }
+            if let f = self as? TowerNode {
+                
+                line.strokeColor = ColorUtils.shared.alpha(.purple,  rate: 0.2)
+                line.lineWidth = log2(CGFloat(f.hitsRemain)) + 1
+            }
             
-                line.lineWidth = ceil(max(min(line.lineWidth,2),9))
+            line.lineWidth = ceil(max(min(line.lineWidth,2),9))
             
-                retPath = line
+            retPath = line
             
             return (SKAction.follow( path, asOffset: false, orientToPath: orient, duration: time),line)
             
         }
         
         return (nil,retPath)
+    }
+    
+    func sailAction(usingTiles tiles:MapHandler, orient:Bool=true, existing:[Set<MapPoint>])->(SKAction?,ShipPath?) {
+        
+        let dest = self.route.finish
+        
+        return changeDirection(dest: dest, usingTiles: tiles, existing: existing)
+      
     }
 }

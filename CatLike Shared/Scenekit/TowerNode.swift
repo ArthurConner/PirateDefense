@@ -94,26 +94,48 @@ class TowerNode: SKShapeNode , Fireable {
         return true
     }
     
+    func adjustClock(){
+        
+        switch level {
+        case 1:
+            gun.clock.adjust(interval: 1)
+           
+        case 2:
+            
+            gun.clock.adjust(interval: 1.5)
+            
+            
+        case 3:
+            gun.clock.adjust(interval: 2)
+        
+        default:
+        
+            gun.clock.adjust(interval: 1)
+        }
+        
+    }
+    
     func adjust(level nextL:Int){
         
         let prior = level
     
+        
         switch nextL {
         case 0:
-            gun.clock.adjust(interval: 1)
+            
             level = 1
         case 1:
    
-             gun.clock.adjust(interval: 1.5)
             level = 2
             
         case 2:
-            gun.clock.adjust(interval: 2)
+         
             level = 3
         default:
             level = 0
-            gun.clock.adjust(interval: 1)
+           
         }
+        adjustClock()
         
         var shrinkTime = levelTimer.length()
 
@@ -344,6 +366,125 @@ class SandTower: TowerNode, Navigatable {
     
 }
 
+
+
+class SirenTower: TowerNode{
+    
+
+    
+    
+    
+    convenience init(radius:Int) {
+        
+        self.init(circleOfRadius:18)
+        self.fillColor = .orange
+        self.strokeColor = .black
+
+        self.lineWidth = 3
+        self.gun.radius = radius
+        
+
+        self.hitsRemain = 1
+        self.zPosition = 3
+     
+        let body = SKPhysicsBody(circleOfRadius: 18)
+        
+        body.allowsRotation = false
+        body.categoryBitMask = PhysicsCategory.Tower
+        body.isDynamic = false
+        body.contactTestBitMask = PhysicsCategory.Ship
+        body.restitution = 0.5
+        
+        self.physicsBody = body
+        self.gun.clock.adjust(interval: 4)
+    }
+    
+
+    
+    override  func adjustClock(){
+        
+
+        
+    }
+    
+    override func checkAge(scene:GameScene)->Bool{
+        
+        let _ = super.checkAge(scene: scene)
+        guard let pos = scene.tileOf(node: self) else { return true}
+        
+  
+        
+        guard gun.clock.needsUpdate() else {
+
+            return true
+            
+        }
+        
+        gun.clock.update()
+        
+        
+       
+        var naviboats:[Navigatable] = []
+        
+        let shipTiles = scene.mapTiles.tiles(near: pos, radius: self.gun.radius, kinds: waterSet)
+        
+        var bestPoint:MapPoint? = nil
+        
+         var bestDist = 0
+        
+        for x in shipTiles {
+            for y in  scene.navigatableBoats(at: x){
+            naviboats.append(y)
+            }
+            let dist = x.distance(manhattan: pos)
+            if let _ = bestPoint {
+                if  dist < bestDist {
+                    bestPoint = x
+                    bestDist = dist
+                }
+            } else {
+                bestPoint = x
+                bestDist = dist
+            }
+        }
+        
+        guard let dest = bestPoint else { return  true }
+        
+        var useSet:[Set<MapPoint>] = []
+        
+        for boat in naviboats {
+
+            if let p = scene.wander(dest: dest, traveler: boat, existing: useSet ) {
+           
+                for (i,x) in p.route.enumerated() {
+                    if i < useSet.count {
+                        var nSet = useSet[i]
+                        nSet.insert(x)
+                        useSet[i] = nSet
+                    } else {
+                        let nSet:Set<MapPoint> = [x]
+                        useSet.append(nSet)
+                    }
+                    
+                }
+            }
+       
+    }
+         return false
+    }
+    
+    
+    override func fire(at:MapPoint,scene:GameScene){
+        return
+    }
+    
+    override func hit(scene: GameScene) {
+        gun.radius = 3
+        super.hit(scene: scene)
+    }
+    
+    
+}
 
 class VictoryTower: TowerNode, Navigatable {
     var waterSpeed: Double = 1
